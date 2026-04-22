@@ -50,4 +50,4 @@ apps/portal/.next
 target
 .env
 .env.local
-
+services/api/api
