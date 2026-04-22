@@ -1,5 +1,6 @@
 FROM rust:1.88-alpine AS build
 WORKDIR /src
+RUN apk add --no-cache musl-dev
 COPY Cargo.toml ./
 COPY crates ./crates
 COPY workers ./workers
