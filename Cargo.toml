@@ -1,0 +1,9 @@
+[workspace]
+members = [
+  "crates/pipeline-core",
+  "crates/deeds-normalizer",
+  "crates/entity-resolution",
+  "crates/storage",
+  "workers/deeds-pipeline",
+]
+resolver = "2"
