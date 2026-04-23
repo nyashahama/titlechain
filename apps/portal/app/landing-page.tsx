@@ -43,7 +43,6 @@ export default function LandingPage() {
       >
         <div className="flex items-center gap-8">
           <a href="#" className="flex items-center gap-2">
-            {/* TitleChain mark */}
             <svg width="22" height="22" viewBox="0 0 32 32" fill="none" className="text-foreground">
               <path d="M16 2L30 28H2L16 2Z" stroke="currentColor" strokeWidth="2.5" fill="none" />
               <circle cx="16" cy="20" r="4" stroke="currentColor" strokeWidth="2" fill="none" />
@@ -95,7 +94,6 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section className="relative overflow-hidden pt-28 pb-0 px-6 text-center">
-        {/* Grid overlay */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -104,7 +102,6 @@ export default function LandingPage() {
             backgroundSize: "64px 64px",
           }}
         />
-        {/* Aurora glow — large, behind the geometric shape */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -119,20 +116,15 @@ export default function LandingPage() {
         />
 
         <div className="relative z-10 max-w-3xl mx-auto pt-12">
-          {/* Headline */}
           <h1 className="text-[clamp(42px,7vw,80px)] font-bold leading-[1.02] tracking-[-0.04em] mb-6">
             Verify property
             <br />
             titles in seconds.
           </h1>
-
-          {/* Subtitle */}
           <p className="text-[18px] text-muted leading-[1.6] max-w-[520px] mx-auto mb-8">
-            The intelligence layer for South African property transactions.
+            The intelligence layer for South African property transfers.
             Built for conveyancers, banks, and insurers.
           </p>
-
-          {/* CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
             <a
               href="#"
@@ -152,10 +144,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Geometric centerpiece — wireframe triangle with inner rings, like Vercel's triangle */}
         <div className="relative z-10 mt-8 flex justify-center">
           <div className="relative" style={{ width: "min(420px, 70vw)", height: "min(360px, 55vw)" }}>
-            {/* Background glow bloom */}
             <div
               className="absolute pointer-events-none"
               style={{
@@ -165,41 +155,35 @@ export default function LandingPage() {
                 filter: "blur(20px)",
               }}
             />
-            {/* Wireframe triangle stack — Vercel-style */}
             <svg
               viewBox="0 0 400 340"
               className="w-full h-full"
               style={{ filter: "drop-shadow(0 0 40px rgba(255,255,255,0.06))" }}
             >
-              {/* Outer wireframe triangle */}
               <path
                 d="M200 40 L360 300 H40 L200 40Z"
                 stroke="rgba(255,255,255,0.15)"
                 strokeWidth="1"
                 fill="none"
               />
-              {/* Middle wireframe triangle */}
               <path
                 d="M200 80 L320 280 H80 L200 80Z"
                 stroke="rgba(255,255,255,0.12)"
                 strokeWidth="1"
                 fill="none"
               />
-              {/* Inner wireframe triangle */}
               <path
                 d="M200 120 L280 260 H120 L200 120Z"
                 stroke="rgba(255,255,255,0.10)"
                 strokeWidth="1"
                 fill="none"
               />
-              {/* Innermost solid-ish triangle */}
               <path
                 d="M200 160 L240 240 H160 L200 160Z"
                 stroke="rgba(255,255,255,0.08)"
                 strokeWidth="1"
                 fill="rgba(255,255,255,0.02)"
               />
-              {/* Horizontal cross-lines for grid effect */}
               <line x1="80" y1="200" x2="320" y2="200" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
               <line x1="120" y1="160" x2="280" y2="160" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
               <line x1="160" y1="120" x2="240" y2="120" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
@@ -221,7 +205,6 @@ export default function LandingPage() {
               {text}
             </span>
           ))}
-          {/* Duplicate for seamless loop */}
           {marqueeItems.map(([text, highlight], i) => (
             <span
               key={`dup-${i}`}
@@ -235,21 +218,80 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* FEATURE HIGHLIGHT */}
-      <section className="py-24 md:py-32 px-6 text-center">
-        <h2 className="text-[clamp(24px,3vw,36px)] font-bold tracking-[-0.02em] mb-6">
+      {/* THE STATUS QUO — large centered statement, like Vercel's "Develop with your favorite tools" */}
+      <section className="relative px-6 pt-24 pb-20 md:pt-32 md:pb-28 text-center overflow-hidden">
+        {/* Subtle aurora line across top */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(50,200,180,0.4), rgba(74,222,128,0.4), rgba(251,191,36,0.3), rgba(239,68,68,0.3), transparent)",
+          }}
+        />
+        <div className="max-w-[720px] mx-auto relative z-10">
+          <p className="text-[clamp(22px,3vw,32px)] font-medium leading-[1.3] tracking-[-0.02em] text-foreground/90">
+            Today, property professionals still piece together the truth from{" "}
+            <span className="text-muted">disconnected systems,</span>{" "}
+            <span className="text-muted">manual checks,</span> and{" "}
+            <span className="text-muted">slow government processes.</span>
+          </p>
+          <p className="text-[clamp(18px,2.5vw,26px)] font-medium leading-[1.4] tracking-[-0.01em] text-muted mt-8">
+            TitleChain gives one trusted answer before lodgement or payout.
+          </p>
+        </div>
+      </section>
+
+      {/* THREE DECISIONS — massive words with color glow, minimal description */}
+      <section className="relative px-6 py-24 md:py-32 overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.015) 0%, transparent 60%)",
+          }}
+        />
+        <div className="max-w-[900px] mx-auto text-center relative z-10">
+          <div className="grid grid-cols-3 gap-4 md:gap-8 mb-10">
+            {[
+              { word: "Clear", color: "#4ade80", desc: "Proceed with confidence" },
+              { word: "Review", color: "#fbbf24", desc: "Human review needed" },
+              { word: "Stop", color: "#ef4444", desc: "Hard blocker detected" },
+            ].map((item) => (
+              <div key={item.word} className="text-center">
+                <div
+                  className="text-[clamp(36px,6vw,72px)] font-bold leading-none tracking-[-0.04em] mb-3"
+                  style={{
+                    color: item.color,
+                    textShadow: `0 0 60px ${item.color}30, 0 0 120px ${item.color}15`,
+                  }}
+                >
+                  {item.word}
+                </div>
+                <div className="font-mono text-[11px] md:text-[12px] tracking-[0.12em] uppercase text-muted-more">
+                  {item.desc}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[15px] md:text-[16px] text-muted leading-[1.6] max-w-[480px] mx-auto">
+            Decision at the top. Evidence underneath. Audit trail throughout.
+            Not another report — one operational answer backed by source provenance.
+          </p>
+        </div>
+      </section>
+
+      {/* BUILT FOR — inline badges like Vercel's "Scale your Enterprise without compromising Security" */}
+      <section className="px-6 py-24 md:py-32 text-center border-t border-border">
+        <h2 className="text-[clamp(26px,4vw,48px)] font-bold leading-[1.15] tracking-[-0.03em]">
           Built for{" "}
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border-light text-[15px] font-medium align-middle">
+          <a href="#" className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border-light text-[clamp(14px,2.5vw,22px)] font-medium align-middle hover:bg-white/5 transition-colors">
             Conveyancers
-          </span>{" "}
+          </a>{" "}
           and{" "}
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border-light text-[15px] font-medium align-middle">
+          <a href="#" className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border-light text-[clamp(14px,2.5vw,22px)] font-medium align-middle hover:bg-white/5 transition-colors">
             Banks
-          </span>
+          </a>
         </h2>
-        <p className="text-[16px] text-muted max-w-[560px] mx-auto leading-[1.6]">
-          Whether you&apos;re running compliance checks, underwriting a bond, or issuing title insurance — TitleChain
-          gives every stakeholder a single, reliable, queryable record.
+        <p className="text-[16px] text-muted max-w-[520px] mx-auto mt-6 leading-[1.6]">
+          One queryable record for every stakeholder in the property transaction chain.
         </p>
       </section>
 
@@ -296,39 +338,19 @@ export default function LandingPage() {
       <footer className="border-t border-border px-6 pt-16 pb-8">
         <div className="max-w-[1200px] mx-auto grid grid-cols-2 md:grid-cols-6 gap-8 mb-16">
           {[
-            {
-              title: "Product",
-              links: ["Title Intelligence", "Transfer Monitor", "Risk & Fraud Score", "Pricing"],
-            },
-            {
-              title: "Resources",
-              links: ["API Documentation", "Status Page", "Changelog", "Support"],
-            },
-            {
-              title: "Company",
-              links: ["About", "Blog", "Careers", "Contact"],
-            },
-            {
-              title: "Legal",
-              links: ["Privacy Policy", "Terms of Service", "POPIA Compliance", "Security"],
-            },
-            {
-              title: "Social",
-              links: ["Twitter / X", "LinkedIn", "GitHub"],
-            },
-            {
-              title: "Get Started",
-              links: ["Request Access", "Schedule Demo", "Talk to Sales"],
-            },
+            { title: "Product", links: ["Title Intelligence", "Transfer Monitor", "Risk & Fraud Score", "Pricing"] },
+            { title: "Resources", links: ["API Documentation", "Status Page", "Changelog", "Support"] },
+            { title: "Company", links: ["About", "Blog", "Careers", "Contact"] },
+            { title: "Legal", links: ["Privacy Policy", "Terms of Service", "POPIA Compliance", "Security"] },
+            { title: "Social", links: ["Twitter / X", "LinkedIn", "GitHub"] },
+            { title: "Get Started", links: ["Request Access", "Schedule Demo", "Talk to Sales"] },
           ].map((col) => (
             <div key={col.title}>
               <h4 className="text-[11px] uppercase tracking-[0.1em] text-muted mb-4">{col.title}</h4>
               <ul className="space-y-2.5">
                 {col.links.map((l) => (
                   <li key={l}>
-                    <a href="#" className="text-[13px] text-muted-more hover:text-foreground transition-colors">
-                      {l}
-                    </a>
+                    <a href="#" className="text-[13px] text-muted-more hover:text-foreground transition-colors">{l}</a>
                   </li>
                 ))}
               </ul>
@@ -337,9 +359,7 @@ export default function LandingPage() {
         </div>
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t border-border">
           <span className="font-semibold text-[15px] text-foreground/50">TitleChain</span>
-          <span className="font-mono text-[11px] text-muted-more">
-            © 2025 TitleChain Pty Ltd · Sandton, South Africa
-          </span>
+          <span className="font-mono text-[11px] text-muted-more">© 2025 TitleChain Pty Ltd · Sandton, South Africa</span>
         </div>
       </footer>
     </div>
