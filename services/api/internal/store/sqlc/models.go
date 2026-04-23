@@ -8,6 +8,96 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type OpsAnalyst struct {
+	ID          string             `json:"id"`
+	DisplayName string             `json:"display_name"`
+	Email       string             `json:"email"`
+	Active      bool               `json:"active"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+type OpsCaseAuditEvent struct {
+	ID        pgtype.UUID        `json:"id"`
+	CaseID    pgtype.UUID        `json:"case_id"`
+	ActorID   string             `json:"actor_id"`
+	EventType string             `json:"event_type"`
+	Metadata  []byte             `json:"metadata"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type OpsCaseDecision struct {
+	ID           pgtype.UUID        `json:"id"`
+	CaseID       pgtype.UUID        `json:"case_id"`
+	Decision     string             `json:"decision"`
+	Note         string             `json:"note"`
+	Status       string             `json:"status"`
+	CreatedBy    string             `json:"created_by"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	SupersededAt pgtype.Timestamptz `json:"superseded_at"`
+}
+
+type OpsCaseDecisionReasonCode struct {
+	DecisionID pgtype.UUID `json:"decision_id"`
+	ReasonCode string      `json:"reason_code"`
+}
+
+type OpsCaseEvidenceItem struct {
+	ID                pgtype.UUID        `json:"id"`
+	CaseID            pgtype.UUID        `json:"case_id"`
+	EvidenceType      string             `json:"evidence_type"`
+	SourceType        string             `json:"source_type"`
+	SourceReference   string             `json:"source_reference"`
+	ExternalReference pgtype.Text        `json:"external_reference"`
+	Excerpt           pgtype.Text        `json:"excerpt"`
+	ExtractedFacts    []byte             `json:"extracted_facts"`
+	EvidenceStatus    string             `json:"evidence_status"`
+	AnalystNote       pgtype.Text        `json:"analyst_note"`
+	CreatedBy         string             `json:"created_by"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+}
+
+type OpsCaseParty struct {
+	ID          pgtype.UUID        `json:"id"`
+	CaseID      pgtype.UUID        `json:"case_id"`
+	Role        string             `json:"role"`
+	EntityType  string             `json:"entity_type"`
+	DisplayName string             `json:"display_name"`
+	Identifier  pgtype.Text        `json:"identifier"`
+	Note        pgtype.Text        `json:"note"`
+	CreatedBy   string             `json:"created_by"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+type OpsCasePropertyMatch struct {
+	ID             pgtype.UUID        `json:"id"`
+	CaseID         pgtype.UUID        `json:"case_id"`
+	SeedPropertyID pgtype.UUID        `json:"seed_property_id"`
+	MatchSource    string             `json:"match_source"`
+	Confidence     pgtype.Numeric     `json:"confidence"`
+	Status         string             `json:"status"`
+	ConfirmedBy    pgtype.Text        `json:"confirmed_by"`
+	ConfirmedAt    pgtype.Timestamptz `json:"confirmed_at"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type OpsCaseRecord struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
 type OpsJob struct {
 	ID             pgtype.UUID        `json:"id"`
 	RunID          pgtype.UUID        `json:"run_id"`
@@ -33,6 +123,16 @@ type OpsJobAttempt struct {
 	ErrorMessage  pgtype.Text        `json:"error_message"`
 }
 
+type OpsReasonCode struct {
+	Code        string             `json:"code"`
+	Label       string             `json:"label"`
+	Category    string             `json:"category"`
+	IsHardBlock bool               `json:"is_hard_block"`
+	Active      bool               `json:"active"`
+	SortOrder   int32              `json:"sort_order"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
 type OpsRun struct {
 	ID         pgtype.UUID        `json:"id"`
 	BatchID    pgtype.UUID        `json:"batch_id"`
@@ -42,6 +142,18 @@ type OpsRun struct {
 	FinishedAt pgtype.Timestamptz `json:"finished_at"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type OpsSeedProperty struct {
+	ID                        pgtype.UUID        `json:"id"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	CurrentOwnerName          pgtype.Text        `json:"current_owner_name"`
+	StatusSummary             string             `json:"status_summary"`
+	SeededRisk                []byte             `json:"seeded_risk"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 }
 
 type RawBatch struct {

@@ -6,12 +6,41 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	AddCaseEvidence(ctx context.Context, arg AddCaseEvidenceParams) (OpsCaseEvidenceItem, error)
+	AddCaseParty(ctx context.Context, arg AddCasePartyParams) (OpsCaseParty, error)
+	AddDecisionReasonCode(ctx context.Context, arg AddDecisionReasonCodeParams) error
 	ClaimNextJob(ctx context.Context, arg ClaimNextJobParams) (OpsJob, error)
+	CloseCaseUnresolved(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
+	ConfirmCasePropertyMatch(ctx context.Context, arg ConfirmCasePropertyMatchParams) (OpsCasePropertyMatch, error)
+	CreateCaseAuditEvent(ctx context.Context, arg CreateCaseAuditEventParams) (OpsCaseAuditEvent, error)
+	CreateCaseDecision(ctx context.Context, arg CreateCaseDecisionParams) (OpsCaseDecision, error)
+	CreateCaseRecord(ctx context.Context, arg CreateCaseRecordParams) (OpsCaseRecord, error)
+	CreatePropertyMatch(ctx context.Context, arg CreatePropertyMatchParams) (OpsCasePropertyMatch, error)
 	CreateRun(ctx context.Context, arg CreateRunParams) (OpsRun, error)
+	GetAnalyst(ctx context.Context, id string) (OpsAnalyst, error)
+	GetCaseRecord(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
+	LinkCaseSeedProperty(ctx context.Context, arg LinkCaseSeedPropertyParams) (OpsCaseRecord, error)
+	ListAnalysts(ctx context.Context) ([]OpsAnalyst, error)
+	ListCaseAuditEvents(ctx context.Context, caseID pgtype.UUID) ([]OpsCaseAuditEvent, error)
+	ListCaseDecisions(ctx context.Context, caseID pgtype.UUID) ([]OpsCaseDecision, error)
+	ListCaseEvidence(ctx context.Context, caseID pgtype.UUID) ([]OpsCaseEvidenceItem, error)
+	ListCaseParties(ctx context.Context, caseID pgtype.UUID) ([]OpsCaseParty, error)
+	ListCasePropertyMatches(ctx context.Context, caseID pgtype.UUID) ([]OpsCasePropertyMatch, error)
+	ListCaseSummaries(ctx context.Context, arg ListCaseSummariesParams) ([]ListCaseSummariesRow, error)
+	ListDecisionReasonCodes(ctx context.Context, decisionID pgtype.UUID) ([]ListDecisionReasonCodesRow, error)
+	ListReasonCodes(ctx context.Context) ([]OpsReasonCode, error)
 	ListRuns(ctx context.Context, limit int32) ([]OpsRun, error)
+	ListSeedPropertyMatches(ctx context.Context, arg ListSeedPropertyMatchesParams) ([]OpsSeedProperty, error)
+	ReassignCase(ctx context.Context, arg ReassignCaseParams) (OpsCaseRecord, error)
+	RejectCasePropertyMatches(ctx context.Context, caseID pgtype.UUID) error
+	ReopenCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
+	ResolveCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
+	SupersedeCurrentDecisions(ctx context.Context, caseID pgtype.UUID) error
 }
 
 var _ Querier = (*Queries)(nil)
