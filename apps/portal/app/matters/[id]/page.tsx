@@ -14,22 +14,22 @@ export default function MatterDetailPage() {
 
   if (!matter) {
     return (
-      <div className="p-6 md:p-10">
+      <div className="p-8 md:p-10">
         <p className="text-muted">Matter not found</p>
       </div>
     );
   }
 
-  const decisionColor =
-    matter.decision === "clear" ? "#4ade80" : matter.decision === "stop" ? "#ef4444" : "#fbbf24";
+  const decisionColor = matter.decision === "clear" ? "#4ade80" : matter.decision === "stop" ? "#ef4444" : "#fbbf24";
+  const decisionLabel = matter.decision === "clear" ? "Clear to Lodge" : matter.decision === "stop" ? "Stop — Do Not Proceed" : "Review Required";
 
   return (
-    <div className="p-6 md:p-10 max-w-4xl animate-slide-in">
-      {/* Header */}
+    <div className="p-8 md:p-10 max-w-4xl animate-slide-in">
+      {/* Back + Header */}
       <div className="mb-8">
         <Link
           href="/matters"
-          className="inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-foreground transition-colors duration-200 group mb-4"
+          className="inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-foreground transition-colors duration-200 group mb-5"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform duration-200 group-hover:-translate-x-0.5">
             <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -43,10 +43,10 @@ export default function MatterDetailPage() {
               <span className="text-[11px] font-mono text-muted-more tabular-nums tracking-tight">{matter.reference}</span>
               <CopyButton text={matter.reference} />
             </div>
-            <h1 className="text-[26px] font-bold tracking-[-0.03em] text-foreground leading-tight">
+            <h1 className="text-[28px] font-bold tracking-[-0.03em] text-foreground leading-tight">
               {matter.property_description}
             </h1>
-            <p className="text-[13px] text-muted mt-1.5">
+            <p className="text-[13px] text-muted mt-2">
               {matter.locality_or_area} · {matter.municipality_or_deeds_office}
             </p>
           </div>
@@ -58,39 +58,28 @@ export default function MatterDetailPage() {
 
       {/* Decision Banner */}
       {matter.decision && (
-        <div
-          className="border rounded-2xl p-6 mb-6"
-          style={{
-            borderColor: `${decisionColor}30`,
-            backgroundColor: `${decisionColor}08`,
-          }}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: `${decisionColor}20` }}
-            >
+        <div className="border rounded-2xl p-6 mb-8" style={{ borderColor: `${decisionColor}25`, backgroundColor: `${decisionColor}06` }}>
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${decisionColor}18` }}>
               <DecisionIcon decision={matter.decision} color={decisionColor} />
             </div>
             <div>
-              <p className="text-[11px] text-muted uppercase tracking-wider font-medium">Clear-to-Lodge Decision</p>
-              <p className="text-[20px] font-bold" style={{ color: decisionColor }}>
-                {matter.decision === "clear" ? "Clear to Lodge" : matter.decision === "stop" ? "Stop — Do Not Proceed" : "Review Required"}
-              </p>
+              <p className="text-[11px] text-muted uppercase tracking-[0.12em] font-semibold">Clear-to-Lodge Decision</p>
+              <p className="text-[22px] font-bold" style={{ color: decisionColor }}>{decisionLabel}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-[11px] text-muted">
-            <span>Confidence: <span className="text-foreground/70 font-medium">{matter.confidence}%</span></span>
-            <span>·</span>
+          <div className="flex items-center gap-4 text-[12px] text-muted ml-16">
+            <span>Confidence: <span className="text-foreground/70 font-semibold">{matter.confidence}%</span></span>
+            <span className="text-border-light">·</span>
             <RelativeTime date={matter.updated_at} />
           </div>
         </div>
       )}
 
       {/* Property Details */}
-      <div className="border border-border rounded-2xl bg-card/20 p-6 mb-6">
-        <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Property Details</h2>
-        <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4">
+      <div className="border border-border rounded-2xl bg-card/20 p-6 mb-8">
+        <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Property Details</h2>
+        <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
           <DetailItem label="Locality" value={matter.locality_or_area} />
           <DetailItem label="Municipality" value={matter.municipality_or_deeds_office} />
           <DetailItem label="Title Reference" value={matter.title_reference} />
@@ -100,33 +89,22 @@ export default function MatterDetailPage() {
 
       {/* Flags */}
       {matter.flags.length > 0 && (
-        <div className="border border-border rounded-2xl bg-card/20 p-6 mb-6">
-          <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Flags</h2>
-          <div className="space-y-2">
+        <div className="border border-border rounded-2xl bg-card/20 p-6 mb-8">
+          <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Flags</h2>
+          <div className="space-y-2.5">
             {matter.flags.map((f) => (
               <div
                 key={f.id}
-                className="flex items-start gap-3 p-3 rounded-xl"
+                className="flex items-start gap-3 p-4 rounded-xl transition-colors"
                 style={{
-                  backgroundColor:
-                    f.severity === "critical"
-                      ? "rgba(239,68,68,0.08)"
-                      : f.severity === "warning"
-                      ? "rgba(251,191,36,0.08)"
-                      : "rgba(255,255,255,0.03)",
-                  border: `1px solid ${
-                    f.severity === "critical"
-                      ? "rgba(239,68,68,0.15)"
-                      : f.severity === "warning"
-                      ? "rgba(251,191,36,0.15)"
-                      : "rgba(255,255,255,0.06)"
-                  }`,
+                  backgroundColor: f.severity === "critical" ? "rgba(239,68,68,0.06)" : f.severity === "warning" ? "rgba(251,191,36,0.06)" : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${f.severity === "critical" ? "rgba(239,68,68,0.12)" : f.severity === "warning" ? "rgba(251,191,36,0.12)" : "rgba(255,255,255,0.06)"}`,
                 }}
               >
                 <FlagDot severity={f.severity} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] text-foreground/90 font-medium">{f.message}</p>
-                  <p className="text-[11px] text-muted mt-0.5">{f.category} · {f.source}</p>
+                  <p className="text-[11px] text-muted mt-1">{f.category} · {f.source}</p>
                 </div>
               </div>
             ))}
@@ -136,18 +114,18 @@ export default function MatterDetailPage() {
 
       {/* Evidence */}
       {matter.evidence.length > 0 && (
-        <div className="border border-border rounded-2xl bg-card/20 p-6 mb-6">
-          <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Evidence</h2>
-          <div className="space-y-3">
+        <div className="border border-border rounded-2xl bg-card/20 p-6 mb-8">
+          <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Evidence</h2>
+          <div className="space-y-4">
             {matter.evidence.map((e) => (
               <div key={e.id} className="py-3 border-b border-border/30 last:border-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-[13px] font-semibold text-foreground/90">{e.type}</span>
                   <span className="text-muted">·</span>
                   <span className="text-[11px] text-muted">{e.source}</span>
                 </div>
                 <p className="text-[13px] text-foreground/60 leading-relaxed">{e.excerpt || e.reference}</p>
-                <div className="flex items-center gap-3 mt-1.5">
+                <div className="flex items-center gap-3 mt-2">
                   <StatusBadge status={e.status} />
                   <span className="text-[11px] text-muted-more font-mono">{e.reference}</span>
                 </div>
@@ -159,8 +137,8 @@ export default function MatterDetailPage() {
 
       {/* Parties */}
       {matter.parties.length > 0 && (
-        <div className="border border-border rounded-2xl bg-card/20 p-6 mb-6">
-          <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Parties</h2>
+        <div className="border border-border rounded-2xl bg-card/20 p-6 mb-8">
+          <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Parties</h2>
           <div className="flex flex-wrap gap-2">
             {matter.parties.map((p) => (
               <div key={p.id} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/40 bg-card/40 text-[12px]">
@@ -176,7 +154,7 @@ export default function MatterDetailPage() {
 
       {/* Audit Log */}
       <div className="border border-border rounded-2xl bg-card/20 p-6">
-        <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Activity</h2>
+        <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Activity</h2>
         <div className="space-y-0">
           {matter.audit_log.map((ev, i) => (
             <div key={ev.id} className="flex gap-3 relative">
@@ -186,7 +164,7 @@ export default function MatterDetailPage() {
               <div className="shrink-0 w-9 h-9 rounded-full bg-card border border-border/40 flex items-center justify-center text-muted z-10">
                 <ActivityIcon />
               </div>
-              <div className="pb-4 pt-1.5 flex-1 min-w-0">
+              <div className="pb-5 pt-1.5 flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-[13px] font-medium text-foreground/80">{ev.event_type}</span>
                   <span className="text-muted">·</span>
@@ -205,7 +183,7 @@ export default function MatterDetailPage() {
 function DetailItem({ label, value }: { label: string; value?: string }) {
   return (
     <div>
-      <dt className="text-[10px] uppercase tracking-wider text-muted mb-1 font-medium">{label}</dt>
+      <dt className="text-[10px] uppercase tracking-wider text-muted mb-1.5 font-medium">{label}</dt>
       <dd className="text-[13px] text-foreground/90 font-medium">{value || <span className="text-muted-more">—</span>}</dd>
     </div>
   );
@@ -213,43 +191,24 @@ function DetailItem({ label, value }: { label: string; value?: string }) {
 
 function DecisionIcon({ decision, color }: { decision: string; color: string }) {
   if (decision === "clear") {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    );
+    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>;
   }
   if (decision === "stop") {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
-    );
+    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
   }
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-      <line x1="12" y1="9" x2="12" y2="13" />
-      <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  );
+  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
 }
 
 function FlagDot({ severity }: { severity: string }) {
   const color = severity === "critical" ? "#ef4444" : severity === "warning" ? "#fbbf24" : "#a1a1aa";
   return (
     <span className="relative flex h-2.5 w-2.5 shrink-0 mt-1.5">
-      <span className="absolute inline-flex h-full w-full rounded-full opacity-60" style={{ backgroundColor: color }} />
+      <span className="absolute inline-flex h-full w-full rounded-full opacity-50" style={{ backgroundColor: color }} />
       <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ backgroundColor: color }} />
     </span>
   );
 }
 
 function ActivityIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
+  return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /></svg>;
 }

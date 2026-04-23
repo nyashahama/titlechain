@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createMatter } from "../../_lib/mock-data";
 import { useAuth } from "../../_providers/auth-provider";
 
@@ -19,7 +20,7 @@ export default function NewMatterPage() {
     e.preventDefault();
     if (!user) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1800));
     const matter = createMatter({
       property_description: propertyDescription,
       locality_or_area: locality,
@@ -33,49 +34,59 @@ export default function NewMatterPage() {
   }
 
   return (
-    <div className="p-6 md:p-10 max-w-2xl animate-slide-in">
+    <div className="p-8 md:p-10 max-w-2xl animate-slide-in">
       <div className="mb-8">
-        <h1 className="text-[24px] font-bold tracking-[-0.03em] text-foreground">New Clear-to-Lodge Check</h1>
-        <p className="text-[13px] text-muted mt-1">Enter property details to run a verification</p>
+        <Link
+          href="/matters"
+          className="inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-foreground transition-colors duration-200 group mb-5"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform duration-200 group-hover:-translate-x-0.5">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back to matters
+        </Link>
+        <h1 className="text-[26px] font-bold tracking-[-0.03em] text-foreground">New Clear-to-Lodge Check</h1>
+        <p className="text-[14px] text-muted mt-1.5">Enter property details to run a verification</p>
       </div>
 
       <div className="border border-border rounded-2xl bg-card/20 p-6 md:p-8">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-[11px] uppercase tracking-[0.1em] text-muted font-medium mb-2">
+            <label className="block text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
               Property Description *
             </label>
             <input
               required
               value={propertyDescription}
               onChange={(e) => setPropertyDescription(e.target.value)}
-              className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
+              className="w-full bg-card border border-border-light rounded-xl px-4 py-[10px] text-[14px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
               placeholder="E.g. Erf 412, Rosebank Township"
             />
+            <p className="text-[11px] text-muted mt-1.5">Tip: Try &ldquo;Rosebank&rdquo; for Clear, &ldquo;Sandton&rdquo; for Review, &ldquo;Centurion&rdquo; for Stop</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] uppercase tracking-[0.1em] text-muted font-medium mb-2">
+              <label className="block text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
                 Locality / Area *
               </label>
               <input
                 required
                 value={locality}
                 onChange={(e) => setLocality(e.target.value)}
-                className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
+                className="w-full bg-card border border-border-light rounded-xl px-4 py-[10px] text-[14px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
                 placeholder="E.g. Rosebank"
               />
             </div>
             <div>
-              <label className="block text-[11px] uppercase tracking-[0.1em] text-muted font-medium mb-2">
+              <label className="block text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
                 Municipality / Deeds Office *
               </label>
               <input
                 required
                 value={municipality}
                 onChange={(e) => setMunicipality(e.target.value)}
-                className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
+                className="w-full bg-card border border-border-light rounded-xl px-4 py-[10px] text-[14px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
                 placeholder="E.g. City of Johannesburg"
               />
             </div>
@@ -83,24 +94,24 @@ export default function NewMatterPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] uppercase tracking-[0.1em] text-muted font-medium mb-2">
+              <label className="block text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
                 Title Reference
               </label>
               <input
                 value={titleRef}
                 onChange={(e) => setTitleRef(e.target.value)}
-                className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
+                className="w-full bg-card border border-border-light rounded-xl px-4 py-[10px] text-[14px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
                 placeholder="E.g. T12345/2018"
               />
             </div>
             <div>
-              <label className="block text-[11px] uppercase tracking-[0.1em] text-muted font-medium mb-2">
+              <label className="block text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
                 Matter Reference
               </label>
               <input
                 value={matterRef}
                 onChange={(e) => setMatterRef(e.target.value)}
-                className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
+                className="w-full bg-card border border-border-light rounded-xl px-4 py-[10px] text-[14px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
                 placeholder="E.g. M-2025-001"
               />
             </div>
@@ -109,7 +120,7 @@ export default function NewMatterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-foreground text-background text-[14px] font-medium px-4 py-[10px] rounded-full transition-opacity duration-200 hover:opacity-80 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-foreground text-background text-[14px] font-semibold px-4 py-[11px] rounded-full transition-opacity duration-200 hover:opacity-80 disabled:opacity-50 flex items-center justify-center gap-2.5 mt-2"
           >
             {loading ? (
               <>

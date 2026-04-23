@@ -7,15 +7,15 @@ export default function MattersPage() {
   const matters = listMatters();
 
   return (
-    <div className="p-6 md:p-10 max-w-5xl animate-slide-in">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-8 md:p-10 max-w-5xl animate-slide-in">
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-[24px] font-bold tracking-[-0.03em] text-foreground">Matters</h1>
-          <p className="text-[13px] text-muted mt-1">All your Clear-to-Lodge checks</p>
+          <h1 className="text-[26px] font-bold tracking-[-0.03em] text-foreground">Matters</h1>
+          <p className="text-[14px] text-muted mt-1.5">All your Clear-to-Lodge checks</p>
         </div>
         <Link
           href="/matters/new"
-          className="bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
+          className="bg-foreground text-background text-[13px] font-semibold px-5 py-[9px] rounded-full transition-opacity duration-200 hover:opacity-80"
         >
           New Check
         </Link>
@@ -23,14 +23,14 @@ export default function MattersPage() {
 
       <div className="border border-border rounded-2xl bg-card/20 overflow-hidden">
         {matters.length === 0 ? (
-          <div className="py-20 text-center">
+          <div className="py-24 text-center">
             <div className="w-14 h-14 rounded-2xl border border-border flex items-center justify-center mb-5 bg-card/30 mx-auto">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
                 <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <p className="text-[15px] text-foreground/80 mb-1.5 font-medium">No matters yet</p>
-            <p className="text-[13px] text-muted max-w-[240px] mx-auto">Create your first Clear-to-Lodge check to get started.</p>
+            <p className="text-[15px] text-foreground/80 font-medium mb-1.5">No matters yet</p>
+            <p className="text-[13px] text-muted max-w-[260px] mx-auto">Create your first Clear-to-Lodge check to get started</p>
           </div>
         ) : (
           <div className="divide-y divide-border/40">
@@ -48,12 +48,12 @@ export default function MattersPage() {
                   <p className="text-[11px] text-muted truncate">{m.locality_or_area} · {m.municipality_or_deeds_office}</p>
                 </div>
                 <div className="hidden md:block shrink-0 w-[100px] text-right">
-                  <span className="text-[11px] font-mono text-muted-more">{m.reference}</span>
+                  <span className="text-[11px] font-mono text-muted-more tabular-nums">{m.reference}</span>
                 </div>
                 <div className="shrink-0 w-[80px] text-right">
                   <RelativeTime date={m.updated_at} />
                 </div>
-                <div className="shrink-0 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="shrink-0 w-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted">
                     <path d="M9 18l6-6-6-6" />
                   </svg>

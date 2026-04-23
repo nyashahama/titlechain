@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (isLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <svg className="animate-spin h-6 w-6 text-muted" viewBox="0 0 24 24" fill="none">
+        <svg className="animate-spin h-5 w-5 text-muted" viewBox="0 0 24 24" fill="none">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
         </svg>
@@ -39,12 +39,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push("/");
   }
 
+  const initials = user.display_name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
-      <aside className="w-[240px] shrink-0 border-r border-border bg-card/[0.15] flex flex-col">
+      <aside className="w-[240px] shrink-0 border-r border-border flex flex-col">
         <div className="p-4">
-          <Link href="/dashboard" className="inline-flex items-center gap-2.5 px-2">
+          <Link href="/dashboard" className="inline-flex items-center gap-2.5 px-2 py-1">
             <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-foreground">
               <path d="M16 2L30 28H2L16 2Z" stroke="currentColor" strokeWidth="2.5" fill="none" />
               <circle cx="16" cy="20" r="4" stroke="currentColor" strokeWidth="2" fill="none" />
@@ -62,7 +69,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href={item.href}
                 className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-200 ${
                   active
-                    ? "bg-white/[0.07] text-foreground font-medium shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+                    ? "bg-white/[0.07] text-foreground font-medium"
                     : "text-muted hover:text-foreground hover:bg-white/[0.03]"
                 }`}
               >
@@ -74,15 +81,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="p-3">
-          <div className="border border-border rounded-xl bg-card/30 p-3 mb-3">
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-7 h-7 rounded-full bg-white/[0.08] flex items-center justify-center text-[10px] font-bold text-foreground">
-                {user.display_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
-              </div>
-              <div className="min-w-0">
-                <p className="text-[12px] font-medium text-foreground/90 truncate">{user.display_name}</p>
-                <p className="text-[11px] text-muted truncate">{user.firm_name}</p>
-              </div>
+          <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
+            <div className="w-7 h-7 rounded-full bg-white/[0.08] flex items-center justify-center text-[10px] font-bold text-foreground">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[12px] font-medium text-foreground/90 truncate">{user.display_name}</p>
+              <p className="text-[11px] text-muted truncate">{user.firm_name}</p>
             </div>
           </div>
           <button
@@ -95,7 +100,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 min-w-0 overflow-auto">
         {children}
       </main>
