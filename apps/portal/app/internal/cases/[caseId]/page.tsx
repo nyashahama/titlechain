@@ -1,0 +1,56 @@
+import Link from "next/link";
+import { getCase, listAnalysts, listReasonCodes } from "./api";
+import { CaseDetail } from "./_components/case-detail";
+import { RecordDecisionForm, CloseUnresolvedForm } from "./_components/decision-form";
+import { EvidenceForm } from "./_components/evidence-form";
+
+export default async function CaseDetailPage({
+  params,
+}: {
+  params: Promise<{ caseId: string }>;
+}) {
+  const { caseId } = await params;
+  const detail = await getCase(caseId);
+  const analysts = await listAnalysts();
+  const reasonCodes = await listReasonCodes();
+  const defaultActorId = analysts[0]?.id ?? "";
+
+  const isOpen =
+    detail.case.status === "open" ||
+    detail.case.status === "in_review" ||
+    detail.case.status === "reopened";
+
+  return (
+    <div className="mx-auto max-w-4xl p-6">
+      <div className="mb-4">
+        <Link href="/internal/cases" className="text-sm text-indigo-600 hover:text-indigo-500">
+          &larr; Back to queue
+        </Link>
+      </div>
+
+      <CaseDetail detail={detail} analysts={analysts} actorId={defaultActorId} />
+
+      {isOpen && (
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="rounded-lg border border-gray-200 p-4">
+            <EvidenceForm caseId={caseId} actorId={defaultActorId} />
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <RecordDecisionForm
+              caseId={caseId}
+              reasonCodes={reasonCodes}
+              actorId={defaultActorId}
+            />
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4 md:col-span-2">
+            <CloseUnresolvedForm
+              caseId={caseId}
+              reasonCodes={reasonCodes}
+              actorId={defaultActorId}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
