@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -236,9 +237,6 @@ func (s Service) ReopenCase(ctx context.Context, caseID string, req ReopenCaseRe
 	return s.repo.ReopenCaseWorkflow(ctx, caseID, req)
 }
 
-var caseRefCounter int
-
 func generateCaseReference() string {
-	caseRefCounter++
-	return fmt.Sprintf("TC-%06d", caseRefCounter)
+	return fmt.Sprintf("TC-%d", time.Now().UnixNano())
 }
