@@ -80,11 +80,11 @@ export default function LandingPage() {
           >
             Ask AI
           </a>
-          <a href="#" className="hidden md:block text-[13px] text-muted hover:text-foreground transition-colors">
+          <a href="/auth/signin" className="hidden md:block text-[13px] text-muted hover:text-foreground transition-colors">
             Log In
           </a>
           <a
-            href="#"
+            href="/auth/signup"
             className="bg-foreground text-background text-[13px] font-medium px-4 py-[7px] rounded-full transition-opacity duration-200 hover:opacity-80"
           >
             Sign Up
