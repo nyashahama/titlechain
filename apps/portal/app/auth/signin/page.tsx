@@ -114,6 +114,18 @@ export default function SignInPage() {
             </button>
           </form>
 
+          <div className="mt-6 p-4 rounded-xl border border-border/40 bg-card/30">
+            <p className="text-[11px] uppercase tracking-wider text-muted font-medium mb-2">Demo Account</p>
+            <div className="flex items-center justify-between text-[13px] text-foreground/80 mb-1">
+              <span>Email</span>
+              <span className="font-mono text-muted">demo@titlechain.co.za</span>
+            </div>
+            <div className="flex items-center justify-between text-[13px] text-foreground/80">
+              <span>Password</span>
+              <span className="font-mono text-muted">demo1234</span>
+            </div>
+          </div>
+
           <p className="text-center text-[13px] text-muted mt-6">
             Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="text-foreground hover:underline font-medium">

@@ -57,11 +57,28 @@ function setSession(user: User | null) {
   localStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(user));
 }
 
+function seedDemoUser() {
+  if (typeof window === "undefined") return;
+  const users = getStoredUsers();
+  if (Object.keys(users).length === 0) {
+    const demoUser: User = {
+      id: "usr_demo_001",
+      email: "demo@titlechain.co.za",
+      display_name: "Nyasha Hama",
+      firm_name: "Hama & Associates Inc",
+      role: "owner",
+    };
+    users["demo@titlechain.co.za"] = { password: "demo1234", user: demoUser };
+    storeUsers(users);
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    seedDemoUser();
     const session = getSession();
     setUser(session);
     setIsLoading(false);
