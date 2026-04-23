@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listCases, listAnalysts } from "./api";
 import { CaseQueue } from "./_components/case-queue";
-import { AnalystSwitcher } from "./_components/analyst-switcher";
+import { ClientAnalystSwitcher } from "./_components/client-analyst-switcher";
 
 export default async function CasesPage({
   searchParams,
@@ -21,7 +21,7 @@ export default async function CasesPage({
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Case Queue</h1>
         <div className="flex items-center gap-4">
-          <AnalystSwitcher analysts={analysts} selected={selectedAnalyst} onChange={() => {}} />
+          <ClientAnalystSwitcher analysts={analysts} defaultSelected={selectedAnalyst} />
           <Link
             href="/internal/cases/new"
             className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"

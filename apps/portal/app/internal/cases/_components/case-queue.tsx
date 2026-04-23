@@ -12,8 +12,8 @@ function statusBadge(status: CaseSummary["status"]) {
   return map[status] ?? "bg-gray-100 text-gray-800";
 }
 
-export function CaseQueue({ cases }: { cases: CaseSummary[] }) {
-  if (cases.length === 0) {
+export function CaseQueue({ cases }: { cases: CaseSummary[] | null }) {
+  if (!cases || cases.length === 0) {
     return <p className="text-sm text-gray-500">No cases found.</p>;
   }
 

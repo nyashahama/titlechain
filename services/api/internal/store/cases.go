@@ -91,7 +91,7 @@ func (s CasesStore) ListCases(ctx context.Context, filter cases.ListCasesFilter)
 		return nil, err
 	}
 
-	var result []cases.CaseSummary
+	result := make([]cases.CaseSummary, 0, len(rows))
 	for _, row := range rows {
 		result = append(result, caseSummaryFromRow(row))
 	}
@@ -143,6 +143,7 @@ func (s CasesStore) GetCaseDetail(ctx context.Context, caseID string) (cases.Cas
 		Matches:     propertyMatchesFromRows(matches),
 		Evidence:    evidenceItemsFromRows(evidence),
 		Parties:     partiesFromRows(parties),
+		Decisions:   make([]cases.Decision, 0, len(decisions)),
 		AuditEvents: auditEventsFromRows(auditEvents),
 	}
 
@@ -153,6 +154,7 @@ func (s CasesStore) GetCaseDetail(ctx context.Context, caseID string) (cases.Cas
 		if err != nil {
 			return cases.CaseDetail{}, err
 		}
+		dec.ReasonCodes = make([]cases.ReasonCode, 0, len(rcRows))
 		for _, rc := range rcRows {
 			dec.ReasonCodes = append(dec.ReasonCodes, cases.ReasonCode{
 				Code:        rc.Code,
@@ -203,11 +205,13 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 	}
 
 	for _, sp := range seedProps {
+		var confidence pgtype.Numeric
+		_ = confidence.Scan("0")
 		_, err := queries.CreatePropertyMatch(ctx, sqlc.CreatePropertyMatchParams{
 			CaseID:         c.ID,
 			SeedPropertyID: sp.ID,
 			MatchSource:    "seeded_fuzzy_match",
-			Confidence:     pgtype.Numeric{Valid: true}, // default 0, refine later
+			Confidence:     confidence,
 		})
 		if err != nil {
 			return cases.CaseDetail{}, err
@@ -603,7 +607,7 @@ func caseSummaryFromRecord(c sqlc.OpsCaseRecord) cases.CaseSummary {
 }
 
 func propertyMatchesFromRows(rows []sqlc.OpsCasePropertyMatch) []cases.PropertyMatch {
-	var result []cases.PropertyMatch
+	result := make([]cases.PropertyMatch, 0, len(rows))
 	for _, row := range rows {
 		var confirmedBy string
 		if row.ConfirmedBy.Valid {
@@ -630,7 +634,7 @@ func propertyMatchesFromRows(rows []sqlc.OpsCasePropertyMatch) []cases.PropertyM
 }
 
 func evidenceItemsFromRows(rows []sqlc.OpsCaseEvidenceItem) []cases.EvidenceItem {
-	var result []cases.EvidenceItem
+	result := make([]cases.EvidenceItem, 0, len(rows))
 	for _, row := range rows {
 		var facts map[string]any
 		_ = json.Unmarshal(row.ExtractedFacts, &facts)
@@ -653,7 +657,7 @@ func evidenceItemsFromRows(rows []sqlc.OpsCaseEvidenceItem) []cases.EvidenceItem
 }
 
 func partiesFromRows(rows []sqlc.OpsCaseParty) []cases.Party {
-	var result []cases.Party
+	result := make([]cases.Party, 0, len(rows))
 	for _, row := range rows {
 		result = append(result, cases.Party{
 			ID:          uuidToString(row.ID),
@@ -683,7 +687,7 @@ func decisionFromRow(row sqlc.OpsCaseDecision) cases.Decision {
 }
 
 func auditEventsFromRows(rows []sqlc.OpsCaseAuditEvent) []cases.AuditEvent {
-	var result []cases.AuditEvent
+	result := make([]cases.AuditEvent, 0, len(rows))
 	for _, row := range rows {
 		var meta map[string]any
 		_ = json.Unmarshal(row.Metadata, &meta)

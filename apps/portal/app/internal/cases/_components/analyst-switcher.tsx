@@ -9,8 +9,9 @@ export function AnalystSwitcher({
 }: {
   analysts: Analyst[];
   selected: string;
-  onChange: (id: string) => void;
+  onChange?: (id: string) => void;
 }) {
+  const handleChange = onChange ?? (() => {});
   return (
     <div className="flex items-center gap-2">
       <label htmlFor="analyst" className="text-sm font-medium text-gray-700">
@@ -19,7 +20,7 @@ export function AnalystSwitcher({
       <select
         id="analyst"
         value={selected}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => handleChange(e.target.value)}
         className="block rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
       >
         {analysts.map((a) => (

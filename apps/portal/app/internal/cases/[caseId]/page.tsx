@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getCase, listAnalysts, listReasonCodes } from "./api";
-import { CaseDetail } from "./_components/case-detail";
-import { RecordDecisionForm, CloseUnresolvedForm } from "./_components/decision-form";
-import { EvidenceForm } from "./_components/evidence-form";
+import { getCase, listAnalysts, listReasonCodes } from "../api";
+import { CaseDetail } from "../_components/case-detail";
+import { RecordDecisionForm, CloseUnresolvedForm } from "../_components/decision-form";
+import { EvidenceForm } from "../_components/evidence-form";
 
 export default async function CaseDetailPage({
   params,

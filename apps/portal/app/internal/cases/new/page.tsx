@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { listAnalysts } from "./api";
-import { CaseIntakeForm } from "./_components/case-intake-form";
+import { listAnalysts } from "../api";
+import { CaseIntakeForm } from "../_components/case-intake-form";
 
 export default async function NewCasePage() {
   const analysts = await listAnalysts();
