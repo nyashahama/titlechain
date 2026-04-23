@@ -17,24 +17,24 @@ export function ReopenForm({ caseId, actorId }: { caseId: string; actorId: strin
   }
 
   return (
-    <form action={handleSubmit} className="space-y-3">
+    <form action={handleSubmit} className="space-y-4">
       <input type="hidden" name="actor_id" value={actorId} />
-      <h3 className="text-base font-semibold text-gray-900">Reopen Case</h3>
+      <h3 className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">Reopen Case</h3>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Note</label>
+        <label className="block text-[11px] text-muted mb-1.5">Note</label>
         <textarea
           name="note"
           rows={2}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm"
+          className="w-full bg-card border border-border-light rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors resize-none"
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-[12px] text-red-400">{error}</p>}
 
       <button
         type="submit"
-        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        className="w-full border border-border-light text-[13px] font-medium px-4 py-[8px] rounded-full text-foreground transition-colors duration-200 hover:bg-white/5"
       >
         Reopen
       </button>

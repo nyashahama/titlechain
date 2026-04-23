@@ -29,8 +29,11 @@ export default async function CaseDetailPage({
 
   return (
     <div className="mx-auto max-w-4xl p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <Link href="/internal/cases" className="text-sm text-indigo-600 hover:text-indigo-500">
+      <div className="mb-6 flex items-center justify-between">
+        <Link
+          href="/internal/cases"
+          className="text-[13px] text-muted hover:text-foreground transition-colors duration-200"
+        >
           &larr; Back to queue
         </Link>
         <CaseDetailAnalystSwitcher
@@ -43,21 +46,21 @@ export default async function CaseDetailPage({
       <CaseDetail detail={detail} analysts={analysts} actorId={actorId} />
 
       {isOpen && (
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="rounded-lg border border-gray-200 p-4">
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="border border-border rounded-xl bg-card/30 p-5">
             <EvidenceForm caseId={caseId} actorId={actorId} />
           </div>
-          <div className="rounded-lg border border-gray-200 p-4">
+          <div className="border border-border rounded-xl bg-card/30 p-5">
             <PartyForm caseId={caseId} actorId={actorId} />
           </div>
-          <div className="rounded-lg border border-gray-200 p-4">
+          <div className="border border-border rounded-xl bg-card/30 p-5">
             <RecordDecisionForm
               caseId={caseId}
               reasonCodes={reasonCodes}
               actorId={actorId}
             />
           </div>
-          <div className="rounded-lg border border-gray-200 p-4">
+          <div className="border border-border rounded-xl bg-card/30 p-5">
             <CloseUnresolvedForm
               caseId={caseId}
               reasonCodes={reasonCodes}
@@ -68,7 +71,7 @@ export default async function CaseDetailPage({
       )}
 
       {!isOpen && (
-        <div className="mt-6 rounded-lg border border-gray-200 p-4">
+        <div className="mt-6 border border-border rounded-xl bg-card/30 p-5">
           <ReopenForm caseId={caseId} actorId={actorId} />
         </div>
       )}

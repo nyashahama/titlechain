@@ -14,18 +14,18 @@ export function AnalystSwitcher({
   const handleChange = onChange ?? (() => {});
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="analyst" className="text-sm font-medium text-gray-700">
-        Acting as:
+      <label htmlFor="analyst" className="text-[13px] text-muted">
+        Acting as
       </label>
       <select
         id="analyst"
         value={selected}
-        onChange={(e) => onChange?.(e.target.value)}
-        className="block rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        onChange={(e) => handleChange(e.target.value)}
+        className="bg-card border border-border-light rounded-lg px-3 py-[6px] text-[13px] text-foreground focus:outline-none focus:border-border-light/50 transition-colors"
       >
-        <option value="">All analysts</option>
+        <option value="" className="bg-card">All analysts</option>
         {analysts.map((a) => (
-          <option key={a.id} value={a.id}>
+          <option key={a.id} value={a.id} className="bg-card">
             {a.display_name}
           </option>
         ))}

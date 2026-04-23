@@ -25,16 +25,16 @@ export function PropertyMatchActions({
   }
 
   return (
-    <div className="mt-1 flex gap-2">
+    <div className="flex gap-2">
       <button
         onClick={() => handleAction("confirm")}
-        className="rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700"
+        className="px-3 py-[5px] rounded-full text-[11px] font-medium bg-[rgba(74,222,128,0.15)] text-[#4ade80] border border-[rgba(74,222,128,0.2)] transition-colors hover:bg-[rgba(74,222,128,0.25)]"
       >
         Confirm
       </button>
       <button
         onClick={() => handleAction("reject")}
-        className="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
+        className="px-3 py-[5px] rounded-full text-[11px] font-medium bg-[rgba(239,68,68,0.15)] text-[#ef4444] border border-[rgba(239,68,68,0.2)] transition-colors hover:bg-[rgba(239,68,68,0.25)]"
       >
         Reject
       </button>

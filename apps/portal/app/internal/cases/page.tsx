@@ -16,58 +16,49 @@ export default async function CasesPage({
   const analysts = await listAnalysts();
   const selectedAnalyst = params.assignee_id ?? "";
 
+  const statusLinks = [
+    { label: "All", href: "/internal/cases" },
+    { label: "Open", href: "/internal/cases?status=open" },
+    { label: "In Review", href: "/internal/cases?status=in_review" },
+    { label: "Resolved", href: "/internal/cases?status=resolved" },
+    { label: "Unresolved", href: "/internal/cases?status=closed_unresolved" },
+    { label: "Reopened", href: "/internal/cases?status=reopened" },
+  ];
+
   return (
     <div className="mx-auto max-w-5xl p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Case Queue</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-[24px] font-bold tracking-[-0.02em] text-foreground">Case Queue</h1>
         <div className="flex items-center gap-4">
           <ClientAnalystSwitcher analysts={analysts} defaultSelected={selectedAnalyst} />
           <Link
             href="/internal/cases/new"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
           >
             New Case
           </Link>
         </div>
       </div>
 
-      <div className="mb-4 flex gap-2">
-        <Link
-          href="/internal/cases"
-          className="rounded-md bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
-        >
-          All
-        </Link>
-        <Link
-          href="/internal/cases?status=open"
-          className="rounded-md bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
-        >
-          Open
-        </Link>
-        <Link
-          href="/internal/cases?status=in_review"
-          className="rounded-md bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
-        >
-          In Review
-        </Link>
-        <Link
-          href="/internal/cases?status=resolved"
-          className="rounded-md bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
-        >
-          Resolved
-        </Link>
-        <Link
-          href="/internal/cases?status=closed_unresolved"
-          className="rounded-md bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
-        >
-          Unresolved
-        </Link>
-        <Link
-          href="/internal/cases?status=reopened"
-          className="rounded-md bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
-        >
-          Reopened
-        </Link>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {statusLinks.map((sl) => {
+          const isActive =
+            (sl.href === "/internal/cases" && !params.status) ||
+            sl.href === `/internal/cases?status=${params.status}`;
+          return (
+            <Link
+              key={sl.label}
+              href={sl.href}
+              className={`px-3 py-[5px] rounded-full text-[12px] font-medium transition-colors duration-200 ${
+                isActive
+                  ? "bg-foreground text-background"
+                  : "border border-border-light text-muted hover:text-foreground hover:bg-white/5"
+              }`}
+            >
+              {sl.label}
+            </Link>
+          );
+        })}
       </div>
 
       <CaseQueue cases={cases} />

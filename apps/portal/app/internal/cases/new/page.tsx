@@ -8,14 +8,17 @@ export default async function NewCasePage() {
 
   return (
     <div className="mx-auto max-w-2xl p-6">
-      <div className="mb-6">
-        <Link href="/internal/cases" className="text-sm text-indigo-600 hover:text-indigo-500">
+      <div className="mb-8">
+        <Link
+          href="/internal/cases"
+          className="text-[13px] text-muted hover:text-foreground transition-colors duration-200"
+        >
           &larr; Back to queue
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-gray-900">New Case</h1>
+        <h1 className="mt-3 text-[24px] font-bold tracking-[-0.02em] text-foreground">New Case</h1>
       </div>
 
-      <div className="rounded-lg border border-gray-200 p-6 shadow-sm">
+      <div className="border border-border rounded-xl bg-card/30 p-6">
         <CaseIntakeForm analysts={analysts} defaultActorId={defaultActorId} />
       </div>
     </div>

@@ -34,7 +34,7 @@ describe("case console", () => {
     render(<CaseQueue cases={cases} />);
     expect(screen.getByText("TC-000001")).toBeInTheDocument();
     expect(screen.getByText("Erf 412 Rosebank Township")).toBeInTheDocument();
-    expect(screen.getByText("open")).toBeInTheDocument();
+    expect(screen.getByText("Open")).toBeInTheDocument();
     expect(screen.getByText("ana-001")).toBeInTheDocument();
   });
 

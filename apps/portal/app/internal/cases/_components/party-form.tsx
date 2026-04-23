@@ -17,70 +17,70 @@ export function PartyForm({ caseId, actorId }: { caseId: string; actorId: string
   }
 
   return (
-    <form action={handleSubmit} className="space-y-3">
+    <form action={handleSubmit} className="space-y-4">
       <input type="hidden" name="actor_id" value={actorId} />
-      <h3 className="text-base font-semibold text-gray-900">Add Party</h3>
+      <h3 className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">Add Party</h3>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Display Name *</label>
+          <label className="block text-[11px] text-muted mb-1.5">Display Name *</label>
           <input
             name="display_name"
             required
-            className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Role *</label>
+          <label className="block text-[11px] text-muted mb-1.5">Role *</label>
           <select
             name="role"
             required
-            className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground focus:outline-none focus:border-border-light/50 transition-colors"
           >
-            <option value="seller">Seller</option>
-            <option value="buyer">Buyer</option>
-            <option value="conveyancer">Conveyancer</option>
-            <option value="other">Other</option>
+            <option value="seller" className="bg-card">Seller</option>
+            <option value="buyer" className="bg-card">Buyer</option>
+            <option value="conveyancer" className="bg-card">Conveyancer</option>
+            <option value="other" className="bg-card">Other</option>
           </select>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Entity Type *</label>
+          <label className="block text-[11px] text-muted mb-1.5">Entity Type *</label>
           <select
             name="entity_type"
             required
-            className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground focus:outline-none focus:border-border-light/50 transition-colors"
           >
-            <option value="person">Person</option>
-            <option value="company">Company</option>
-            <option value="unknown">Unknown</option>
+            <option value="person" className="bg-card">Person</option>
+            <option value="company" className="bg-card">Company</option>
+            <option value="unknown" className="bg-card">Unknown</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Identifier</label>
+          <label className="block text-[11px] text-muted mb-1.5">Identifier</label>
           <input
             name="identifier"
-            className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Note</label>
+        <label className="block text-[11px] text-muted mb-1.5">Note</label>
         <textarea
           name="note"
           rows={2}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm"
+          className="w-full bg-card border border-border-light rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors resize-none"
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-[12px] text-red-400">{error}</p>}
 
       <button
         type="submit"
-        className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        className="w-full bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
       >
         Add Party
       </button>

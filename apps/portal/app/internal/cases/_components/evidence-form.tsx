@@ -17,93 +17,93 @@ export function EvidenceForm({ caseId, actorId }: { caseId: string; actorId: str
   }
 
   return (
-    <form action={handleSubmit} className="space-y-3">
+    <form action={handleSubmit} className="space-y-4">
       <input type="hidden" name="actor_id" value={actorId} />
-      <h3 className="text-base font-semibold text-gray-900">Add Evidence</h3>
+      <h3 className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">Add Evidence</h3>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Evidence Type</label>
+          <label className="block text-[11px] text-muted mb-1.5">Evidence Type</label>
           <input
             name="evidence_type"
             required
-            className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Source Type</label>
+          <label className="block text-[11px] text-muted mb-1.5">Source Type</label>
           <input
             name="source_type"
             required
-            className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Source Reference</label>
+        <label className="block text-[11px] text-muted mb-1.5">Source Reference</label>
         <input
           name="source_reference"
           required
-          className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
+          className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">External Reference</label>
+        <label className="block text-[11px] text-muted mb-1.5">External Reference</label>
         <input
           name="external_reference"
-          className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
+          className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Excerpt</label>
+        <label className="block text-[11px] text-muted mb-1.5">Excerpt</label>
         <textarea
           name="excerpt"
           rows={2}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm"
+          className="w-full bg-card border border-border-light rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors resize-none"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Extracted Facts (JSON)</label>
+        <label className="block text-[11px] text-muted mb-1.5">Extracted Facts (JSON)</label>
         <textarea
           name="extracted_facts"
           rows={2}
           placeholder='{"key": "value"}'
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm"
+          className="w-full bg-card border border-border-light rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors resize-none"
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Status</label>
-        <select
-          name="evidence_status"
-          required
-          className="mt-1 block rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm"
-        >
-          <option value="captured">Captured</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="conflicting">Conflicting</option>
-          <option value="superseded">Superseded</option>
-        </select>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-[11px] text-muted mb-1.5">Status</label>
+          <select
+            name="evidence_status"
+            required
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground focus:outline-none focus:border-border-light/50 transition-colors"
+          >
+            <option value="captured" className="bg-card">Captured</option>
+            <option value="confirmed" className="bg-card">Confirmed</option>
+            <option value="conflicting" className="bg-card">Conflicting</option>
+            <option value="superseded" className="bg-card">Superseded</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[11px] text-muted mb-1.5">Analyst Note</label>
+          <input
+            name="analyst_note"
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
+          />
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Analyst Note</label>
-        <textarea
-          name="analyst_note"
-          rows={2}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm"
-        />
-      </div>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-[12px] text-red-400">{error}</p>}
 
       <button
         type="submit"
-        className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        className="w-full bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
       >
         Add Evidence
       </button>
