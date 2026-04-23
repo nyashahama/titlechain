@@ -3,7 +3,8 @@ package platform
 import "os"
 
 type Config struct {
-	HTTPAddr string
+	HTTPAddr    string
+	DatabaseURL string
 }
 
 func LoadConfig() Config {
@@ -12,7 +13,13 @@ func LoadConfig() Config {
 		addr = ":8080"
 	}
 
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		dbURL = "postgres://titlechain:titlechain@localhost:5432/titlechain?sslmode=disable"
+	}
+
 	return Config{
-		HTTPAddr: addr,
+		HTTPAddr:    addr,
+		DatabaseURL: dbURL,
 	}
 }

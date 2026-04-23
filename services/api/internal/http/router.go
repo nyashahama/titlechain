@@ -7,11 +7,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
 	"github.com/nyasha-hama/titlechain/services/api/internal/property"
 )
 
-func NewRouter() stdhttp.Handler {
+type RouterDeps struct {
+	Cases cases.Service
+}
+
+func NewRouter(deps RouterDeps) stdhttp.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/healthz", func(w stdhttp.ResponseWriter, _ *stdhttp.Request) {
@@ -38,6 +43,20 @@ func NewRouter() stdhttp.Handler {
 				_ = json.NewEncoder(w).Encode(jobs.ListRuns())
 			})
 		})
+
+		casesHandler := newCasesHandler(deps.Cases)
+		r.Get("/analysts", casesHandler.listAnalysts)
+		r.Get("/reason-codes", casesHandler.listReasonCodes)
+		r.Get("/cases", casesHandler.listCases)
+		r.Post("/cases", casesHandler.createCase)
+		r.Get("/cases/{caseID}", casesHandler.getCase)
+		r.Post("/cases/{caseID}/assignment", casesHandler.reassignCase)
+		r.Post("/cases/{caseID}/property-match", casesHandler.confirmPropertyMatch)
+		r.Post("/cases/{caseID}/evidence", casesHandler.addEvidence)
+		r.Post("/cases/{caseID}/parties", casesHandler.addParty)
+		r.Post("/cases/{caseID}/decision", casesHandler.recordDecision)
+		r.Post("/cases/{caseID}/close-unresolved", casesHandler.closeUnresolved)
+		r.Post("/cases/{caseID}/reopen", casesHandler.reopenCase)
 	})
 
 	return r

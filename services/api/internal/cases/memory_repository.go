@@ -1,3 +1,5 @@
+// Package cases provides the case workflow domain. This file contains an in-memory
+// repository implementation intended for testing only. Do not use in production.
 package cases
 
 import (
@@ -29,7 +31,7 @@ type caseRecord struct {
 	ResolvedAt           *time.Time
 }
 
-func newMemoryRepository() *memoryRepository {
+func NewMemoryRepository() *memoryRepository {
 	return &memoryRepository{
 		analysts:    seedAnalysts(),
 		reasonCodes: FixedReasonCodes,

@@ -6,7 +6,7 @@ import (
 )
 
 func TestService_CreateCaseAutoAssignsActorAndCreatesAuditEvent(t *testing.T) {
-	repo := newMemoryRepository()
+	repo := NewMemoryRepository()
 	svc := NewService(repo)
 	ctx := context.Background()
 
@@ -44,7 +44,7 @@ func TestService_CreateCaseAutoAssignsActorAndCreatesAuditEvent(t *testing.T) {
 }
 
 func TestService_RecordDecisionRejectsStopWithoutHardBlock(t *testing.T) {
-	repo := newMemoryRepository()
+	repo := NewMemoryRepository()
 	svc := NewService(repo)
 	ctx := context.Background()
 
@@ -72,7 +72,7 @@ func TestService_RecordDecisionRejectsStopWithoutHardBlock(t *testing.T) {
 }
 
 func TestService_RecordDecisionAllowsStopWithHardBlock(t *testing.T) {
-	repo := newMemoryRepository()
+	repo := NewMemoryRepository()
 	svc := NewService(repo)
 	ctx := context.Background()
 
@@ -108,7 +108,7 @@ func TestService_RecordDecisionAllowsStopWithHardBlock(t *testing.T) {
 }
 
 func TestService_RecordDecisionRejectsClearWithHardBlock(t *testing.T) {
-	repo := newMemoryRepository()
+	repo := NewMemoryRepository()
 	svc := NewService(repo)
 	ctx := context.Background()
 
@@ -135,7 +135,7 @@ func TestService_RecordDecisionRejectsClearWithHardBlock(t *testing.T) {
 }
 
 func TestService_CloseUnresolvedRequiresUnresolvedReasonAndNote(t *testing.T) {
-	repo := newMemoryRepository()
+	repo := NewMemoryRepository()
 	svc := NewService(repo)
 	ctx := context.Background()
 
@@ -185,7 +185,7 @@ func TestService_CloseUnresolvedRequiresUnresolvedReasonAndNote(t *testing.T) {
 }
 
 func TestService_ReassignCaseCreatesAuditEvent(t *testing.T) {
-	repo := newMemoryRepository()
+	repo := NewMemoryRepository()
 	svc := NewService(repo)
 	ctx := context.Background()
 
