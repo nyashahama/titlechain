@@ -17,6 +17,7 @@ function TimelineIcon({ type }: { type: string }) {
     "Rates clearance uploaded": <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>,
     "Trust documents requested": <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>,
     "Development docs uploaded": <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>,
+    "Note added": <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>,
   };
   return icons[type] ?? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /></svg>;
 }
@@ -34,6 +35,8 @@ export default function MatterDetailPage() {
   }
 
   const decisionColor = matter.decision === "clear" ? "#4ade80" : matter.decision === "stop" ? "#ef4444" : "#fbbf24";
+  const decisionBg = matter.decision === "clear" ? "rgba(74,222,128,0.06)" : matter.decision === "stop" ? "rgba(239,68,68,0.06)" : "rgba(251,191,36,0.06)";
+  const decisionBorder = matter.decision === "clear" ? "rgba(74,222,128,0.2)" : matter.decision === "stop" ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)";
 
   function handleAddNote(note: string) {
     if (!matter) return;
@@ -75,7 +78,7 @@ export default function MatterDetailPage() {
                 <span className="text-[11px] font-mono text-muted-more tabular-nums tracking-tight">{matter.reference}</span>
                 <CopyButton text={matter.reference} />
               </div>
-              <h1 className="text-[26px] font-bold tracking-[-0.03em] text-foreground leading-tight">
+              <h1 className="text-[28px] font-bold tracking-[-0.03em] text-foreground leading-tight">
                 {matter.property_description}
               </h1>
               <p className="text-[13px] text-muted mt-1.5">
@@ -89,22 +92,61 @@ export default function MatterDetailPage() {
 
           {/* Decision Banner */}
           {matter.decision && (
-            <div className="border rounded-2xl p-6" style={{ borderColor: `${decisionColor}25`, backgroundColor: `${decisionColor}06` }}>
+            <div className="border rounded-2xl p-6" style={{ borderColor: decisionBorder, backgroundColor: decisionBg }}>
               <div className="flex items-center gap-4 mb-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${decisionColor}18` }}>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: `${decisionColor}18` }}>
                   <DecisionIcon decision={matter.decision} color={decisionColor} />
                 </div>
                 <div>
                   <p className="text-[11px] text-muted uppercase tracking-[0.12em] font-semibold">Clear-to-Lodge Decision</p>
-                  <p className="text-[22px] font-bold" style={{ color: decisionColor }}>
+                  <p className="text-[24px] font-bold" style={{ color: decisionColor }}>
                     {matter.decision === "clear" ? "Clear to Lodge" : matter.decision === "stop" ? "Stop — Do Not Proceed" : "Review Required"}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-[12px] text-muted ml-16">
+              <div className="flex items-center gap-4 text-[12px] text-muted ml-[72px]">
                 <span>Confidence: <span className="text-foreground/70 font-semibold">{matter.confidence}%</span></span>
                 <span className="text-border-light">·</span>
                 <RelativeTime date={matter.updated_at} />
+              </div>
+            </div>
+          )}
+
+          {/* Verification Steps */}
+          {matter.decision && (
+            <div className="border border-border rounded-2xl bg-card/20 p-6">
+              <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Verification Steps</h2>
+              <div className="flex items-center gap-2">
+                {[
+                  { label: "Intake", done: true },
+                  { label: "Title Search", done: true },
+                  { label: "Municipal", done: matter.flags.some((f) => f.category === "Municipal") },
+                  { label: "Fraud Check", done: matter.evidence.some((e) => e.type === "Fraud Check") },
+                  { label: "Decision", done: !!matter.decision },
+                ].map((step, i, arr) => (
+                  <div key={step.label} className="flex items-center gap-2 flex-1">
+                    <div className="flex flex-col items-center gap-1.5 flex-1">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors"
+                        style={{
+                          backgroundColor: step.done ? `${decisionColor}20` : "rgba(255,255,255,0.05)",
+                          color: step.done ? decisionColor : "rgba(255,255,255,0.3)",
+                          border: `1px solid ${step.done ? `${decisionColor}30` : "rgba(255,255,255,0.08)"}`,
+                        }}
+                      >
+                        {step.done ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        ) : (
+                          i + 1
+                        )}
+                      </div>
+                      <span className="text-[10px] text-muted whitespace-nowrap">{step.label}</span>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <div className="h-px flex-1 mb-4" style={{ backgroundColor: step.done ? `${decisionColor}30` : "rgba(255,255,255,0.06)" }} />
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -123,12 +165,12 @@ export default function MatterDetailPage() {
           {/* Flags */}
           {matter.flags.length > 0 && (
             <div className="border border-border rounded-2xl bg-card/20 p-6">
-              <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Flags</h2>
+              <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Flags ({matter.flags.length})</h2>
               <div className="space-y-2.5">
                 {matter.flags.map((f) => (
                   <div
                     key={f.id}
-                    className="flex items-start gap-3 p-4 rounded-xl"
+                    className="flex items-start gap-3 p-4 rounded-xl transition-colors"
                     style={{
                       backgroundColor: f.severity === "critical" ? "rgba(239,68,68,0.06)" : f.severity === "warning" ? "rgba(251,191,36,0.06)" : "rgba(255,255,255,0.03)",
                       border: `1px solid ${f.severity === "critical" ? "rgba(239,68,68,0.12)" : f.severity === "warning" ? "rgba(251,191,36,0.12)" : "rgba(255,255,255,0.06)"}`,
@@ -148,7 +190,7 @@ export default function MatterDetailPage() {
           {/* Evidence */}
           {matter.evidence.length > 0 && (
             <div className="border border-border rounded-2xl bg-card/20 p-6">
-              <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Evidence</h2>
+              <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Evidence ({matter.evidence.length})</h2>
               <div className="space-y-4">
                 {matter.evidence.map((e) => (
                   <div key={e.id} className="py-3 border-b border-border/30 last:border-0">
@@ -217,15 +259,20 @@ export default function MatterDetailPage() {
           <div className="border border-border rounded-2xl bg-card/20 p-5">
             <h3 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <button className="w-full text-left text-[13px] text-foreground/80 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-colors">
-                Upload document
-              </button>
-              <button className="w-full text-left text-[13px] text-foreground/80 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-colors">
-                Add party
-              </button>
-              <button className="w-full text-left text-[13px] text-foreground/80 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-colors">
-                Re-run check
-              </button>
+              {[
+                { label: "Upload document", icon: UploadIcon },
+                { label: "Add party", icon: UserPlusIcon },
+                { label: "Re-run check", icon: RefreshIcon },
+                { label: "Export report", icon: DownloadIcon },
+              ].map((action) => (
+                <button
+                  key={action.label}
+                  className="w-full flex items-center gap-3 text-left text-[13px] text-foreground/80 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-colors group"
+                >
+                  <action.icon />
+                  {action.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -239,30 +286,21 @@ export default function MatterDetailPage() {
           <div className="border border-border rounded-2xl bg-card/20 p-5">
             <h3 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Matter Info</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-[12px]">
-                <span className="text-muted">Reference</span>
-                <span className="text-foreground/80 font-mono">{matter.reference}</span>
-              </div>
-              <div className="flex items-center justify-between text-[12px]">
-                <span className="text-muted">Status</span>
-                <StatusDot status={matter.status} />
-              </div>
-              {matter.decision && (
-                <div className="flex items-center justify-between text-[12px]">
-                  <span className="text-muted">Decision</span>
-                  <span className="font-medium" style={{ color: decisionColor }}>{matter.decision}</span>
+              {[
+                { label: "Reference", value: matter.reference },
+                { label: "Status", value: <StatusDot status={matter.status} /> },
+                ...(matter.decision ? [{ label: "Decision", value: <span className="font-medium" style={{ color: decisionColor }}>{matter.decision}</span> }] : []),
+                ...(matter.confidence > 0 ? [{ label: "Confidence", value: <span className="text-foreground/80 font-mono">{matter.confidence}%</span> }] : []),
+                { label: "Created", value: <RelativeTime date={matter.created_at} /> },
+                { label: "Updated", value: <RelativeTime date={matter.updated_at} /> },
+                { label: "Evidence", value: <span className="text-foreground/80">{matter.evidence.length} items</span> },
+                { label: "Flags", value: <span className="text-foreground/80">{matter.flags.length} items</span> },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between text-[12px]">
+                  <span className="text-muted">{item.label}</span>
+                  <span className="text-foreground/80">{item.value}</span>
                 </div>
-              )}
-              {matter.confidence > 0 && (
-                <div className="flex items-center justify-between text-[12px]">
-                  <span className="text-muted">Confidence</span>
-                  <span className="text-foreground/80 font-mono">{matter.confidence}%</span>
-                </div>
-              )}
-              <div className="flex items-center justify-between text-[12px]">
-                <span className="text-muted">Created</span>
-                <RelativeTime date={matter.created_at} />
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -311,12 +349,12 @@ function DetailItem({ label, value }: { label: string; value?: string }) {
 
 function DecisionIcon({ decision, color }: { decision: string; color: string }) {
   if (decision === "clear") {
-    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>;
+    return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>;
   }
   if (decision === "stop") {
-    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
+    return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
   }
-  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
+  return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
 }
 
 function FlagDot({ severity }: { severity: string }) {
@@ -327,4 +365,17 @@ function FlagDot({ severity }: { severity: string }) {
       <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ backgroundColor: color }} />
     </span>
   );
+}
+
+function UploadIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>;
+}
+function UserPlusIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" /></svg>;
+}
+function RefreshIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted"><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>;
+}
+function DownloadIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
 }
