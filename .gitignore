@@ -51,3 +51,5 @@ target
 .env
 .env.local
 services/api/api
+.superpowers/
+docs/
