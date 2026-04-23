@@ -4,10 +4,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 )
 
+func newTestRouter() http.Handler {
+	// Use a memory-backed cases service for tests that only check route wiring
+	return NewRouter(RouterDeps{Cases: cases.NewService(nil)})
+}
+
 func TestRouter_HealthAndInternalRoutes(t *testing.T) {
-	router := NewRouter()
+	router := newTestRouter()
 
 	tests := []struct {
 		name   string

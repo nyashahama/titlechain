@@ -28,3 +28,15 @@ cargo test --workspace
 docker compose -f infra/docker/docker-compose.yml config
 ```
 
+## Phase 1 Case Workflow Verification
+
+Run the internal decision-case workflow checks with:
+
+```bash
+sqlc generate
+cd services/api && go test ./...
+npm run test --workspace @titlechain/portal
+```
+
+The phase-one API expects `DATABASE_URL` for runtime database access. Unit tests use in-memory repositories for workflow validation.
+
