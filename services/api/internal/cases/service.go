@@ -176,6 +176,9 @@ func (s Service) RecordDecision(ctx context.Context, caseID string, req RecordDe
 		if hasHardBlock {
 			return CaseDetail{}, errors.New("review decision cannot include hard_block reason codes")
 		}
+		if hasClearSupport {
+			return CaseDetail{}, errors.New("review decision cannot include clear_support reason codes")
+		}
 	case DecisionStop:
 		if !hasHardBlock {
 			return CaseDetail{}, errors.New("stop decision requires at least one hard_block reason code")

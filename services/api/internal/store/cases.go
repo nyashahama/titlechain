@@ -454,6 +454,13 @@ func (s CasesStore) ReassignCaseWorkflow(ctx context.Context, caseID string, req
 		return cases.CaseDetail{}, err
 	}
 
+	// Get current assignee before reassignment for audit
+	current, err := queries.GetCaseRecord(ctx, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+	oldAssignee := current.AssigneeID
+
 	c, err := queries.ReassignCase(ctx, sqlc.ReassignCaseParams{
 		ID:         id,
 		AssigneeID: req.AssigneeID,
@@ -462,7 +469,7 @@ func (s CasesStore) ReassignCaseWorkflow(ctx context.Context, caseID string, req
 		return cases.CaseDetail{}, err
 	}
 
-	meta, _ := json.Marshal(map[string]any{"from": c.AssigneeID, "to": req.AssigneeID})
+	meta, _ := json.Marshal(map[string]any{"from": oldAssignee, "to": c.AssigneeID})
 	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 		CaseID:    id,
 		ActorID:   req.ActorID,
@@ -494,7 +501,9 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 	}
 
 	// Supersede current decisions
-	queries.SupersedeCurrentDecisions(ctx, id)
+	if err := queries.SupersedeCurrentDecisions(ctx, id); err != nil {
+		return cases.CaseDetail{}, err
+	}
 
 	dec, err := queries.CreateCaseDecision(ctx, sqlc.CreateCaseDecisionParams{
 		CaseID:    id,
@@ -507,10 +516,12 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 	}
 
 	for _, code := range req.ReasonCodes {
-		queries.AddDecisionReasonCode(ctx, sqlc.AddDecisionReasonCodeParams{
+		if err := queries.AddDecisionReasonCode(ctx, sqlc.AddDecisionReasonCodeParams{
 			DecisionID: dec.ID,
 			ReasonCode: code,
-		})
+		}); err != nil {
+			return cases.CaseDetail{}, err
+		}
 	}
 
 	_, err = queries.ResolveCase(ctx, id)
