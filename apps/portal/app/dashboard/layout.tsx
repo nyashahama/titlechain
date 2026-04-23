@@ -42,9 +42,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className="w-[220px] shrink-0 border-r border-border bg-card/20 flex flex-col">
-        <div className="p-5">
-          <Link href="/dashboard" className="inline-flex items-center gap-2">
+      <aside className="w-[240px] shrink-0 border-r border-border bg-card/[0.15] flex flex-col">
+        <div className="p-4">
+          <Link href="/dashboard" className="inline-flex items-center gap-2.5 px-2">
             <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-foreground">
               <path d="M16 2L30 28H2L16 2Z" stroke="currentColor" strokeWidth="2.5" fill="none" />
               <circle cx="16" cy="20" r="4" stroke="currentColor" strokeWidth="2" fill="none" />
@@ -60,9 +60,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-colors duration-200 ${
+                className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-200 ${
                   active
-                    ? "bg-white/[0.06] text-foreground font-medium"
+                    ? "bg-white/[0.07] text-foreground font-medium shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
                     : "text-muted hover:text-foreground hover:bg-white/[0.03]"
                 }`}
               >
@@ -73,10 +73,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        <div className="p-3 border-t border-border">
-          <div className="px-3 py-2 mb-2">
-            <p className="text-[12px] font-medium text-foreground/80 truncate">{user?.display_name}</p>
-            <p className="text-[11px] text-muted truncate">{user?.firm_name}</p>
+        <div className="p-3">
+          <div className="border border-border rounded-xl bg-card/30 p-3 mb-3">
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="w-7 h-7 rounded-full bg-white/[0.08] flex items-center justify-center text-[10px] font-bold text-foreground">
+                {user.display_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] font-medium text-foreground/90 truncate">{user.display_name}</p>
+                <p className="text-[11px] text-muted truncate">{user.firm_name}</p>
+              </div>
+            </div>
           </div>
           <button
             onClick={handleSignOut}
