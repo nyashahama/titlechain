@@ -14,7 +14,7 @@ export default async function CasesPage({
     assignee_id: params.assignee_id,
   });
   const analysts = await listAnalysts();
-  const selectedAnalyst = params.analyst ?? analysts[0]?.id ?? "";
+  const selectedAnalyst = params.assignee_id ?? "";
 
   return (
     <div className="mx-auto max-w-5xl p-6">

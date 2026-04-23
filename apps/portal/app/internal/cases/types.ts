@@ -142,3 +142,23 @@ export type ReassignCaseInput = {
   assignee_id: string;
   note?: string;
 };
+
+export type ConfirmPropertyMatchInput = {
+  actor_id: string;
+  match_id: string;
+  action: "confirm" | "reject";
+};
+
+export type AddPartyInput = {
+  actor_id: string;
+  role: string;
+  entity_type: string;
+  display_name: string;
+  identifier?: string;
+  note?: string;
+};
+
+export type ReopenCaseInput = {
+  actor_id: string;
+  note?: string;
+};

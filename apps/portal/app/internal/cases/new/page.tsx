@@ -16,7 +16,7 @@ export default async function NewCasePage() {
       </div>
 
       <div className="rounded-lg border border-gray-200 p-6 shadow-sm">
-        <CaseIntakeForm actorId={defaultActorId} />
+        <CaseIntakeForm analysts={analysts} defaultActorId={defaultActorId} />
       </div>
     </div>
   );

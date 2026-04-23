@@ -4,11 +4,14 @@ import {
   CaseStatus,
   CaseSummary,
   CloseUnresolvedInput,
+  ConfirmPropertyMatchInput,
   CreateCaseInput,
   AddEvidenceInput,
+  AddPartyInput,
   ReasonCode,
   RecordDecisionInput,
   ReassignCaseInput,
+  ReopenCaseInput,
 } from "./types";
 
 const apiBaseUrl = process.env.TITLECHAIN_API_BASE_URL ?? "http://localhost:8080";
@@ -93,6 +96,36 @@ export async function reassignCase(
   input: ReassignCaseInput
 ): Promise<CaseDetail> {
   return fetchJson<CaseDetail>(`/api/internal/cases/${caseId}/assignment`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function confirmPropertyMatch(
+  caseId: string,
+  input: ConfirmPropertyMatchInput
+): Promise<CaseDetail> {
+  return fetchJson<CaseDetail>(`/api/internal/cases/${caseId}/property-match`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function addParty(
+  caseId: string,
+  input: AddPartyInput
+): Promise<CaseDetail> {
+  return fetchJson<CaseDetail>(`/api/internal/cases/${caseId}/parties`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function reopenCase(
+  caseId: string,
+  input: ReopenCaseInput
+): Promise<CaseDetail> {
+  return fetchJson<CaseDetail>(`/api/internal/cases/${caseId}/reopen`, {
     method: "POST",
     body: JSON.stringify(input),
   });

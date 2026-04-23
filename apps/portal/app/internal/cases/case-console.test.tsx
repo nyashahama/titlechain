@@ -39,7 +39,10 @@ describe("case console", () => {
   });
 
   it("renders the intake form with required property fields", () => {
-    render(<CaseIntakeForm actorId="ana-001" />);
+    const analysts = [
+      { id: "ana-001", display_name: "Nyasha Hama", email: "nyasha@titlechain.local", active: true },
+    ];
+    render(<CaseIntakeForm analysts={analysts} defaultActorId="ana-001" />);
     expect(screen.getByLabelText(/Property Description/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Locality \/ Area/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Municipality \/ Deeds Office/i)).toBeInTheDocument();

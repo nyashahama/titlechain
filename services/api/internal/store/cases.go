@@ -238,6 +238,30 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 	return s.GetCaseDetail(ctx, uuidToString(c.ID))
 }
 
+func (s CasesStore) maybeAutoReopen(ctx context.Context, queries *sqlc.Queries, id pgtype.UUID, actorID string) error {
+	c, err := queries.GetCaseRecord(ctx, id)
+	if err != nil {
+		return err
+	}
+	if c.Status == "resolved" || c.Status == "closed_unresolved" {
+		_, err = queries.ReopenCase(ctx, id)
+		if err != nil {
+			return err
+		}
+		meta, _ := json.Marshal(map[string]any{"trigger": "auto_reopen"})
+		_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
+			CaseID:    id,
+			ActorID:   actorID,
+			EventType: cases.AuditCaseReopened,
+			Metadata:  meta,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s CasesStore) ConfirmPropertyMatchWorkflow(ctx context.Context, caseID string, req cases.ConfirmPropertyMatchRequest) (cases.CaseDetail, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -248,6 +272,10 @@ func (s CasesStore) ConfirmPropertyMatchWorkflow(ctx context.Context, caseID str
 	queries := sqlc.New(s.pool).WithTx(tx)
 	id, err := parseUUID(caseID)
 	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	if err := s.maybeAutoReopen(ctx, queries, id, req.ActorID); err != nil {
 		return cases.CaseDetail{}, err
 	}
 
@@ -322,6 +350,10 @@ func (s CasesStore) AddEvidenceWorkflow(ctx context.Context, caseID string, req 
 		return cases.CaseDetail{}, err
 	}
 
+	if err := s.maybeAutoReopen(ctx, queries, id, req.ActorID); err != nil {
+		return cases.CaseDetail{}, err
+	}
+
 	facts, _ := json.Marshal(req.ExtractedFacts)
 	_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
 		CaseID:            id,
@@ -370,6 +402,10 @@ func (s CasesStore) AddPartyWorkflow(ctx context.Context, caseID string, req cas
 		return cases.CaseDetail{}, err
 	}
 
+	if err := s.maybeAutoReopen(ctx, queries, id, req.ActorID); err != nil {
+		return cases.CaseDetail{}, err
+	}
+
 	_, err = queries.AddCaseParty(ctx, sqlc.AddCasePartyParams{
 		CaseID:      id,
 		Role:        req.Role,
@@ -411,6 +447,10 @@ func (s CasesStore) ReassignCaseWorkflow(ctx context.Context, caseID string, req
 	queries := sqlc.New(s.pool).WithTx(tx)
 	id, err := parseUUID(caseID)
 	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	if err := s.maybeAutoReopen(ctx, queries, id, req.ActorID); err != nil {
 		return cases.CaseDetail{}, err
 	}
 

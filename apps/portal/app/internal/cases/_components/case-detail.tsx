@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CaseDetail as CaseDetailType, Analyst } from "../types";
 import { ReassignCaseForm } from "./decision-form";
+import { PropertyMatchActions } from "./property-match-actions";
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
@@ -90,6 +91,12 @@ export function CaseDetail({
                 >
                   {m.status}
                 </span>
+                <PropertyMatchActions
+                  caseId={c.id}
+                  matchId={m.id}
+                  actorId={actorId}
+                  status={m.status}
+                />
               </li>
             ))}
           </ul>

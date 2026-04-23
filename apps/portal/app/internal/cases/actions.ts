@@ -7,6 +7,9 @@ import {
   recordDecision,
   closeUnresolved,
   reassignCase,
+  confirmPropertyMatch,
+  addParty,
+  reopenCase,
 } from "./api";
 
 export async function createCaseAction(formData: FormData) {
@@ -50,10 +53,7 @@ export async function addEvidenceAction(caseId: string, formData: FormData) {
 }
 
 export async function recordDecisionAction(caseId: string, formData: FormData) {
-  const reasonCodes = (formData.get("reason_codes") as string)
-    .split(",")
-    .map((c) => c.trim())
-    .filter(Boolean);
+  const reasonCodes = formData.getAll("reason_codes").map((v) => String(v));
 
   const detail = await recordDecision(caseId, {
     actor_id: formData.get("actor_id") as string,
@@ -66,10 +66,7 @@ export async function recordDecisionAction(caseId: string, formData: FormData) {
 }
 
 export async function closeUnresolvedAction(caseId: string, formData: FormData) {
-  const reasonCodes = (formData.get("reason_codes") as string)
-    .split(",")
-    .map((c) => c.trim())
-    .filter(Boolean);
+  const reasonCodes = formData.getAll("reason_codes").map((v) => String(v));
 
   const detail = await closeUnresolved(caseId, {
     actor_id: formData.get("actor_id") as string,
@@ -84,6 +81,39 @@ export async function reassignCaseAction(caseId: string, formData: FormData) {
   const detail = await reassignCase(caseId, {
     actor_id: formData.get("actor_id") as string,
     assignee_id: formData.get("assignee_id") as string,
+    note: (formData.get("note") as string) || undefined,
+  });
+  revalidatePath("/internal/cases");
+  revalidatePath(`/internal/cases/${caseId}`);
+  return detail;
+}
+
+export async function confirmPropertyMatchAction(caseId: string, formData: FormData) {
+  const detail = await confirmPropertyMatch(caseId, {
+    actor_id: formData.get("actor_id") as string,
+    match_id: formData.get("match_id") as string,
+    action: (formData.get("action") as string) as "confirm" | "reject",
+  });
+  revalidatePath(`/internal/cases/${caseId}`);
+  return detail;
+}
+
+export async function addPartyAction(caseId: string, formData: FormData) {
+  const detail = await addParty(caseId, {
+    actor_id: formData.get("actor_id") as string,
+    role: formData.get("role") as string,
+    entity_type: formData.get("entity_type") as string,
+    display_name: formData.get("display_name") as string,
+    identifier: (formData.get("identifier") as string) || undefined,
+    note: (formData.get("note") as string) || undefined,
+  });
+  revalidatePath(`/internal/cases/${caseId}`);
+  return detail;
+}
+
+export async function reopenCaseAction(caseId: string, formData: FormData) {
+  const detail = await reopenCase(caseId, {
+    actor_id: formData.get("actor_id") as string,
     note: (formData.get("note") as string) || undefined,
   });
   revalidatePath("/internal/cases");

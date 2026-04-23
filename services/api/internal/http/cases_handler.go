@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"strings"
 	stdhttp "net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -86,7 +87,11 @@ func (h casesHandler) reassignCase(w stdhttp.ResponseWriter, r *stdhttp.Request)
 
 	detail, err := h.service.ReassignCase(r.Context(), caseID, req)
 	if err != nil {
-		h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
 		return
 	}
 	h.respondJSON(w, stdhttp.StatusOK, detail)
@@ -102,7 +107,11 @@ func (h casesHandler) confirmPropertyMatch(w stdhttp.ResponseWriter, r *stdhttp.
 
 	detail, err := h.service.ConfirmPropertyMatch(r.Context(), caseID, req)
 	if err != nil {
-		h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
 		return
 	}
 	h.respondJSON(w, stdhttp.StatusOK, detail)
@@ -118,7 +127,11 @@ func (h casesHandler) addEvidence(w stdhttp.ResponseWriter, r *stdhttp.Request) 
 
 	detail, err := h.service.AddEvidence(r.Context(), caseID, req)
 	if err != nil {
-		h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
 		return
 	}
 	h.respondJSON(w, stdhttp.StatusOK, detail)
@@ -134,7 +147,11 @@ func (h casesHandler) addParty(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 
 	detail, err := h.service.AddParty(r.Context(), caseID, req)
 	if err != nil {
-		h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
 		return
 	}
 	h.respondJSON(w, stdhttp.StatusOK, detail)
@@ -150,7 +167,11 @@ func (h casesHandler) recordDecision(w stdhttp.ResponseWriter, r *stdhttp.Reques
 
 	detail, err := h.service.RecordDecision(r.Context(), caseID, req)
 	if err != nil {
-		h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
 		return
 	}
 	h.respondJSON(w, stdhttp.StatusOK, detail)
@@ -166,7 +187,11 @@ func (h casesHandler) closeUnresolved(w stdhttp.ResponseWriter, r *stdhttp.Reque
 
 	detail, err := h.service.CloseUnresolved(r.Context(), caseID, req)
 	if err != nil {
-		h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
 		return
 	}
 	h.respondJSON(w, stdhttp.StatusOK, detail)
@@ -182,10 +207,22 @@ func (h casesHandler) reopenCase(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 
 	detail, err := h.service.ReopenCase(r.Context(), caseID, req)
 	if err != nil {
-		h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
 		return
 	}
 	h.respondJSON(w, stdhttp.StatusOK, detail)
+}
+
+func isNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "not found") || strings.Contains(msg, "no rows")
 }
 
 func (h casesHandler) respondJSON(w stdhttp.ResponseWriter, status int, payload any) {

@@ -20,9 +20,10 @@ export function AnalystSwitcher({
       <select
         id="analyst"
         value={selected}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => onChange?.(e.target.value)}
         className="block rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
       >
+        <option value="">All analysts</option>
         {analysts.map((a) => (
           <option key={a.id} value={a.id}>
             {a.display_name}

@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { createCaseAction } from "../actions";
 import { useRouter } from "next/navigation";
+import { Analyst } from "../types";
 
-export function CaseIntakeForm({ actorId }: { actorId: string }) {
+export function CaseIntakeForm({ analysts, defaultActorId }: { analysts: Analyst[]; defaultActorId: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -24,7 +25,24 @@ export function CaseIntakeForm({ actorId }: { actorId: string }) {
 
   return (
     <form action={handleSubmit} className="space-y-4">
-      <input type="hidden" name="actor_id" value={actorId} />
+      <div>
+        <label htmlFor="actor_id" className="block text-sm font-medium text-gray-700">
+          Creating Analyst *
+        </label>
+        <select
+          id="actor_id"
+          name="actor_id"
+          required
+          defaultValue={defaultActorId}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        >
+          {analysts.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.display_name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div>
         <label htmlFor="property_description" className="block text-sm font-medium text-gray-700">

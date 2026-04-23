@@ -3,6 +3,8 @@ import { getCase, listAnalysts, listReasonCodes } from "../api";
 import { CaseDetail } from "../_components/case-detail";
 import { RecordDecisionForm, CloseUnresolvedForm } from "../_components/decision-form";
 import { EvidenceForm } from "../_components/evidence-form";
+import { PartyForm } from "../_components/party-form";
+import { ReopenForm } from "../_components/reopen-form";
 
 export default async function CaseDetailPage({
   params,
@@ -36,19 +38,28 @@ export default async function CaseDetailPage({
             <EvidenceForm caseId={caseId} actorId={defaultActorId} />
           </div>
           <div className="rounded-lg border border-gray-200 p-4">
+            <PartyForm caseId={caseId} actorId={defaultActorId} />
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
             <RecordDecisionForm
               caseId={caseId}
               reasonCodes={reasonCodes}
               actorId={defaultActorId}
             />
           </div>
-          <div className="rounded-lg border border-gray-200 p-4 md:col-span-2">
+          <div className="rounded-lg border border-gray-200 p-4">
             <CloseUnresolvedForm
               caseId={caseId}
               reasonCodes={reasonCodes}
               actorId={defaultActorId}
             />
           </div>
+        </div>
+      )}
+
+      {!isOpen && (
+        <div className="mt-6 rounded-lg border border-gray-200 p-4">
+          <ReopenForm caseId={caseId} actorId={defaultActorId} />
         </div>
       )}
     </div>
