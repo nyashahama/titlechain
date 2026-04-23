@@ -30,12 +30,13 @@ describe("case console", () => {
         updated_at: new Date().toISOString(),
       },
     ];
+    const analystMap = new Map([["ana-001", "Nyasha Hama"]]);
 
-    render(<CaseQueue cases={cases} />);
+    render(<CaseQueue cases={cases} analystMap={analystMap} />);
     expect(screen.getByText("TC-000001")).toBeInTheDocument();
     expect(screen.getByText("Erf 412 Rosebank Township")).toBeInTheDocument();
     expect(screen.getByText("Open")).toBeInTheDocument();
-    expect(screen.getByText("ana-001")).toBeInTheDocument();
+    expect(screen.getByText("Nyasha Hama")).toBeInTheDocument();
   });
 
   it("renders the intake form with required property fields", () => {
@@ -98,9 +99,10 @@ describe("case console", () => {
         },
       ],
     };
+    const analystMap = new Map([["ana-001", "Nyasha Hama"]]);
 
-    render(<CaseDetail detail={detail} analysts={[]} actorId="ana-001" />);
-    expect(screen.getByRole("heading", { name: /Audit Timeline/i })).toBeInTheDocument();
-    expect(screen.getByText(/case_created/i)).toBeInTheDocument();
+    render(<CaseDetail detail={detail} analysts={[]} actorId="ana-001" analystMap={analystMap} />);
+    expect(screen.getByRole("heading", { name: /Activity/i })).toBeInTheDocument();
+    expect(screen.getByText(/case created/i)).toBeInTheDocument();
   });
 });

@@ -19,6 +19,7 @@ export default async function CaseDetailPage({
   const detail = await getCase(caseId);
   const analysts = await listAnalysts();
   const reasonCodes = await listReasonCodes();
+  const analystMap = new Map(analysts.map((a) => [a.id, a.display_name]));
   const defaultActorId = analysts[0]?.id ?? "";
   const actorId = query.actor ?? defaultActorId;
 
@@ -28,53 +29,54 @@ export default async function CaseDetailPage({
     detail.case.status === "reopened";
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-6xl p-6 md:p-10 animate-slide-in">
+      {/* Top Bar */}
+      <div className="mb-8 flex items-center justify-between">
         <Link
           href="/internal/cases"
-          className="text-[13px] text-muted hover:text-foreground transition-colors duration-200"
+          className="inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-foreground transition-colors duration-200 group"
         >
-          &larr; Back to queue
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform duration-200 group-hover:-translate-x-0.5">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back to cases
         </Link>
-        <CaseDetailAnalystSwitcher
-          analysts={analysts}
-          selected={actorId}
-          caseId={caseId}
-        />
+        <CaseDetailAnalystSwitcher analysts={analysts} selected={actorId} caseId={caseId} />
       </div>
 
-      <CaseDetail detail={detail} analysts={analysts} actorId={actorId} />
-
-      {isOpen && (
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="border border-border rounded-xl bg-card/30 p-5">
-            <EvidenceForm caseId={caseId} actorId={actorId} />
-          </div>
-          <div className="border border-border rounded-xl bg-card/30 p-5">
-            <PartyForm caseId={caseId} actorId={actorId} />
-          </div>
-          <div className="border border-border rounded-xl bg-card/30 p-5">
-            <RecordDecisionForm
-              caseId={caseId}
-              reasonCodes={reasonCodes}
-              actorId={actorId}
-            />
-          </div>
-          <div className="border border-border rounded-xl bg-card/30 p-5">
-            <CloseUnresolvedForm
-              caseId={caseId}
-              reasonCodes={reasonCodes}
-              actorId={actorId}
-            />
-          </div>
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
+        {/* Main Content */}
+        <div>
+          <CaseDetail detail={detail} analysts={analysts} actorId={actorId} analystMap={analystMap} />
         </div>
-      )}
 
-      {!isOpen && (
-        <div className="mt-6 border border-border rounded-xl bg-card/30 p-5">
-          <ReopenForm caseId={caseId} actorId={actorId} />
+        {/* Sticky Sidebar Actions */}
+        <div className="space-y-4 lg:sticky lg:top-8 lg:self-start">
+          {isOpen && (
+            <>
+              <div className="border border-border rounded-2xl bg-card/20 p-5">
+                <RecordDecisionForm caseId={caseId} reasonCodes={reasonCodes} actorId={actorId} />
+              </div>
+              <div className="border border-border rounded-2xl bg-card/20 p-5">
+                <EvidenceForm caseId={caseId} actorId={actorId} />
+              </div>
+              <div className="border border-border rounded-2xl bg-card/20 p-5">
+                <PartyForm caseId={caseId} actorId={actorId} />
+              </div>
+              <div className="border border-border rounded-2xl bg-card/20 p-5">
+                <CloseUnresolvedForm caseId={caseId} reasonCodes={reasonCodes} actorId={actorId} />
+              </div>
+            </>
+          )}
+
+          {!isOpen && (
+            <div className="border border-border rounded-2xl bg-card/20 p-5">
+              <ReopenForm caseId={caseId} actorId={actorId} />
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

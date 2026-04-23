@@ -7,18 +7,22 @@ export default async function NewCasePage() {
   const defaultActorId = analysts[0]?.id ?? "";
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
+    <div className="mx-auto max-w-2xl p-6 md:p-10 animate-slide-in">
       <div className="mb-8">
         <Link
           href="/internal/cases"
-          className="text-[13px] text-muted hover:text-foreground transition-colors duration-200"
+          className="inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-foreground transition-colors duration-200 group"
         >
-          &larr; Back to queue
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform duration-200 group-hover:-translate-x-0.5">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back to cases
         </Link>
-        <h1 className="mt-3 text-[24px] font-bold tracking-[-0.02em] text-foreground">New Case</h1>
+        <h1 className="mt-4 text-[28px] font-bold tracking-[-0.03em] text-foreground">New Case</h1>
+        <p className="text-[13px] text-muted mt-1">Create a new title verification case</p>
       </div>
 
-      <div className="border border-border rounded-xl bg-card/30 p-6">
+      <div className="border border-border rounded-2xl bg-card/20 p-6 md:p-8">
         <CaseIntakeForm analysts={analysts} defaultActorId={defaultActorId} />
       </div>
     </div>
