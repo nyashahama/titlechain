@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
@@ -80,5 +81,21 @@ func TestOpsRunsHandler_ListRunsReturns200(t *testing.T) {
 	}
 	if len(runs) != 1 {
 		t.Fatalf("runs = %d, want 1", len(runs))
+	}
+}
+
+func TestOpsRunsHandler_StartSourceIngestion(t *testing.T) {
+	repo := jobs.NewMemoryRepository()
+	svc := jobs.NewService(repo)
+	router := NewRouter(RouterDeps{Jobs: svc})
+
+	body := strings.NewReader(`{"source_name":"pilot.deeds_snapshot","batch_key":"2026-04-25-main","payload_uri":"s3://titlechain/dev/2026-04-25-main.jsonl","payload_sha256":"abc123"}`)
+	req := httptest.NewRequest(http.MethodPost, "/api/internal/ops/source-batches", body)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusCreated)
 	}
 }

@@ -110,8 +110,8 @@ func (s JobsStore) CreateSourceIngestionRun(ctx context.Context, req jobs.StartS
 	batch, err := queries.CreateSourceBatch(ctx, sqlc.CreateSourceBatchParams{
 		SourceName:     req.SourceName,
 		SourceBatchKey: req.BatchKey,
-		PayloadUri:     pgtype.Text{Valid: false},
-		PayloadSha256:  "placeholder",
+		PayloadUri:     pgtype.Text{String: req.PayloadURI, Valid: req.PayloadURI != ""},
+		PayloadSha256:  req.PayloadSHA256,
 	})
 	if err != nil {
 		return jobs.RunSummary{}, err
@@ -148,16 +148,18 @@ func runSummaryFromRow(row sqlc.ListRunsWithCountsRow) jobs.RunSummary {
 		ID:            uuidToString(row.ID),
 		RunType:       row.RunType,
 		Status:        row.Status,
+		CreatedAt:     row.CreatedAt.Time,
 		TotalJobs:     int(row.TotalJobs),
 		CompletedJobs: int(row.CompletedJobs),
 		FailedJobs:    int(row.FailedJobs),
-		CreatedAt:     row.CreatedAt.Time.Format("2006-01-02T15:04:05Z07:00"),
 	}
 	if row.StartedAt.Valid {
-		summary.StartedAt = row.StartedAt.Time.Format("2006-01-02T15:04:05Z07:00")
+		t := row.StartedAt.Time
+		summary.StartedAt = &t
 	}
 	if row.FinishedAt.Valid {
-		summary.FinishedAt = row.FinishedAt.Time.Format("2006-01-02T15:04:05Z07:00")
+		t := row.FinishedAt.Time
+		summary.FinishedAt = &t
 	}
 	if row.LatestError != nil {
 		if s, ok := row.LatestError.(string); ok {
@@ -172,13 +174,15 @@ func runSummaryFromOpsRun(run sqlc.OpsRun) jobs.RunSummary {
 		ID:        uuidToString(run.ID),
 		RunType:   run.RunType,
 		Status:    run.Status,
-		CreatedAt: run.CreatedAt.Time.Format("2006-01-02T15:04:05Z07:00"),
+		CreatedAt: run.CreatedAt.Time,
 	}
 	if run.StartedAt.Valid {
-		summary.StartedAt = run.StartedAt.Time.Format("2006-01-02T15:04:05Z07:00")
+		t := run.StartedAt.Time
+		summary.StartedAt = &t
 	}
 	if run.FinishedAt.Valid {
-		summary.FinishedAt = run.FinishedAt.Time.Format("2006-01-02T15:04:05Z07:00")
+		t := run.FinishedAt.Time
+		summary.FinishedAt = &t
 	}
 	return summary
 }

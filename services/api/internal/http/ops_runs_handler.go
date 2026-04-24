@@ -37,6 +37,25 @@ func (h opsRunsHandler) startSeedProjection(w stdhttp.ResponseWriter, r *stdhttp
 	h.respondJSON(w, stdhttp.StatusCreated, run)
 }
 
+func (h opsRunsHandler) startSourceIngestion(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	var req jobs.StartSourceIngestionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondJSON(w, stdhttp.StatusBadRequest, map[string]string{"error": "invalid json body"})
+		return
+	}
+
+	run, err := h.service.StartSourceIngestion(r.Context(), req)
+	if err != nil {
+		if err == jobs.ErrActiveRun {
+			h.respondJSON(w, stdhttp.StatusConflict, map[string]string{"error": err.Error()})
+			return
+		}
+		h.respondJSON(w, stdhttp.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	h.respondJSON(w, stdhttp.StatusCreated, run)
+}
+
 func (h opsRunsHandler) respondJSON(w stdhttp.ResponseWriter, status int, payload any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 )
 
 type MemoryRepository struct {
@@ -23,6 +24,8 @@ type memoryBatch struct {
 	ID             string
 	SourceName     string
 	SourceBatchKey string
+	PayloadURI     string
+	PayloadSHA256  string
 }
 
 type memoryJob struct {
@@ -70,10 +73,12 @@ func (r *MemoryRepository) CreateSeedProjectionRun(_ context.Context) (RunSummar
 
 	r.runCounter++
 	runID := fmt.Sprintf("run-%d", r.runCounter)
+	now := time.Now().UTC()
 	run := RunSummary{
-		ID:      runID,
-		RunType: RunTypeSeedPropertyProjection,
-		Status:  "pending",
+		ID:        runID,
+		RunType:   RunTypeSeedPropertyProjection,
+		Status:    "pending",
+		CreatedAt: now,
 	}
 	r.runs = append(r.runs, run)
 	r.activeRun = &run
@@ -99,14 +104,18 @@ func (r *MemoryRepository) CreateSourceIngestionRun(_ context.Context, req Start
 		ID:             batchID,
 		SourceName:     req.SourceName,
 		SourceBatchKey: req.BatchKey,
+		PayloadURI:     req.PayloadURI,
+		PayloadSHA256:  req.PayloadSHA256,
 	}
 
 	r.runCounter++
 	runID := fmt.Sprintf("run-%d", r.runCounter)
+	now := time.Now().UTC()
 	run := RunSummary{
-		ID:      runID,
-		RunType: RunTypeSourceIngestionV1,
-		Status:  "pending",
+		ID:        runID,
+		RunType:   RunTypeSourceIngestionV1,
+		Status:    "pending",
+		CreatedAt: now,
 	}
 	r.runs = append(r.runs, run)
 	r.activeRun = &run
