@@ -224,6 +224,11 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		titleReference = pgtype.Text{String: req.TitleReference, Valid: req.TitleReference != ""}
 	}
 
+	var linkedPropID pgtype.UUID
+	if req.LinkedPropertyID != "" {
+		linkedPropID.Scan(req.LinkedPropertyID)
+	}
+
 	c, err := queries.CreateCaseRecord(ctx, sqlc.CreateCaseRecordParams{
 		CaseReference:             caseReference,
 		PropertyDescription:       propertyDescription,
@@ -233,6 +238,7 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		MatterReference:           pgtype.Text{String: req.MatterReference, Valid: req.MatterReference != ""},
 		IntakeNote:                pgtype.Text{String: req.IntakeNote, Valid: req.IntakeNote != ""},
 		AssigneeID:                req.ActorID,
+		LinkedPropertyID:          linkedPropID,
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -333,11 +339,12 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 			return cases.CaseDetail{}, err
 		}
 
-		// Insert canonical evidence items
+		// Insert canonical evidence items with provenance
 		facts, err := json.Marshal(map[string]any{
-			"linked_property_id":   req.LinkedPropertyID,
+			"linked_property_id":     req.LinkedPropertyID,
 			"property_description": propRow.PropertyDescription,
-			"title_reference":      propRow.TitleReference,
+			"title_reference":     propRow.TitleReference,
+			"source":            "core.properties",
 		})
 		if err != nil {
 			return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
@@ -347,6 +354,7 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 			EvidenceType:    "canonical_property",
 			SourceType:      "normalized_data",
 			SourceReference: req.LinkedPropertyID,
+			ExternalReference: pgtype.Text{String: propRow.TitleReference, Valid: propRow.TitleReference != ""},
 			ExtractedFacts:  facts,
 			EvidenceStatus:  string(cases.EvidenceStatusConfirmed),
 			CreatedBy:       req.ActorID,
@@ -764,21 +772,44 @@ func caseSummaryFromRow(row sqlc.ListCaseSummariesRow) cases.CaseSummary {
 	}
 }
 
-func caseSummaryFromRecord(c sqlc.OpsCaseRecord) cases.CaseSummary {
-	return cases.CaseSummary{
-		ID:                        uuidToString(c.ID),
-		CaseReference:             c.CaseReference,
-		PropertyDescription:       c.PropertyDescription,
-		LocalityOrArea:            c.LocalityOrArea,
-		MunicipalityOrDeedsOffice: c.MunicipalityOrDeedsOffice,
-		TitleReference:            textToString(c.TitleReference),
-		MatterReference:           textToString(c.MatterReference),
-		Status:                    cases.CaseStatus(c.Status),
-		AssigneeID:                c.AssigneeID,
-		CreatedBy:                 c.CreatedBy,
-		LinkedSeedPropertyID:      uuidToString(c.LinkedSeedPropertyID),
-		CreatedAt:                 c.CreatedAt.Time,
-		UpdatedAt:                 c.UpdatedAt.Time,
+func caseSummaryFromRecord(c any) cases.CaseSummary {
+	switch r := c.(type) {
+	case sqlc.OpsCaseRecord:
+		return cases.CaseSummary{
+			ID:                        uuidToString(r.ID),
+			CaseReference:             r.CaseReference,
+			PropertyDescription:       r.PropertyDescription,
+			LocalityOrArea:            r.LocalityOrArea,
+			MunicipalityOrDeedsOffice: r.MunicipalityOrDeedsOffice,
+			TitleReference:            textToString(r.TitleReference),
+			MatterReference:           textToString(r.MatterReference),
+			Status:                    cases.CaseStatus(r.Status),
+			AssigneeID:                r.AssigneeID,
+			CreatedBy:                 r.CreatedBy,
+			LinkedSeedPropertyID:      uuidToString(r.LinkedSeedPropertyID),
+			LinkedPropertyID:        uuidToString(r.LinkedPropertyID),
+			CreatedAt:                 r.CreatedAt.Time,
+			UpdatedAt:                 r.UpdatedAt.Time,
+		}
+	case sqlc.GetCaseRecordRow:
+		return cases.CaseSummary{
+			ID:                        uuidToString(r.ID),
+			CaseReference:             r.CaseReference,
+			PropertyDescription:       r.PropertyDescription,
+			LocalityOrArea:            r.LocalityOrArea,
+			MunicipalityOrDeedsOffice: r.MunicipalityOrDeedsOffice,
+			TitleReference:            textToString(r.TitleReference),
+			MatterReference:           textToString(r.MatterReference),
+			Status:                    cases.CaseStatus(r.Status),
+			AssigneeID:                r.AssigneeID,
+			CreatedBy:                 r.CreatedBy,
+			LinkedSeedPropertyID:      uuidToString(r.LinkedSeedPropertyID),
+			LinkedPropertyID:        uuidToString(r.LinkedPropertyID),
+			CreatedAt:                 r.CreatedAt.Time,
+			UpdatedAt:                 r.UpdatedAt.Time,
+		}
+	default:
+		return cases.CaseSummary{}
 	}
 }
 

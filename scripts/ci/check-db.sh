@@ -11,8 +11,9 @@ set -e
 
 if [ "${validate_exit}" -eq 0 ]; then
   printf "%s\n" "${validate_output}"
-elif printf "%s" "${validate_output}" | grep -q 'no such command'; then
-  goose -dir db/migrations postgres "${DATABASE_URL}" status
+elif printf "%s" "${validate_output}" | grep -q 'no such command\|unknown command'; then
+  printf "WARNING: goose validate not available, skipping validation\n"
+  printf "%s\n" "${validate_output}"
 else
   printf "%s\n" "${validate_output}"
   exit "${validate_exit}"

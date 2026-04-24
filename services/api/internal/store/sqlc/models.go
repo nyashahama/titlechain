@@ -141,6 +141,7 @@ type OpsCaseRecord struct {
 	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
 }
 
 type OpsJob struct {

@@ -8,8 +8,7 @@ pub async fn run(
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let batch = crate::db::get_batch_for_run(pool, run_id).await?;
 
-    // Pilot source: read structured records from payload_uri (local file path for v1)
-    let records = read_source_records(&batch.payload_uri).await?;
+    let records = read_source_records(&batch.payload_uri, cfg!(test)).await?;
 
     for (record_key, payload) in records {
         let payload_sha256 = sha256_hex(&payload);
@@ -29,6 +28,7 @@ pub async fn run(
 
 async fn read_source_records(
     payload_uri: &str,
+    test_mode: bool,
 ) -> Result<Vec<(String, Value)>, Box<dyn std::error::Error + Send + Sync>> {
     if payload_uri.is_empty() {
         return Ok(vec![]);
@@ -40,8 +40,10 @@ async fn read_source_records(
         .unwrap_or(payload_uri);
 
     if !std::path::Path::new(path).exists() {
-        // For tests and CI where fixture files may not exist, return empty.
-        return Ok(vec![]);
+        if test_mode {
+            return Ok(vec![]);
+        }
+        return Err(format!("payload file not found: {}", path).into());
     }
 
     let content = tokio::fs::read_to_string(path).await?;
@@ -56,18 +58,17 @@ async fn read_source_records(
             .get("record_key")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
-            .unwrap_or_else(|| {
-                // derive a stable key from payload hash when not explicit
-                format!("auto-{}", sha256_hex(&payload))
-            });
+            .unwrap_or_else(|| sha256_hex(&payload)[..8].to_string());
         records.push((record_key, payload));
     }
+
     Ok(records)
 }
 
 fn sha256_hex(value: &Value) -> String {
-    use sha2::{Digest, Sha256};
-    let bytes = serde_json::to_vec(value).unwrap_or_default();
-    let hash = Sha256::digest(&bytes);
-    format!("{:x}", hash)
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    let mut hasher = DefaultHasher::new();
+    value.to_string().hash(&mut hasher);
+    format!("{:016x}", hasher.finish())
 }

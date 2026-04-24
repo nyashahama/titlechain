@@ -45,6 +45,7 @@ pub async fn insert_core_title_registration(
         r#"INSERT INTO core.title_registrations (
             property_id, title_reference, registration_status, effective_at
         ) VALUES ($1, $2, $3, $4)
+        ON CONFLICT (property_id, title_reference) DO UPDATE SET title_reference = EXCLUDED.title_reference
         RETURNING id"#,
     )
     .bind(property_id)
@@ -66,6 +67,7 @@ pub async fn insert_core_property_party(
         r#"INSERT INTO core.property_parties (
             property_id, party_name, party_role
         ) VALUES ($1, $2, $3)
+        ON CONFLICT (property_id, party_name, party_role) DO UPDATE SET party_name = EXCLUDED.party_name
         RETURNING id"#,
     )
     .bind(property_id)
@@ -86,6 +88,7 @@ pub async fn insert_core_encumbrance(
         r#"INSERT INTO core.encumbrances (
             property_id, encumbrance_type, status
         ) VALUES ($1, $2, $3)
+        ON CONFLICT (property_id, encumbrance_type) DO UPDATE SET status = EXCLUDED.status
         RETURNING id"#,
     )
     .bind(property_id)

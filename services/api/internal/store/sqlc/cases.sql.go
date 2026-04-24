@@ -129,9 +129,27 @@ RETURNING id, case_reference, property_description, locality_or_area, municipali
     linked_seed_property_id, resolved_at, created_at, updated_at
 `
 
-func (q *Queries) CloseCaseUnresolved(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error) {
+type CloseCaseUnresolvedRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) CloseCaseUnresolved(ctx context.Context, id pgtype.UUID) (CloseCaseUnresolvedRow, error) {
 	row := q.db.QueryRow(ctx, closeCaseUnresolved, id)
-	var i OpsCaseRecord
+	var i CloseCaseUnresolvedRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -259,11 +277,12 @@ INSERT INTO ops.case_records (
     intake_note,
     status,
     assignee_id,
-    created_by
-) VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $8)
+    created_by,
+    linked_property_id
+) VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $8, $9)
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 `
 
 type CreateCaseRecordParams struct {
@@ -275,9 +294,29 @@ type CreateCaseRecordParams struct {
 	MatterReference           pgtype.Text `json:"matter_reference"`
 	IntakeNote                pgtype.Text `json:"intake_note"`
 	AssigneeID                string      `json:"assignee_id"`
+	LinkedPropertyID          pgtype.UUID `json:"linked_property_id"`
 }
 
-func (q *Queries) CreateCaseRecord(ctx context.Context, arg CreateCaseRecordParams) (OpsCaseRecord, error) {
+type CreateCaseRecordRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) CreateCaseRecord(ctx context.Context, arg CreateCaseRecordParams) (CreateCaseRecordRow, error) {
 	row := q.db.QueryRow(ctx, createCaseRecord,
 		arg.CaseReference,
 		arg.PropertyDescription,
@@ -287,8 +326,9 @@ func (q *Queries) CreateCaseRecord(ctx context.Context, arg CreateCaseRecordPara
 		arg.MatterReference,
 		arg.IntakeNote,
 		arg.AssigneeID,
+		arg.LinkedPropertyID,
 	)
-	var i OpsCaseRecord
+	var i CreateCaseRecordRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -302,6 +342,7 @@ func (q *Queries) CreateCaseRecord(ctx context.Context, arg CreateCaseRecordPara
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -366,14 +407,33 @@ func (q *Queries) GetAnalyst(ctx context.Context, id string) (OpsAnalyst, error)
 const getCaseRecord = `-- name: GetCaseRecord :one
 SELECT id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 FROM ops.case_records
 WHERE id = $1
 `
 
-func (q *Queries) GetCaseRecord(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error) {
+type GetCaseRecordRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetCaseRecord(ctx context.Context, id pgtype.UUID) (GetCaseRecordRow, error) {
 	row := q.db.QueryRow(ctx, getCaseRecord, id)
-	var i OpsCaseRecord
+	var i GetCaseRecordRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -387,6 +447,7 @@ func (q *Queries) GetCaseRecord(ctx context.Context, id pgtype.UUID) (OpsCaseRec
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -432,9 +493,27 @@ type LinkCaseSeedPropertyParams struct {
 	LinkedSeedPropertyID pgtype.UUID `json:"linked_seed_property_id"`
 }
 
-func (q *Queries) LinkCaseSeedProperty(ctx context.Context, arg LinkCaseSeedPropertyParams) (OpsCaseRecord, error) {
+type LinkCaseSeedPropertyRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) LinkCaseSeedProperty(ctx context.Context, arg LinkCaseSeedPropertyParams) (LinkCaseSeedPropertyRow, error) {
 	row := q.db.QueryRow(ctx, linkCaseSeedProperty, arg.ID, arg.LinkedSeedPropertyID)
-	var i OpsCaseRecord
+	var i LinkCaseSeedPropertyRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -888,9 +967,27 @@ type ReassignCaseParams struct {
 	AssigneeID string      `json:"assignee_id"`
 }
 
-func (q *Queries) ReassignCase(ctx context.Context, arg ReassignCaseParams) (OpsCaseRecord, error) {
+type ReassignCaseRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ReassignCase(ctx context.Context, arg ReassignCaseParams) (ReassignCaseRow, error) {
 	row := q.db.QueryRow(ctx, reassignCase, arg.ID, arg.AssigneeID)
-	var i OpsCaseRecord
+	var i ReassignCaseRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -931,9 +1028,27 @@ RETURNING id, case_reference, property_description, locality_or_area, municipali
     linked_seed_property_id, resolved_at, created_at, updated_at
 `
 
-func (q *Queries) ReopenCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error) {
+type ReopenCaseRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ReopenCase(ctx context.Context, id pgtype.UUID) (ReopenCaseRow, error) {
 	row := q.db.QueryRow(ctx, reopenCase, id)
-	var i OpsCaseRecord
+	var i ReopenCaseRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -963,9 +1078,27 @@ RETURNING id, case_reference, property_description, locality_or_area, municipali
     linked_seed_property_id, resolved_at, created_at, updated_at
 `
 
-func (q *Queries) ResolveCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error) {
+type ResolveCaseRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ResolveCase(ctx context.Context, id pgtype.UUID) (ResolveCaseRow, error) {
 	row := q.db.QueryRow(ctx, resolveCase, id)
-	var i OpsCaseRecord
+	var i ResolveCaseRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
