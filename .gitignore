@@ -53,3 +53,4 @@ target
 services/api/api
 .superpowers/
 docs/
+.worktrees/
