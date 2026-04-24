@@ -29,7 +29,9 @@ pub fn project_seed_property(seed: SeedPropertyRow) -> PropertySummaryRow {
         property_description: seed.property_description,
         locality_or_area: seed.locality_or_area,
         municipality_or_deeds_office: seed.municipality_or_deeds_office,
-        title_reference: seed.title_ref.map(|v| deeds_normalizer::normalize_title_reference(&v)),
+        title_reference: seed
+            .title_ref
+            .map(|v| deeds_normalizer::normalize_title_reference(&v)),
         current_owner_name: seed.current_owner_name,
         status: seed.status_summary,
     }

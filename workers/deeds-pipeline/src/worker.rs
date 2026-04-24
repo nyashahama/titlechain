@@ -4,7 +4,10 @@ use crate::config::Config;
 use crate::db;
 use crate::projection;
 
-pub async fn run(pool: PgPool, config: Config) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+pub async fn run(
+    pool: PgPool,
+    config: Config,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let worker_id = "deeds-pipeline".to_string();
     loop {
         match db::claim_next_job(&pool, &worker_id).await? {

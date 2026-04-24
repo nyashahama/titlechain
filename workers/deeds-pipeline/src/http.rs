@@ -14,9 +14,7 @@ pub fn app() -> Router {
         .route("/metrics", get(metrics))
 }
 
-pub async fn serve_metrics(
-    addr: String,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+pub async fn serve_metrics(addr: String) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let listener = tokio::net::TcpListener::bind(&addr).await?;
     axum::serve(listener, app()).await?;
     Ok(())
