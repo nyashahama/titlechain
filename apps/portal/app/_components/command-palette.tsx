@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { motion, AnimatePresence } from "framer-motion";
+import { Search, ArrowRight, Command as CommandIcon } from "lucide-react";
+import { cn } from "@/app/_lib/cn";
 
 interface PaletteItem {
   id: string;
@@ -69,7 +71,9 @@ export function CommandPalette() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] bg-black/60 backdrop-blur-sm"
+          className={cn(
+            "fixed inset-0 z-50 flex items-start justify-center pt-[20vh] bg-black/60 backdrop-blur-sm"
+          )}
           onClick={() => setOpen(false)}
         >
           <motion.div
@@ -80,15 +84,23 @@ export function CommandPalette() {
             className="w-full max-w-[640px] mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <Command className="bg-[#141414] border border-border rounded-2xl overflow-hidden shadow-2xl">
+            <Command
+              className={cn(
+                "bg-popover border border-border rounded-2xl overflow-hidden shadow-2xl"
+              )}
+            >
               <div className="flex items-center border-b border-border px-4">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted mr-3">
-                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-                </svg>
+                <Search className="h-4 w-4 text-muted mr-3 shrink-0" />
                 <Command.Input
                   placeholder="Search cases, properties, runs, or actions..."
-                  className="w-full bg-transparent py-4 text-[14px] text-foreground placeholder:text-muted outline-none"
+                  className={cn(
+                    "w-full bg-transparent py-4 text-sm text-foreground placeholder:text-muted outline-none"
+                  )}
                 />
+                <div className="hidden sm:flex items-center gap-1 text-[11px] text-muted ml-3">
+                  <CommandIcon className="h-3 w-3" />
+                  <span>K</span>
+                </div>
               </div>
               <Command.List className="max-h-[400px] overflow-y-auto py-2">
                 <Command.Empty className="px-4 py-8 text-center text-[13px] text-muted">
@@ -99,9 +111,14 @@ export function CommandPalette() {
                     <Command.Item
                       key={item.id}
                       onSelect={() => handleSelect(item)}
-                      className="px-3 py-2.5 rounded-lg text-[13px] text-foreground cursor-pointer hover:bg-white/[0.05] data-[selected=true]:bg-white/[0.08] flex items-center gap-3"
+                      className={cn(
+                        "px-3 py-2.5 rounded-lg text-[13px] text-foreground cursor-pointer flex items-center gap-3",
+                        "hover:bg-white/[0.05] data-[selected=true]:bg-white/[0.08]"
+                      )}
                     >
-                      <span className="text-muted">{item.icon || "→"}</span>
+                      <span className="text-muted">
+                        {item.icon || <ArrowRight className="h-3.5 w-3.5" />}
+                      </span>
                       {item.title}
                     </Command.Item>
                   ))}

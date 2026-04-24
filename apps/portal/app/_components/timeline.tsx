@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { Separator } from "./ui/separator";
 
 interface TimelineEvent {
   id: string;
@@ -33,7 +34,7 @@ export function Timeline({ events }: TimelineProps) {
   return (
     <div className="relative pl-6">
       {/* Vertical line */}
-      <div className="absolute left-[9px] top-2 bottom-2 w-[2px] bg-border" />
+      <Separator orientation="vertical" className="absolute left-[9px] top-2 bottom-2 w-[2px]" />
 
       <div className="space-y-4">
         {events.map((event, i) => (
