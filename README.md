@@ -40,3 +40,14 @@ npm run test --workspace @titlechain/portal
 
 The phase-one API expects `DATABASE_URL` for runtime database access. Unit tests use in-memory repositories for workflow validation.
 
+## Phase 2 Property Projection Verification
+
+Run these commands after applying migrations:
+
+```bash
+sqlc generate
+cd services/api && go test ./...
+npm run test --workspace @titlechain/portal
+cargo test --workspace
+```
+
