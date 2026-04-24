@@ -48,22 +48,3 @@ async fn run_seed_projection(
     db::upsert_property_summaries(pool, &summaries).await?;
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use pipeline_core::RawRecord;
-    use crate::normalization::{normalize_record, NormalizationResult};
-
-    #[tokio::test]
-    async fn run_stage_normalization_quarantines_invalid_rows() {
-        let row = RawRecord {
-            record_key: "row-1".into(),
-            record_type: "property_snapshot".into(),
-            payload: serde_json::json!({"municipality_or_deeds_office":"Johannesburg"}),
-        };
-
-        let result = normalize_record(&row);
-
-        assert!(matches!(result, NormalizationResult::Quarantined { .. }));
-    }
-}

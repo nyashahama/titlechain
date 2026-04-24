@@ -222,6 +222,7 @@ dependencies = [
  "entity-resolution",
  "pipeline-core",
  "serde",
+ "serde_json",
  "sqlx",
  "tokio",
  "uuid",
@@ -288,6 +289,9 @@ dependencies = [
 [[package]]
 name = "entity-resolution"
 version = "0.1.0"
+dependencies = [
+ "deeds-normalizer",
+]
 
 [[package]]
 name = "equivalent"
@@ -931,6 +935,7 @@ name = "pipeline-core"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "serde_json",
 ]
 
 [[package]]

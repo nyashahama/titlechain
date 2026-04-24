@@ -10,7 +10,7 @@ pub async fn run(
     for row in &stage_rows {
         let fingerprint = entity_resolution::property_fingerprint(
             &row.municipality_or_deeds_office,
-            row.title_reference.as_deref().unwrap_or(""),
+            &row.title_reference,
         );
         crate::db::upsert_core_property(pool, &fingerprint, row).await?;
     }

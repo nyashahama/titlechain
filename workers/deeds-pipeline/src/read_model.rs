@@ -2,6 +2,13 @@ use sqlx::PgPool;
 
 use crate::projection::PropertySummaryRow;
 
+/// Default status for a property in the read model.
+const DEFAULT_PROPERTY_STATUS: &str = "active";
+
+/// Empty placeholder for `locality_or_area` until the field is populated
+/// from a more detailed source.
+const UNKNOWN_LOCALITY: &str = "";
+
 pub async fn run(
     pool: &PgPool,
     _run_id: uuid::Uuid,
@@ -12,12 +19,12 @@ pub async fn run(
         .into_iter()
         .map(|row| PropertySummaryRow {
             property_id: row.id,
-            property_description: row.property_description.unwrap_or_default(),
-            locality_or_area: row.locality_or_area.unwrap_or_default(),
+            property_description: row.property_description,
+            locality_or_area: UNKNOWN_LOCALITY.into(),
             municipality_or_deeds_office: row.municipality_or_deeds_office,
-            title_reference: row.title_reference,
-            current_owner_name: row.current_owner_name,
-            status: "active".into(),
+            title_reference: Some(row.latest_title_reference),
+            current_owner_name: None,
+            status: DEFAULT_PROPERTY_STATUS.into(),
         })
         .collect();
 
