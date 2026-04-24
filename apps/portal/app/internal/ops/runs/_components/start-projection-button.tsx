@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { startProjectionAction } from "../actions";
 
 export function StartProjectionButton() {
@@ -9,8 +10,12 @@ export function StartProjectionButton() {
   async function handleClick() {
     setLoading(true);
     try {
-      await startProjectionAction();
-    } catch {
+      const run = await startProjectionAction();
+      toast.success("Property sync started", { description: `Run ${run.id}` });
+    } catch (err) {
+      toast.error("Sync failed", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      });
     } finally {
       setLoading(false);
     }

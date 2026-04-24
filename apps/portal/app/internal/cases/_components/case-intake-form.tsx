@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { createCaseAction } from "../actions";
 import { useRouter } from "next/navigation";
 import { Analyst } from "../types";
@@ -23,9 +24,12 @@ export function CaseIntakeForm({ analysts, defaultActorId, initialValues }: { an
     setError(null);
     try {
       const detail = await createCaseAction(formData);
+      toast.success("Case created", { description: detail.case.case_reference });
       router.push(`/internal/cases/${detail.case.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create case");
+      const message = err instanceof Error ? err.message : "Failed to create case";
+      toast.error("Failed to create case", { description: message });
+      setError(message);
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { reopenCaseAction } from "../actions";
 
 export function ReopenForm({ caseId, actorId }: { caseId: string; actorId: string }) {
@@ -10,9 +11,12 @@ export function ReopenForm({ caseId, actorId }: { caseId: string; actorId: strin
     setError(null);
     try {
       await reopenCaseAction(caseId, formData);
+      toast.success("Case reopened");
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to reopen");
+      const message = err instanceof Error ? err.message : "Failed to reopen";
+      toast.error("Failed to reopen case", { description: message });
+      setError(message);
     }
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { addEvidenceAction } from "../actions";
 
 export function EvidenceForm({ caseId, actorId }: { caseId: string; actorId: string }) {
@@ -10,9 +11,12 @@ export function EvidenceForm({ caseId, actorId }: { caseId: string; actorId: str
     setError(null);
     try {
       await addEvidenceAction(caseId, formData);
+      toast.success("Evidence added");
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add evidence");
+      const message = err instanceof Error ? err.message : "Failed to add evidence";
+      toast.error("Failed to add evidence", { description: message });
+      setError(message);
     }
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Analyst, ReasonCode } from "../types";
 import {
   reassignCaseAction,
@@ -23,9 +24,12 @@ export function ReassignCaseForm({
     setError(null);
     try {
       await reassignCaseAction(caseId, formData);
+      toast.success("Case reassigned");
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to reassign");
+      const message = err instanceof Error ? err.message : "Failed to reassign";
+      toast.error("Failed to reassign case", { description: message });
+      setError(message);
     }
   }
 
@@ -72,9 +76,12 @@ export function RecordDecisionForm({
     setError(null);
     try {
       await recordDecisionAction(caseId, formData);
+      toast.success("Decision recorded");
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to record decision");
+      const message = err instanceof Error ? err.message : "Failed to record decision";
+      toast.error("Failed to record decision", { description: message });
+      setError(message);
     }
   }
 
@@ -160,9 +167,12 @@ export function CloseUnresolvedForm({
     setError(null);
     try {
       await closeUnresolvedAction(caseId, formData);
+      toast.success("Case closed unresolved");
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to close");
+      const message = err instanceof Error ? err.message : "Failed to close";
+      toast.error("Failed to close case", { description: message });
+      setError(message);
     }
   }
 
