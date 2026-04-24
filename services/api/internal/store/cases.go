@@ -168,6 +168,22 @@ func (s CasesStore) GetCaseDetail(ctx context.Context, caseID string) (cases.Cas
 		detail.Decisions = append(detail.Decisions, dec)
 	}
 
+	// Derive LinkedPropertyID from canonical evidence to avoid schema migration
+	for _, ev := range detail.Evidence {
+		if ev.EvidenceType == "canonical_property" {
+			if facts, ok := ev.ExtractedFacts["linked_property_id"]; ok {
+				if str, ok := facts.(string); ok && str != "" {
+					detail.Case.LinkedPropertyID = str
+					break
+				}
+			}
+			if detail.Case.LinkedPropertyID == "" && ev.SourceReference != "" {
+				detail.Case.LinkedPropertyID = ev.SourceReference
+				break
+			}
+		}
+	}
+
 	return detail, nil
 }
 
@@ -319,9 +335,9 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 
 		// Insert canonical evidence items
 		facts, _ := json.Marshal(map[string]any{
-			"property_id":     req.LinkedPropertyID,
-			"description":     propRow.PropertyDescription,
-			"title_reference": propRow.TitleReference,
+			"linked_property_id":   req.LinkedPropertyID,
+			"property_description": propRow.PropertyDescription,
+			"title_reference":      propRow.TitleReference,
 		})
 		_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
 			CaseID:          c.ID,
