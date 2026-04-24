@@ -101,10 +101,15 @@ func (s JobsStore) CreateSourceIngestionRun(ctx context.Context, req jobs.StartS
 			return sqlc.OpsRun{}, mapPgDuplicate(err)
 		}
 
-		for _, kind := range jobs.IngestionJobKinds {
+		for i, kind := range jobs.IngestionJobKinds {
+			status := "blocked"
+			if i == 0 {
+				status = "pending"
+			}
 			_, err = q.CreateIngestionJob(ctx, sqlc.CreateIngestionJobParams{
 				RunID:   run.ID,
 				JobKind: kind,
+				Status:  status,
 			})
 			if err != nil {
 				return sqlc.OpsRun{}, err

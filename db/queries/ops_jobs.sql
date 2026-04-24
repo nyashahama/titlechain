@@ -46,8 +46,15 @@ RETURNING id, batch_id, run_type, status, started_at, finished_at, created_at, u
 
 -- name: CreateIngestionJob :one
 INSERT INTO ops.jobs (run_id, job_kind, status, checkpoint)
-VALUES ($1, $2, 'pending', '{}'::jsonb)
+VALUES ($1, $2, $3, '{}'::jsonb)
 RETURNING id, run_id, job_kind, status, lease_owner, lease_expires_at, retry_count, checkpoint, error_message, created_at, updated_at;
+
+-- name: UnblockNextJob :exec
+UPDATE ops.jobs
+SET status = 'pending', updated_at = NOW()
+WHERE run_id = $1
+  AND status = 'blocked'
+  AND job_kind = $2;
 
 -- name: ClaimNextJob :one
 WITH candidate AS (

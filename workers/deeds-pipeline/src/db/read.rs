@@ -1,6 +1,6 @@
 use sqlx::PgPool;
 
-use crate::projection::{PropertySummaryRow, SeedPropertyRow};
+pub use crate::projection::{PropertySummaryRow, SeedPropertyRow};
 
 pub async fn read_seed_properties(pool: &PgPool) -> sqlx::Result<Vec<SeedPropertyRow>> {
     sqlx::query_as::<_, SeedPropertyRow>(

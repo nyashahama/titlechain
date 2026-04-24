@@ -62,6 +62,13 @@ pub async fn mark_job_running(pool: &PgPool, job_id: Uuid) -> sqlx::Result<()> {
     Ok(())
 }
 
+const INGESTION_SEQUENCE: &[&str] = &[
+    "raw_landing",
+    "stage_normalization",
+    "core_materialization",
+    "read_refresh",
+];
+
 pub async fn mark_job_completed(pool: &PgPool, job_id: Uuid) -> sqlx::Result<()> {
     let mut tx = pool.begin().await?;
 
@@ -76,6 +83,29 @@ pub async fn mark_job_completed(pool: &PgPool, job_id: Uuid) -> sqlx::Result<()>
     .bind(job_id)
     .execute(&mut *tx)
     .await?;
+
+    // Unblock the next stage in the ingestion sequence
+    let run_id: Uuid = sqlx::query_scalar("SELECT run_id FROM ops.jobs WHERE id = $1")
+        .bind(job_id)
+        .fetch_one(&mut *tx)
+        .await?;
+
+    let job_kind: String = sqlx::query_scalar("SELECT job_kind FROM ops.jobs WHERE id = $1")
+        .bind(job_id)
+        .fetch_one(&mut *tx)
+        .await?;
+
+    if let Some(pos) = INGESTION_SEQUENCE.iter().position(|&k| k == job_kind) {
+        if let Some(&next_kind) = INGESTION_SEQUENCE.get(pos + 1) {
+            sqlx::query(
+                "UPDATE ops.jobs SET status = 'pending', updated_at = NOW() WHERE run_id = $1 AND job_kind = $2 AND status = 'blocked'",
+            )
+            .bind(run_id)
+            .bind(next_kind)
+            .execute(&mut *tx)
+            .await?;
+        }
+    }
 
     sqlx::query(
         r#"UPDATE ops.runs

@@ -52,6 +52,9 @@ func (r *stubJobsRepo) FindActiveRun(_ context.Context, _ string) (*jobs.RunSumm
 }
 
 func (r *stubJobsRepo) CreateSeedProjectionRun(_ context.Context) (jobs.RunSummary, error) {
+	if r.activeRun != nil {
+		return jobs.RunSummary{}, jobs.ErrActiveRun
+	}
 	return jobs.RunSummary{
 		ID:      "run-new",
 		RunType: jobs.RunTypeSeedPropertyProjection,
@@ -61,6 +64,9 @@ func (r *stubJobsRepo) CreateSeedProjectionRun(_ context.Context) (jobs.RunSumma
 
 func (r *stubJobsRepo) CreateSourceIngestionRun(_ context.Context, req jobs.StartSourceIngestionRequest) (jobs.RunSummary, error) {
 	r.lastSourceIngestionReq = &req
+	if r.activeRun != nil {
+		return jobs.RunSummary{}, jobs.ErrActiveRun
+	}
 	return jobs.RunSummary{
 		ID:      "run-ingest-1",
 		RunType: jobs.RunTypeSourceIngestionV1,

@@ -1,6 +1,9 @@
 -- +goose Up
 -- +goose StatementBegin
 
+-- Enforce at most one active run per run_type atomically
+CREATE UNIQUE INDEX idx_runs_active_unique ON ops.runs(run_type) WHERE status IN ('pending', 'running');
+
 CREATE TABLE raw.records (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     batch_id UUID NOT NULL REFERENCES raw.batches(id) ON DELETE CASCADE,
@@ -126,6 +129,7 @@ DROP TABLE IF EXISTS stage.encumbrance_rows;
 DROP TABLE IF EXISTS stage.party_rows;
 DROP TABLE IF EXISTS stage.title_rows;
 DROP TABLE IF EXISTS stage.property_rows;
+DROP INDEX IF EXISTS idx_runs_active_unique;
 DROP TABLE IF EXISTS raw.records;
 
 -- +goose StatementEnd

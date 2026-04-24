@@ -10,8 +10,40 @@ pub struct StagePropertyRow {
 }
 
 #[derive(Debug)]
+pub struct StageTitleRow {
+    pub record_key: String,
+    pub title_reference: String,
+    pub registration_status: String,
+    pub effective_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+#[derive(Debug)]
+pub struct StagePartyRow {
+    pub record_key: String,
+    pub title_reference: String,
+    pub party_name: String,
+    pub party_role: String,
+}
+
+#[derive(Debug)]
+pub struct StageEncumbranceRow {
+    pub record_key: String,
+    pub title_reference: String,
+    pub encumbrance_type: String,
+    pub status: String,
+}
+
+#[derive(Debug)]
+pub struct NormalizedRecord {
+    pub property: StagePropertyRow,
+    pub title: Option<StageTitleRow>,
+    pub parties: Vec<StagePartyRow>,
+    pub encumbrances: Vec<StageEncumbranceRow>,
+}
+
+#[derive(Debug)]
 pub enum NormalizationResult {
-    Property(StagePropertyRow),
+    Record(NormalizedRecord),
     Quarantined { reason: String, details: Value },
 }
 
@@ -45,7 +77,7 @@ pub fn normalize_record(record: &RawRecord) -> NormalizationResult {
         };
     };
 
-    NormalizationResult::Property(StagePropertyRow {
+    let property = StagePropertyRow {
         record_key: record.record_key.clone(),
         municipality_or_deeds_office: municipality.to_string(),
         property_description: payload
@@ -53,7 +85,61 @@ pub fn normalize_record(record: &RawRecord) -> NormalizationResult {
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
             .unwrap_or_default(),
-        title_reference,
+        title_reference: title_reference.clone(),
+    };
+
+    let title = payload
+        .get("registration_status")
+        .and_then(|v| v.as_str())
+        .map(|status| StageTitleRow {
+            record_key: record.record_key.clone(),
+            title_reference: title_reference.clone(),
+            registration_status: status.to_string(),
+            effective_at: payload
+                .get("effective_at")
+                .and_then(|v| v.as_str())
+                .and_then(|s| s.parse::<chrono::DateTime<chrono::Utc>>().ok()),
+        });
+
+    let mut parties = Vec::new();
+    if let Some(arr) = payload.get("parties").and_then(|v| v.as_array()) {
+        for p in arr {
+            if let (Some(name), Some(role)) = (
+                p.get("party_name").and_then(|v| v.as_str()),
+                p.get("party_role").and_then(|v| v.as_str()),
+            ) {
+                parties.push(StagePartyRow {
+                    record_key: record.record_key.clone(),
+                    title_reference: title_reference.clone(),
+                    party_name: deeds_normalizer::normalize_party_name(name),
+                    party_role: role.to_string(),
+                });
+            }
+        }
+    }
+
+    let mut encumbrances = Vec::new();
+    if let Some(arr) = payload.get("encumbrances").and_then(|v| v.as_array()) {
+        for e in arr {
+            if let (Some(et), Some(st)) = (
+                e.get("encumbrance_type").and_then(|v| v.as_str()),
+                e.get("status").and_then(|v| v.as_str()),
+            ) {
+                encumbrances.push(StageEncumbranceRow {
+                    record_key: record.record_key.clone(),
+                    title_reference: title_reference.clone(),
+                    encumbrance_type: et.to_string(),
+                    status: st.to_string(),
+                });
+            }
+        }
+    }
+
+    NormalizationResult::Record(NormalizedRecord {
+        property,
+        title,
+        parties,
+        encumbrances,
     })
 }
 
@@ -67,8 +153,19 @@ pub async fn run(
     for (source_record_id, record) in records {
         let result = normalize_record(&record);
         match result {
-            NormalizationResult::Property(row) => {
-                crate::db::insert_stage_property(pool, batch_id, source_record_id, row).await?;
+            NormalizationResult::Record(norm) => {
+                crate::db::insert_stage_property(pool, batch_id, source_record_id, norm.property)
+                    .await?;
+                if let Some(title) = norm.title {
+                    crate::db::insert_stage_title(pool, batch_id, source_record_id, title).await?;
+                }
+                for party in norm.parties {
+                    crate::db::insert_stage_party(pool, batch_id, source_record_id, party).await?;
+                }
+                for enc in norm.encumbrances {
+                    crate::db::insert_stage_encumbrance(pool, batch_id, source_record_id, enc)
+                        .await?;
+                }
             }
             NormalizationResult::Quarantined { reason, details } => {
                 let quarantined_row = crate::db::QuarantinedRow {
@@ -113,20 +210,64 @@ mod tests {
                 "municipality_or_deeds_office": "Cape Town",
                 "title_reference": "t 12345 / 2024",
                 "property_description": "Erf 42 Bellville",
+                "registration_status": "registered",
+                "parties": [
+                    {"party_name": "John  Doe", "party_role": "owner"}
+                ],
+                "encumbrances": [
+                    {"encumbrance_type": "bond", "status": "active"}
+                ],
             }),
         };
 
         let result = normalize_record(&row);
 
         match result {
-            NormalizationResult::Property(stage) => {
-                assert_eq!(stage.record_key, "row-2");
-                assert_eq!(stage.municipality_or_deeds_office, "Cape Town");
-                assert_eq!(stage.property_description, "Erf 42 Bellville");
-                assert_eq!(stage.title_reference, "T 12345 / 2024");
+            NormalizationResult::Record(norm) => {
+                assert_eq!(norm.property.record_key, "row-2");
+                assert_eq!(norm.property.municipality_or_deeds_office, "Cape Town");
+                assert_eq!(norm.property.property_description, "Erf 42 Bellville");
+                assert_eq!(norm.property.title_reference, "T 12345 / 2024");
+
+                assert!(norm.title.is_some());
+                let title = norm.title.unwrap();
+                assert_eq!(title.registration_status, "registered");
+
+                assert_eq!(norm.parties.len(), 1);
+                assert_eq!(norm.parties[0].party_name, "JOHN DOE");
+                assert_eq!(norm.parties[0].party_role, "owner");
+
+                assert_eq!(norm.encumbrances.len(), 1);
+                assert_eq!(norm.encumbrances[0].encumbrance_type, "bond");
+                assert_eq!(norm.encumbrances[0].status, "active");
             }
             NormalizationResult::Quarantined { .. } => {
-                panic!("expected NormalizationResult::Property, got Quarantined");
+                panic!("expected NormalizationResult::Record, got Quarantined");
+            }
+        }
+    }
+
+    #[test]
+    fn normalize_record_minimal_payload() {
+        let row = RawRecord {
+            record_key: "row-3".into(),
+            record_type: "property_snapshot".into(),
+            payload: serde_json::json!({
+                "municipality_or_deeds_office": "Johannesburg",
+                "title_reference": "t 999 / 2024",
+            }),
+        };
+
+        let result = normalize_record(&row);
+
+        match result {
+            NormalizationResult::Record(norm) => {
+                assert_eq!(norm.parties.len(), 0);
+                assert_eq!(norm.encumbrances.len(), 0);
+                assert!(norm.title.is_none());
+            }
+            NormalizationResult::Quarantined { .. } => {
+                panic!("expected NormalizationResult::Record, got Quarantined");
             }
         }
     }

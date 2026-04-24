@@ -54,6 +54,7 @@ type Querier interface {
 	ReopenCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
 	ResolveCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
 	SupersedeCurrentDecisions(ctx context.Context, caseID pgtype.UUID) error
+	UnblockNextJob(ctx context.Context, arg UnblockNextJobParams) error
 	UpsertCoreProperty(ctx context.Context, arg UpsertCorePropertyParams) (CoreProperty, error)
 	UpsertPropertySummary(ctx context.Context, arg UpsertPropertySummaryParams) error
 }

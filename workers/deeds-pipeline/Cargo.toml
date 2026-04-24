@@ -5,11 +5,13 @@ edition = "2021"
 
 [dependencies]
 axum = "0.8"
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "time"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "time", "fs"] }
+sha2 = "0.10"
 deeds-normalizer = { path = "../../crates/deeds-normalizer" }
 entity-resolution = { path = "../../crates/entity-resolution" }
 pipeline-core = { path = "../../crates/pipeline-core" }
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "uuid", "time"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "uuid", "time", "chrono"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 uuid = "1"
+chrono = "0.4"

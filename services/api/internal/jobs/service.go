@@ -26,13 +26,9 @@ func (s Service) ListRuns(ctx context.Context) ([]RunSummary, error) {
 }
 
 func (s Service) StartSeedPropertyProjection(ctx context.Context) (RunSummary, error) {
-	active, err := s.repo.FindActiveRun(ctx, RunTypeSeedPropertyProjection)
-	if err != nil {
-		return RunSummary{}, err
-	}
-	if active != nil {
-		return RunSummary{}, ErrActiveRun
-	}
+	// The DB partial unique index on ops.runs(run_type) WHERE status IN ('pending', 'running')
+	// enforces atomic active-run protection. A 23505 violation is translated to ErrActiveRun
+	// by the repository layer.
 	return s.repo.CreateSeedProjectionRun(ctx)
 }
 
@@ -43,12 +39,8 @@ func (s Service) StartSourceIngestion(ctx context.Context, req StartSourceIngest
 	if strings.TrimSpace(req.BatchKey) == "" {
 		return RunSummary{}, fmt.Errorf("%w: batch_key is required", ErrValidation)
 	}
-	active, err := s.repo.FindActiveRun(ctx, RunTypeSourceIngestionV1)
-	if err != nil {
-		return RunSummary{}, err
-	}
-	if active != nil {
-		return RunSummary{}, ErrActiveRun
-	}
+	// The DB partial unique index on ops.runs(run_type) WHERE status IN ('pending', 'running')
+	// enforces atomic active-run protection. A 23505 violation is translated to ErrActiveRun
+	// by the repository layer.
 	return s.repo.CreateSourceIngestionRun(ctx, req)
 }

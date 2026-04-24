@@ -24,6 +24,9 @@ func (r *stubRepo) FindActiveRun(_ context.Context, _ string) (*RunSummary, erro
 }
 
 func (r *stubRepo) CreateSeedProjectionRun(_ context.Context) (RunSummary, error) {
+	if r.activeRun != nil {
+		return RunSummary{}, ErrActiveRun
+	}
 	if r.createErr != nil {
 		return RunSummary{}, r.createErr
 	}
@@ -36,6 +39,9 @@ func (r *stubRepo) CreateSeedProjectionRun(_ context.Context) (RunSummary, error
 
 func (r *stubRepo) CreateSourceIngestionRun(_ context.Context, req StartSourceIngestionRequest) (RunSummary, error) {
 	r.lastSourceIngestionReq = &req
+	if r.activeRun != nil {
+		return RunSummary{}, ErrActiveRun
+	}
 	if r.sourceIngestionRun.ID != "" {
 		return r.sourceIngestionRun, nil
 	}
