@@ -84,3 +84,20 @@ func TestService_StartSeedPropertyProjectionCreatesRun(t *testing.T) {
 		t.Errorf("status = %s, want pending", run.Status)
 	}
 }
+
+func TestService_StartSeedPropertyProjectionAllowsSequentialRuns(t *testing.T) {
+	repo := &stubRepo{}
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	_, err := svc.StartSeedPropertyProjection(ctx)
+	if err != nil {
+		t.Fatalf("first run: %v", err)
+	}
+
+	repo.activeRun = nil
+	_, err = svc.StartSeedPropertyProjection(ctx)
+	if err != nil {
+		t.Fatalf("second run: %v", err)
+	}
+}

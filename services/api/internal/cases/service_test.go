@@ -253,4 +253,13 @@ func TestService_CreateCaseWithSeedPropertyStartsInReview(t *testing.T) {
 	if !found {
 		t.Error("expected property_match_confirmed audit event")
 	}
+	if len(detail.Matches) != 1 {
+		t.Fatalf("matches = %d, want 1", len(detail.Matches))
+	}
+	if detail.Matches[0].MatchSource != "property_selection" {
+		t.Errorf("match_source = %s, want property_selection", detail.Matches[0].MatchSource)
+	}
+	if detail.Matches[0].Status != "confirmed" {
+		t.Errorf("match_status = %s, want confirmed", detail.Matches[0].Status)
+	}
 }

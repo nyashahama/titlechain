@@ -35,10 +35,21 @@ pub async fn claim_next_job(pool: &PgPool, worker_id: &str) -> sqlx::Result<Opti
 }
 
 pub async fn mark_job_running(pool: &PgPool, job_id: Uuid) -> sqlx::Result<()> {
+    let mut tx = pool.begin().await?;
+
     sqlx::query("UPDATE ops.jobs SET status = 'running', updated_at = NOW() WHERE id = $1")
         .bind(job_id)
-        .execute(pool)
+        .execute(&mut *tx)
         .await?;
+
+    sqlx::query(
+        "UPDATE ops.runs SET status = 'running', started_at = NOW(), updated_at = NOW() WHERE id = (SELECT run_id FROM ops.jobs WHERE id = $1)",
+    )
+    .bind(job_id)
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
     Ok(())
 }
 

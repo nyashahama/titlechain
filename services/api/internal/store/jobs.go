@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -58,8 +59,8 @@ func (s JobsStore) CreateSeedProjectionRun(ctx context.Context) (jobs.RunSummary
 	queries := sqlc.New(s.pool).WithTx(tx)
 
 	batch, err := queries.CreateBatch(ctx, sqlc.CreateBatchParams{
-		SourceName:     "seed_property_projection",
-		SourceBatchKey: fmt.Sprintf("seed-property-projection-%d", 0),
+		SourceName:     "ops.seed_properties",
+		SourceBatchKey: fmt.Sprintf("seed-property-projection-%d", time.Now().UnixNano()),
 		PayloadSha256:  "placeholder",
 	})
 	if err != nil {

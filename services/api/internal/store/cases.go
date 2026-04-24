@@ -180,12 +180,40 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 
 	queries := sqlc.New(s.pool).WithTx(tx)
 
+	var seedProp sqlc.OpsSeedProperty
+	if req.SeedPropertyID != "" {
+		seedID, err := parseUUID(req.SeedPropertyID)
+		if err != nil {
+			return cases.CaseDetail{}, fmt.Errorf("invalid seed_property_id: %w", err)
+		}
+		seedProp, err = queries.GetSeedProperty(ctx, seedID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return cases.CaseDetail{}, errors.New("seed property not found")
+			}
+			return cases.CaseDetail{}, err
+		}
+	}
+
+	propertyDescription := req.PropertyDescription
+	localityOrArea := req.LocalityOrArea
+	municipalityOrDeedsOffice := req.MunicipalityOrDeedsOffice
+	var titleReference pgtype.Text
+	if req.SeedPropertyID != "" {
+		propertyDescription = seedProp.PropertyDescription
+		localityOrArea = seedProp.LocalityOrArea
+		municipalityOrDeedsOffice = seedProp.MunicipalityOrDeedsOffice
+		titleReference = seedProp.TitleReference
+	} else {
+		titleReference = pgtype.Text{String: req.TitleReference, Valid: req.TitleReference != ""}
+	}
+
 	c, err := queries.CreateCaseRecord(ctx, sqlc.CreateCaseRecordParams{
 		CaseReference:             caseReference,
-		PropertyDescription:       req.PropertyDescription,
-		LocalityOrArea:            req.LocalityOrArea,
-		MunicipalityOrDeedsOffice: req.MunicipalityOrDeedsOffice,
-		TitleReference:            pgtype.Text{String: req.TitleReference, Valid: req.TitleReference != ""},
+		PropertyDescription:       propertyDescription,
+		LocalityOrArea:            localityOrArea,
+		MunicipalityOrDeedsOffice: municipalityOrDeedsOffice,
+		TitleReference:            titleReference,
 		MatterReference:           pgtype.Text{String: req.MatterReference, Valid: req.MatterReference != ""},
 		IntakeNote:                pgtype.Text{String: req.IntakeNote, Valid: req.IntakeNote != ""},
 		AssigneeID:                req.ActorID,
@@ -194,29 +222,29 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		return cases.CaseDetail{}, err
 	}
 
-	// Create seed property matches
-	seedProps, err := queries.ListSeedPropertyMatches(ctx, sqlc.ListSeedPropertyMatchesParams{
-		Lower:   req.PropertyDescription,
-		Lower_2: req.LocalityOrArea,
-		Lower_3: req.MunicipalityOrDeedsOffice,
-	})
-	if err != nil {
-		return cases.CaseDetail{}, err
-	}
-
-	for _, sp := range seedProps {
-		var confidence pgtype.Numeric
-		_ = confidence.Scan("0")
-		_, err := queries.CreatePropertyMatch(ctx, sqlc.CreatePropertyMatchParams{
-			CaseID:         c.ID,
-			SeedPropertyID: sp.ID,
-			MatchSource:    "seeded_fuzzy_match",
-			Confidence:     confidence,
+	if req.SeedPropertyID == "" {
+		seedProps, err := queries.ListSeedPropertyMatches(ctx, sqlc.ListSeedPropertyMatchesParams{
+			Lower:   req.PropertyDescription,
+			Lower_2: req.LocalityOrArea,
+			Lower_3: req.MunicipalityOrDeedsOffice,
 		})
 		if err != nil {
 			return cases.CaseDetail{}, err
 		}
-		_ = err
+
+		for _, sp := range seedProps {
+			var confidence pgtype.Numeric
+			_ = confidence.Scan("0")
+			_, err := queries.CreatePropertyMatch(ctx, sqlc.CreatePropertyMatchParams{
+				CaseID:         c.ID,
+				SeedPropertyID: sp.ID,
+				MatchSource:    "seeded_fuzzy_match",
+				Confidence:     confidence,
+			})
+			if err != nil {
+				return cases.CaseDetail{}, err
+			}
+		}
 	}
 
 	// Create audit event
@@ -232,19 +260,7 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 	}
 
 	if req.SeedPropertyID != "" {
-		seedID, err := parseUUID(req.SeedPropertyID)
-		if err != nil {
-			return cases.CaseDetail{}, fmt.Errorf("invalid seed_property_id: %w", err)
-		}
-
-		_, err = queries.GetSeedProperty(ctx, seedID)
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return cases.CaseDetail{}, errors.New("seed property not found")
-			}
-			return cases.CaseDetail{}, err
-		}
-
+		seedID, _ := parseUUID(req.SeedPropertyID)
 		var confidence pgtype.Numeric
 		_ = confidence.Scan("100")
 		match, err := queries.CreatePropertyMatch(ctx, sqlc.CreatePropertyMatchParams{
