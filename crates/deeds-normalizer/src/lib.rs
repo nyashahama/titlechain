@@ -2,6 +2,10 @@ pub fn normalize_title_reference(input: &str) -> String {
     input.trim().to_uppercase()
 }
 
+pub fn normalize_party_name(input: &str) -> String {
+    input.trim().to_uppercase()
+}
+
 #[cfg(test)]
 mod tests {
     use super::normalize_title_reference;
