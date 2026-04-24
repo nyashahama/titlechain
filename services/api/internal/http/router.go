@@ -1,7 +1,6 @@
 package http
 
 import (
-	"encoding/json"
 	stdhttp "net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -13,7 +12,9 @@ import (
 )
 
 type RouterDeps struct {
-	Cases cases.Service
+	Cases      cases.Service
+	Properties property.Service
+	Jobs       jobs.Service
 }
 
 func NewRouter(deps RouterDeps) stdhttp.Handler {
@@ -32,16 +33,15 @@ func NewRouter(deps RouterDeps) stdhttp.Handler {
 	r.Handle("/metrics", promhttp.Handler())
 
 	r.Route("/api/internal", func(r chi.Router) {
+		propertiesHandler := newPropertiesHandler(deps.Properties)
 		r.Route("/portal", func(r chi.Router) {
-			r.Get("/properties", func(w stdhttp.ResponseWriter, _ *stdhttp.Request) {
-				_ = json.NewEncoder(w).Encode(property.ListProperties())
-			})
+			r.Get("/properties", propertiesHandler.listProperties)
 		})
 
+		opsRunsHandler := newOpsRunsHandler(deps.Jobs)
 		r.Route("/ops", func(r chi.Router) {
-			r.Get("/runs", func(w stdhttp.ResponseWriter, _ *stdhttp.Request) {
-				_ = json.NewEncoder(w).Encode(jobs.ListRuns())
-			})
+			r.Get("/runs", opsRunsHandler.listRuns)
+			r.Post("/runs/property-sync", opsRunsHandler.startSeedProjection)
 		})
 
 		casesHandler := newCasesHandler(deps.Cases)

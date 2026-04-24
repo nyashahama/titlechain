@@ -223,3 +223,43 @@ func TestService_ReassignCaseCreatesAuditEvent(t *testing.T) {
 		t.Error("expected audit event for assignee change")
 	}
 }
+
+func TestService_CreateCaseWithSeedPropertyStartsInReview(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+	detail, err := svc.CreateCase(context.Background(), CreateCaseRequest{
+		ActorID:                   "ana-001",
+		PropertyDescription:       "Erf 412 Rosebank Township",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+		SeedPropertyID:            "seed-prop-1",
+	})
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+	if detail.Case.Status != CaseStatusInReview {
+		t.Fatalf("status = %s, want %s", detail.Case.Status, CaseStatusInReview)
+	}
+	if detail.Case.LinkedSeedPropertyID != "seed-prop-1" {
+		t.Fatalf("linked_seed_property_id = %s, want seed-prop-1", detail.Case.LinkedSeedPropertyID)
+	}
+	found := false
+	for _, ev := range detail.AuditEvents {
+		if ev.EventType == AuditPropertyMatchConfirmed {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("expected property_match_confirmed audit event")
+	}
+	if len(detail.Matches) != 1 {
+		t.Fatalf("matches = %d, want 1", len(detail.Matches))
+	}
+	if detail.Matches[0].MatchSource != "property_selection" {
+		t.Errorf("match_source = %s, want property_selection", detail.Matches[0].MatchSource)
+	}
+	if detail.Matches[0].Status != "confirmed" {
+		t.Errorf("match_status = %s, want confirmed", detail.Matches[0].Status)
+	}
+}

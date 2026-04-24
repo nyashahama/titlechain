@@ -167,8 +167,12 @@ type RawBatch struct {
 }
 
 type ReadPropertySummary struct {
-	PropertyID     pgtype.UUID        `json:"property_id"`
-	TitleReference string             `json:"title_reference"`
-	Status         string             `json:"status"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	PropertyID                pgtype.UUID        `json:"property_id"`
+	TitleReference            string             `json:"title_reference"`
+	Status                    string             `json:"status"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	CurrentOwnerName          pgtype.Text        `json:"current_owner_name"`
 }

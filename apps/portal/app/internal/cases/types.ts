@@ -110,6 +110,7 @@ export type CreateCaseInput = {
   title_reference?: string;
   matter_reference?: string;
   intake_note?: string;
+  seed_property_id?: string;
 };
 
 export type AddEvidenceInput = {

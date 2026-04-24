@@ -2,9 +2,30 @@ import Link from "next/link";
 import { listAnalysts } from "../api";
 import { CaseIntakeForm } from "../_components/case-intake-form";
 
-export default async function NewCasePage() {
+export default async function NewCasePage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    seed_property_id?: string;
+    property_description?: string;
+    locality_or_area?: string;
+    municipality_or_deeds_office?: string;
+    title_reference?: string;
+  }>;
+}) {
+  const params = await searchParams;
   const analysts = await listAnalysts();
   const defaultActorId = analysts[0]?.id ?? "";
+
+  const initialValues = params.seed_property_id
+    ? {
+        seed_property_id: params.seed_property_id,
+        property_description: params.property_description,
+        locality_or_area: params.locality_or_area,
+        municipality_or_deeds_office: params.municipality_or_deeds_office,
+        title_reference: params.title_reference,
+      }
+    : undefined;
 
   return (
     <div className="mx-auto max-w-2xl p-6 md:p-10 animate-slide-in">
@@ -23,7 +44,7 @@ export default async function NewCasePage() {
       </div>
 
       <div className="border border-border rounded-2xl bg-card/20 p-6 md:p-8">
-        <CaseIntakeForm analysts={analysts} defaultActorId={defaultActorId} />
+        <CaseIntakeForm analysts={analysts} defaultActorId={defaultActorId} initialValues={initialValues} />
       </div>
     </div>
   );

@@ -46,6 +46,7 @@ next-env.d.ts
 .aidesigner/
 .codex/
 
+apps/portal/node_modules
 apps/portal/.next
 target
 .env
@@ -53,3 +54,4 @@ target
 services/api/api
 .superpowers/
 docs/
+.worktrees/

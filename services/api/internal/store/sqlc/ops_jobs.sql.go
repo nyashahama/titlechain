@@ -53,6 +53,63 @@ func (q *Queries) ClaimNextJob(ctx context.Context, arg ClaimNextJobParams) (Ops
 	return i, err
 }
 
+const createBatch = `-- name: CreateBatch :one
+INSERT INTO raw.batches (source_name, source_batch_key, payload_sha256)
+VALUES ($1, $2, $3)
+RETURNING id, source_name, source_batch_key, payload_uri, payload_sha256, imported_at, created_at
+`
+
+type CreateBatchParams struct {
+	SourceName     string `json:"source_name"`
+	SourceBatchKey string `json:"source_batch_key"`
+	PayloadSha256  string `json:"payload_sha256"`
+}
+
+func (q *Queries) CreateBatch(ctx context.Context, arg CreateBatchParams) (RawBatch, error) {
+	row := q.db.QueryRow(ctx, createBatch, arg.SourceName, arg.SourceBatchKey, arg.PayloadSha256)
+	var i RawBatch
+	err := row.Scan(
+		&i.ID,
+		&i.SourceName,
+		&i.SourceBatchKey,
+		&i.PayloadUri,
+		&i.PayloadSha256,
+		&i.ImportedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createJob = `-- name: CreateJob :one
+INSERT INTO ops.jobs (run_id, job_kind, status)
+VALUES ($1, $2, 'pending')
+RETURNING id, run_id, job_kind, status, lease_owner, lease_expires_at, retry_count, checkpoint, error_message, created_at, updated_at
+`
+
+type CreateJobParams struct {
+	RunID   pgtype.UUID `json:"run_id"`
+	JobKind string      `json:"job_kind"`
+}
+
+func (q *Queries) CreateJob(ctx context.Context, arg CreateJobParams) (OpsJob, error) {
+	row := q.db.QueryRow(ctx, createJob, arg.RunID, arg.JobKind)
+	var i OpsJob
+	err := row.Scan(
+		&i.ID,
+		&i.RunID,
+		&i.JobKind,
+		&i.Status,
+		&i.LeaseOwner,
+		&i.LeaseExpiresAt,
+		&i.RetryCount,
+		&i.Checkpoint,
+		&i.ErrorMessage,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createRun = `-- name: CreateRun :one
 INSERT INTO ops.runs (batch_id, run_type, status)
 VALUES ($1, $2, $3)
@@ -67,6 +124,31 @@ type CreateRunParams struct {
 
 func (q *Queries) CreateRun(ctx context.Context, arg CreateRunParams) (OpsRun, error) {
 	row := q.db.QueryRow(ctx, createRun, arg.BatchID, arg.RunType, arg.Status)
+	var i OpsRun
+	err := row.Scan(
+		&i.ID,
+		&i.BatchID,
+		&i.RunType,
+		&i.Status,
+		&i.StartedAt,
+		&i.FinishedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const findActiveRun = `-- name: FindActiveRun :one
+SELECT id, batch_id, run_type, status, started_at, finished_at, created_at, updated_at
+FROM ops.runs
+WHERE run_type = $1
+  AND status IN ('pending', 'running')
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) FindActiveRun(ctx context.Context, runType string) (OpsRun, error) {
+	row := q.db.QueryRow(ctx, findActiveRun, runType)
 	var i OpsRun
 	err := row.Scan(
 		&i.ID,
@@ -106,6 +188,63 @@ func (q *Queries) ListRuns(ctx context.Context, limit int32) ([]OpsRun, error) {
 			&i.FinishedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRunsWithCounts = `-- name: ListRunsWithCounts :many
+SELECT r.id, r.run_type, r.status, r.started_at, r.finished_at, r.created_at,
+       COUNT(j.id)::int AS total_jobs,
+       COUNT(*) FILTER (WHERE j.status = 'completed')::int AS completed_jobs,
+       COUNT(*) FILTER (WHERE j.status = 'failed')::int AS failed_jobs,
+       MAX(j.error_message) AS latest_error
+FROM ops.runs r
+LEFT JOIN ops.jobs j ON j.run_id = r.id
+GROUP BY r.id
+ORDER BY r.created_at DESC
+LIMIT $1
+`
+
+type ListRunsWithCountsRow struct {
+	ID            pgtype.UUID        `json:"id"`
+	RunType       string             `json:"run_type"`
+	Status        string             `json:"status"`
+	StartedAt     pgtype.Timestamptz `json:"started_at"`
+	FinishedAt    pgtype.Timestamptz `json:"finished_at"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	TotalJobs     int32              `json:"total_jobs"`
+	CompletedJobs int32              `json:"completed_jobs"`
+	FailedJobs    int32              `json:"failed_jobs"`
+	LatestError   interface{}        `json:"latest_error"`
+}
+
+func (q *Queries) ListRunsWithCounts(ctx context.Context, limit int32) ([]ListRunsWithCountsRow, error) {
+	rows, err := q.db.Query(ctx, listRunsWithCounts, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListRunsWithCountsRow
+	for rows.Next() {
+		var i ListRunsWithCountsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.RunType,
+			&i.Status,
+			&i.StartedAt,
+			&i.FinishedAt,
+			&i.CreatedAt,
+			&i.TotalJobs,
+			&i.CompletedJobs,
+			&i.FailedJobs,
+			&i.LatestError,
 		); err != nil {
 			return nil, err
 		}
