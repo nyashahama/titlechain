@@ -20,6 +20,6 @@ describe("runs page", () => {
     ];
     render(<RunList runs={runs} />);
     expect(screen.getByText("seed_property_projection")).toBeInTheDocument();
-    expect(screen.getByText("completed")).toBeInTheDocument();
+    expect(screen.getAllByText("completed").length).toBeGreaterThanOrEqual(1);
   });
 });

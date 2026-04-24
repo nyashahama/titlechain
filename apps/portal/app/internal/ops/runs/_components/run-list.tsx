@@ -2,6 +2,8 @@
 
 import { RunSummary } from "../types";
 import { RelativeTime } from "../../../cases/_components/relative-time";
+import { PipelineSwimlane } from "@/app/_components/pipeline-swimlane";
+import { LogViewer } from "@/app/_components/log-viewer";
 
 export function RunList({ runs }: { runs: RunSummary[] | null }) {
   if (!runs || runs.length === 0) {
@@ -61,6 +63,10 @@ export function RunList({ runs }: { runs: RunSummary[] | null }) {
               {r.finished_at && <div className="text-[11px] text-muted-more mt-0.5">done <RelativeTime date={r.finished_at} /></div>}
             </div>
           </div>
+          <div className="mt-3">
+            <PipelineSwimlane status={r.status} />
+          </div>
+          <LogViewer logs={r.logs ?? []} />
         </div>
       ))}
     </div>
