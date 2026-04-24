@@ -120,6 +120,7 @@ pub async fn insert_core_source_link(
 }
 
 #[derive(Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct CorePropertyRecord {
     pub id: Uuid,
     pub property_fingerprint: String,
@@ -139,6 +140,7 @@ pub async fn read_core_properties(pool: &PgPool) -> sqlx::Result<Vec<CorePropert
 }
 
 #[derive(Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct CorePropertyWithOwners {
     pub id: Uuid,
     pub property_fingerprint: String,

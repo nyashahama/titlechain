@@ -41,7 +41,8 @@ pub async fn run(
 async fn run_seed_projection(
     pool: &PgPool,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let seeds = db::read_seed_properties(pool).await?;
+    use crate::projection::SeedPropertyRow;
+    let seeds: Vec<SeedPropertyRow> = db::read_seed_properties(pool).await?;
     let summaries: Vec<_> = seeds
         .into_iter()
         .map(projection::project_seed_property)

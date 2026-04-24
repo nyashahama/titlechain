@@ -126,6 +126,7 @@ pub async fn insert_stage_encumbrance(
 }
 
 #[derive(Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct StagePropertyRecord {
     pub id: Uuid,
     pub source_record_id: Uuid,
@@ -149,6 +150,7 @@ pub async fn read_stage_properties(
 }
 
 #[derive(Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct StageTitleRecord {
     pub id: Uuid,
     pub source_record_id: Uuid,
@@ -172,6 +174,7 @@ pub async fn read_stage_titles(
 }
 
 #[derive(Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct StagePartyRecord {
     pub id: Uuid,
     pub source_record_id: Uuid,
@@ -195,6 +198,7 @@ pub async fn read_stage_parties(
 }
 
 #[derive(Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct StageEncumbranceRecord {
     pub id: Uuid,
     pub source_record_id: Uuid,

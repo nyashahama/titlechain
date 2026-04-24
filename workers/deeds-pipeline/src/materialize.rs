@@ -1,5 +1,5 @@
-use std::collections::BTreeMap;
 use sqlx::PgPool;
+use std::collections::BTreeMap;
 use uuid::Uuid;
 
 pub async fn run(
@@ -17,17 +17,26 @@ pub async fn run(
     // Build lookup maps by title_reference
     let mut titles_by_title: BTreeMap<String, Vec<_>> = BTreeMap::new();
     for t in &stage_titles {
-        titles_by_title.entry(t.title_reference.clone()).or_insert_with(Vec::new).push(t);
+        titles_by_title
+            .entry(t.title_reference.clone())
+            .or_insert_with(Vec::new)
+            .push(t);
     }
 
     let mut parties_by_title: BTreeMap<String, Vec<_>> = BTreeMap::new();
     for p in &stage_parties {
-        parties_by_title.entry(p.title_reference.clone()).or_insert_with(Vec::new).push(p);
+        parties_by_title
+            .entry(p.title_reference.clone())
+            .or_insert_with(Vec::new)
+            .push(p);
     }
 
     let mut encumbrances_by_title: BTreeMap<String, Vec<_>> = BTreeMap::new();
     for e in &stage_encumbrances {
-        encumbrances_by_title.entry(e.title_reference.clone()).or_insert_with(Vec::new).push(e);
+        encumbrances_by_title
+            .entry(e.title_reference.clone())
+            .or_insert_with(Vec::new)
+            .push(e);
     }
 
     // Process each property
@@ -49,7 +58,8 @@ pub async fn run(
                     &t.title_reference,
                     &t.registration_status,
                     t.effective_at,
-                ).await?;
+                )
+                .await?;
 
                 crate::db::core::insert_core_source_link(
                     pool,
@@ -58,7 +68,8 @@ pub async fn run(
                     t.source_record_id,
                     "core.title_registrations",
                     reg_id,
-                ).await?;
+                )
+                .await?;
             }
         }
 
@@ -70,7 +81,8 @@ pub async fn run(
                     property_id,
                     &p.party_name,
                     &p.party_role,
-                ).await?;
+                )
+                .await?;
 
                 crate::db::core::insert_core_source_link(
                     pool,
@@ -79,7 +91,8 @@ pub async fn run(
                     p.source_record_id,
                     "core.property_parties",
                     party_id,
-                ).await?;
+                )
+                .await?;
             }
         }
 
@@ -91,7 +104,8 @@ pub async fn run(
                     property_id,
                     &e.encumbrance_type,
                     &e.status,
-                ).await?;
+                )
+                .await?;
 
                 crate::db::core::insert_core_source_link(
                     pool,
@@ -100,7 +114,8 @@ pub async fn run(
                     e.source_record_id,
                     "core.encumbrances",
                     enc_id,
-                ).await?;
+                )
+                .await?;
             }
         }
 
@@ -112,7 +127,8 @@ pub async fn run(
             prop.source_record_id,
             "core.properties",
             property_id,
-        ).await?;
+        )
+        .await?;
     }
 
     Ok(())
