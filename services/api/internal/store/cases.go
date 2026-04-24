@@ -147,6 +147,14 @@ func (s CasesStore) GetCaseDetail(ctx context.Context, caseID string) (cases.Cas
 		AuditEvents: auditEventsFromRows(auditEvents),
 	}
 
+	// Derive linked_property_id from canonical evidence
+	for _, ev := range detail.Evidence {
+		if ev.SourceType == "canonical_property" && ev.SourceReference != "" {
+			detail.Case.LinkedPropertyID = ev.SourceReference
+			break
+		}
+	}
+
 	// Enrich decisions with reason codes
 	for _, d := range decisions {
 		dec := decisionFromRow(d)
@@ -257,6 +265,61 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
+	}
+
+	if req.LinkedPropertyID != "" {
+		propID, err := parseUUID(req.LinkedPropertyID)
+		if err != nil {
+			return cases.CaseDetail{}, fmt.Errorf("invalid linked_property_id: %w", err)
+		}
+		prop, err := queries.GetPropertySummary(ctx, propID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return cases.CaseDetail{}, errors.New("linked property not found")
+			}
+			return cases.CaseDetail{}, err
+		}
+
+		canonicalEvidence := []struct {
+			EvidenceType string
+			Excerpt      string
+		}{
+			{"property_description", prop.PropertyDescription},
+			{"locality_or_area", prop.LocalityOrArea},
+			{"municipality_or_deeds_office", prop.MunicipalityOrDeedsOffice},
+		}
+		if prop.TitleReference != "" {
+			canonicalEvidence = append(canonicalEvidence, struct {
+				EvidenceType string
+				Excerpt      string
+			}{"title_reference", prop.TitleReference})
+		}
+		if prop.CurrentOwnerName.Valid {
+			canonicalEvidence = append(canonicalEvidence, struct {
+				EvidenceType string
+				Excerpt      string
+			}{"current_owner_name", prop.CurrentOwnerName.String})
+		}
+
+		for _, item := range canonicalEvidence {
+			facts, _ := json.Marshal(map[string]any{
+				"property_id": req.LinkedPropertyID,
+				"field":       item.EvidenceType,
+			})
+			_, err := queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+				CaseID:          c.ID,
+				EvidenceType:    item.EvidenceType,
+				SourceType:      "canonical_property",
+				SourceReference: req.LinkedPropertyID,
+				Excerpt:         pgtype.Text{String: item.Excerpt, Valid: true},
+				ExtractedFacts:  facts,
+				EvidenceStatus:  string(cases.EvidenceStatusCaptured),
+				CreatedBy:       req.ActorID,
+			})
+			if err != nil {
+				return cases.CaseDetail{}, err
+			}
+		}
 	}
 
 	if req.SeedPropertyID != "" {

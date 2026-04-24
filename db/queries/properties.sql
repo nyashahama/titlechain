@@ -10,6 +10,12 @@ WHERE (sqlc.narg('query')::text IS NULL
 ORDER BY updated_at DESC
 LIMIT sqlc.arg('limit');
 
+-- name: GetPropertySummary :one
+SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office,
+       title_reference, current_owner_name, status, updated_at
+FROM read.property_summaries
+WHERE property_id = $1;
+
 -- name: UpsertPropertySummary :exec
 INSERT INTO read.property_summaries (
     property_id, property_description, locality_or_area,

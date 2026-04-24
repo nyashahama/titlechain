@@ -67,6 +67,7 @@ type CaseSummary struct {
 	AssigneeID                string     `json:"assignee_id"`
 	CreatedBy                 string     `json:"created_by"`
 	LinkedSeedPropertyID      string     `json:"linked_seed_property_id,omitempty"`
+	LinkedPropertyID          string     `json:"linked_property_id,omitempty"`
 	CreatedAt                 time.Time  `json:"created_at"`
 	UpdatedAt                 time.Time  `json:"updated_at"`
 }
@@ -80,6 +81,7 @@ type CreateCaseRequest struct {
 	MatterReference           string `json:"matter_reference"`
 	IntakeNote                string `json:"intake_note"`
 	SeedPropertyID            string `json:"seed_property_id"`
+	LinkedPropertyID          string `json:"linked_property_id"`
 }
 
 type RecordDecisionRequest struct {

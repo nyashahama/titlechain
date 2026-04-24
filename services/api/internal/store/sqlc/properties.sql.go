@@ -11,6 +11,40 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getPropertySummary = `-- name: GetPropertySummary :one
+SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office,
+       title_reference, current_owner_name, status, updated_at
+FROM read.property_summaries
+WHERE property_id = $1
+`
+
+type GetPropertySummaryRow struct {
+	PropertyID                pgtype.UUID        `json:"property_id"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            string             `json:"title_reference"`
+	CurrentOwnerName          pgtype.Text        `json:"current_owner_name"`
+	Status                    string             `json:"status"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetPropertySummary(ctx context.Context, propertyID pgtype.UUID) (GetPropertySummaryRow, error) {
+	row := q.db.QueryRow(ctx, getPropertySummary, propertyID)
+	var i GetPropertySummaryRow
+	err := row.Scan(
+		&i.PropertyID,
+		&i.PropertyDescription,
+		&i.LocalityOrArea,
+		&i.MunicipalityOrDeedsOffice,
+		&i.TitleReference,
+		&i.CurrentOwnerName,
+		&i.Status,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listPropertySummaries = `-- name: ListPropertySummaries :many
 SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office,
        title_reference, current_owner_name, status, updated_at

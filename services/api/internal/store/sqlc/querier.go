@@ -27,6 +27,7 @@ type Querier interface {
 	FindActiveRun(ctx context.Context, runType string) (OpsRun, error)
 	GetAnalyst(ctx context.Context, id string) (OpsAnalyst, error)
 	GetCaseRecord(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
+	GetPropertySummary(ctx context.Context, propertyID pgtype.UUID) (GetPropertySummaryRow, error)
 	GetSeedProperty(ctx context.Context, id pgtype.UUID) (OpsSeedProperty, error)
 	LinkCaseSeedProperty(ctx context.Context, arg LinkCaseSeedPropertyParams) (OpsCaseRecord, error)
 	ListAnalysts(ctx context.Context) ([]OpsAnalyst, error)

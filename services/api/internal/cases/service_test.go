@@ -224,6 +224,28 @@ func TestService_ReassignCaseCreatesAuditEvent(t *testing.T) {
 	}
 }
 
+func TestService_CreateCaseFromNormalizedPropertyHydratesCanonicalEvidence(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+
+	detail, err := svc.CreateCase(context.Background(), CreateCaseRequest{
+		ActorID:                   "ana-001",
+		PropertyDescription:       "Erf 412 Rosebank Township",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+		LinkedPropertyID:          "prop-1",
+	})
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+	if detail.Case.LinkedPropertyID != "prop-1" {
+		t.Fatalf("linked_property_id = %s, want prop-1", detail.Case.LinkedPropertyID)
+	}
+	if len(detail.Evidence) == 0 {
+		t.Fatal("evidence = 0, want canonical evidence hydrated")
+	}
+}
+
 func TestService_CreateCaseWithSeedPropertyStartsInReview(t *testing.T) {
 	repo := NewMemoryRepository()
 	svc := NewService(repo)

@@ -124,9 +124,14 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 
 	status := CaseStatusOpen
 	linkedSeedPropertyID := ""
+	linkedPropertyID := ""
 	if req.SeedPropertyID != "" {
 		status = CaseStatusInReview
 		linkedSeedPropertyID = req.SeedPropertyID
+	}
+	if req.LinkedPropertyID != "" {
+		status = CaseStatusInReview
+		linkedPropertyID = req.LinkedPropertyID
 	}
 
 	c := &caseRecord{
@@ -142,6 +147,7 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 			AssigneeID:                req.ActorID,
 			CreatedBy:                 req.ActorID,
 			LinkedSeedPropertyID:      linkedSeedPropertyID,
+			LinkedPropertyID:          linkedPropertyID,
 			CreatedAt:                 now,
 			UpdatedAt:                 now,
 		},
@@ -169,6 +175,29 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 		r.addAuditEventLocked(id, req.ActorID, AuditPropertyMatchConfirmed, map[string]any{
 			"match_id":        matchID,
 			"seed_property_id": req.SeedPropertyID,
+		})
+	}
+
+	if req.LinkedPropertyID != "" {
+		r.evidence[id] = append(r.evidence[id], EvidenceItem{
+			ID:             fmt.Sprintf("evi-%d", len(r.evidence[id])+1),
+			CaseID:         id,
+			EvidenceType:   "property_description",
+			SourceType:     "canonical_property",
+			SourceReference: req.LinkedPropertyID,
+			EvidenceStatus: EvidenceStatusCaptured,
+			CreatedBy:      req.ActorID,
+			CreatedAt:      now,
+		})
+		r.evidence[id] = append(r.evidence[id], EvidenceItem{
+			ID:             fmt.Sprintf("evi-%d", len(r.evidence[id])+1),
+			CaseID:         id,
+			EvidenceType:   "title_reference",
+			SourceType:     "canonical_property",
+			SourceReference: req.LinkedPropertyID,
+			EvidenceStatus: EvidenceStatusCaptured,
+			CreatedBy:      req.ActorID,
+			CreatedAt:      now,
 		})
 	}
 
