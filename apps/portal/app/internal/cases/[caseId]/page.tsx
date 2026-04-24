@@ -12,10 +12,11 @@ export default async function CaseDetailPage({
   searchParams,
 }: {
   params: Promise<{ caseId: string }>;
-  searchParams: Promise<{ actor?: string }>;
+  searchParams: Promise<{ actor?: string; tab?: string }>;
 }) {
   const { caseId } = await params;
   const query = await searchParams;
+  const tab = query.tab ?? "overview";
   const detail = await getCase(caseId);
   const analysts = await listAnalysts();
   const reasonCodes = await listReasonCodes();
@@ -44,11 +45,28 @@ export default async function CaseDetailPage({
         <CaseDetailAnalystSwitcher analysts={analysts} selected={actorId} caseId={caseId} />
       </div>
 
+      {/* Tabs */}
+      <div className="flex items-center gap-1 mb-8 border-b border-border">
+        {["overview", "evidence", "parties", "timeline", "activity"].map((t) => (
+          <Link
+            key={t}
+            href={`/internal/cases/${caseId}?tab=${t}`}
+            className={`px-4 py-2.5 text-[13px] font-medium capitalize transition-colors duration-200 border-b-2 ${
+              tab === t
+                ? "text-foreground border-foreground"
+                : "text-muted border-transparent hover:text-foreground hover:border-border"
+            }`}
+          >
+            {t}
+          </Link>
+        ))}
+      </div>
+
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
         {/* Main Content */}
         <div>
-          <CaseDetail detail={detail} analysts={analysts} actorId={actorId} analystMap={analystMap} />
+          <CaseDetail detail={detail} analysts={analysts} actorId={actorId} analystMap={analystMap} activeTab={tab} />
         </div>
 
         {/* Sticky Sidebar Actions */}

@@ -7,6 +7,7 @@ import { StatusDot, StatusBadge } from "./status-dot";
 import { RelativeTime } from "./relative-time";
 import { Avatar } from "./avatar";
 import { CopyButton } from "./copy-button";
+import { Timeline } from "@/app/_components/timeline";
 
 function TimelineIcon({ type }: { type: string }) {
   const icons: Record<string, React.ReactNode> = {
@@ -46,11 +47,13 @@ export function CaseDetail({
   analysts,
   actorId,
   analystMap,
+  activeTab = "overview",
 }: {
   detail: CaseDetailType;
   analysts: Analyst[];
   actorId: string;
   analystMap: Map<string, string>;
+  activeTab?: string;
 }) {
   const c = detail.case;
   const assigneeName = analystMap.get(c.assignee_id) ?? c.assignee_id;
@@ -80,6 +83,7 @@ export function CaseDetail({
       </div>
 
       {/* Property Details */}
+      {activeTab === "overview" && (
       <div className="border border-border rounded-2xl bg-card/20 p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold">Property Details</h2>
@@ -104,15 +108,18 @@ export function CaseDetail({
           </span>
         </div>
       </div>
+      )}
 
       {/* Assignment */}
+      {activeTab === "overview" && (
       <div className="border border-border rounded-2xl bg-card/20 p-6">
         <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Assignment</h2>
         <ReassignCaseForm caseId={c.id} analysts={analysts} actorId={actorId} />
       </div>
+      )}
 
       {/* Property Matches */}
-      {detail.matches.length > 0 && (
+      {activeTab === "overview" && detail.matches.length > 0 && (
         <div className="border border-border rounded-2xl bg-card/20 p-6">
           <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Property Matches</h2>
           <div className="space-y-3">
@@ -131,7 +138,7 @@ export function CaseDetail({
       )}
 
       {/* Evidence */}
-      {detail.evidence.length > 0 && (
+      {(activeTab === "overview" || activeTab === "evidence") && detail.evidence.length > 0 && (
         <div className="border border-border rounded-2xl bg-card/20 p-6">
           <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Evidence</h2>
           <div className="space-y-4">
@@ -158,7 +165,7 @@ export function CaseDetail({
       )}
 
       {/* Parties */}
-      {detail.parties.length > 0 && (
+      {(activeTab === "overview" || activeTab === "parties") && detail.parties.length > 0 && (
         <div className="border border-border rounded-2xl bg-card/20 p-6">
           <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Parties</h2>
           <div className="flex flex-wrap gap-2">
@@ -178,7 +185,7 @@ export function CaseDetail({
       )}
 
       {/* Decisions */}
-      {detail.decisions.length > 0 && (
+      {activeTab === "overview" && detail.decisions.length > 0 && (
         <div className="border border-border rounded-2xl bg-card/20 p-6">
           <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Decisions</h2>
           <div className="space-y-5">
@@ -221,6 +228,7 @@ export function CaseDetail({
       )}
 
       {/* Audit Timeline */}
+      {(activeTab === "overview" || activeTab === "activity") && (
       <div className="border border-border rounded-2xl bg-card/20 p-6">
         <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Activity</h2>
         <div className="space-y-0">
@@ -249,6 +257,24 @@ export function CaseDetail({
           ))}
         </div>
       </div>
+      )}
+
+      {/* Timeline */}
+      {activeTab === "timeline" && (
+        <div className="border border-border rounded-2xl bg-card/20 p-6">
+          <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-5">Timeline</h2>
+          <Timeline
+            events={detail.audit_events.map((ev) => ({
+              id: ev.id,
+              type: ev.event_type,
+              description: ev.event_type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+              timestamp: ev.created_at,
+              actor: analystMap.get(ev.actor_id) ?? ev.actor_id,
+              metadata: ev.metadata,
+            }))}
+          />
+        </div>
+      )}
     </div>
   );
 }
