@@ -1,16 +1,33 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
+	"github.com/nyasha-hama/titlechain/services/api/internal/property"
 )
 
 func newTestRouter() http.Handler {
-	// Use a memory-backed cases service for tests that only check route wiring
-	return NewRouter(RouterDeps{Cases: cases.NewService(nil)})
+	propRepo := &stubPropertyRepo{
+		properties: []property.PropertySummary{
+			{PropertyID: "prop-1", PropertyDescription: "Erf 412 Rosebank Township", LocalityOrArea: "Rosebank", Status: "No material blocker seeded"},
+		},
+	}
+	return NewRouter(RouterDeps{
+		Cases:     cases.NewService(nil),
+		Properties: property.NewService(propRepo),
+	})
+}
+
+type stubPropertyRepo struct {
+	properties []property.PropertySummary
+}
+
+func (r *stubPropertyRepo) ListProperties(_ context.Context, _ property.ListFilter) ([]property.PropertySummary, error) {
+	return r.properties, nil
 }
 
 func TestRouter_HealthAndInternalRoutes(t *testing.T) {

@@ -33,6 +33,7 @@ type Querier interface {
 	ListCasePropertyMatches(ctx context.Context, caseID pgtype.UUID) ([]OpsCasePropertyMatch, error)
 	ListCaseSummaries(ctx context.Context, arg ListCaseSummariesParams) ([]ListCaseSummariesRow, error)
 	ListDecisionReasonCodes(ctx context.Context, decisionID pgtype.UUID) ([]ListDecisionReasonCodesRow, error)
+	ListPropertySummaries(ctx context.Context, arg ListPropertySummariesParams) ([]ListPropertySummariesRow, error)
 	ListReasonCodes(ctx context.Context) ([]OpsReasonCode, error)
 	ListRuns(ctx context.Context, limit int32) ([]OpsRun, error)
 	ListSeedPropertyMatches(ctx context.Context, arg ListSeedPropertyMatchesParams) ([]OpsSeedProperty, error)
@@ -41,6 +42,7 @@ type Querier interface {
 	ReopenCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
 	ResolveCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
 	SupersedeCurrentDecisions(ctx context.Context, caseID pgtype.UUID) error
+	UpsertPropertySummary(ctx context.Context, arg UpsertPropertySummaryParams) error
 }
 
 var _ Querier = (*Queries)(nil)

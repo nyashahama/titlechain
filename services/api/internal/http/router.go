@@ -13,7 +13,8 @@ import (
 )
 
 type RouterDeps struct {
-	Cases cases.Service
+	Cases     cases.Service
+	Properties property.Service
 }
 
 func NewRouter(deps RouterDeps) stdhttp.Handler {
@@ -32,10 +33,9 @@ func NewRouter(deps RouterDeps) stdhttp.Handler {
 	r.Handle("/metrics", promhttp.Handler())
 
 	r.Route("/api/internal", func(r chi.Router) {
+		propertiesHandler := newPropertiesHandler(deps.Properties)
 		r.Route("/portal", func(r chi.Router) {
-			r.Get("/properties", func(w stdhttp.ResponseWriter, _ *stdhttp.Request) {
-				_ = json.NewEncoder(w).Encode(property.ListProperties())
-			})
+			r.Get("/properties", propertiesHandler.listProperties)
 		})
 
 		r.Route("/ops", func(r chi.Router) {
