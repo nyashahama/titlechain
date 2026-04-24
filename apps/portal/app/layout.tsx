@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "./_providers/auth-provider";
 import { AnimationProvider } from "@/app/_providers/animation-provider";
 import { Toaster } from "sonner";
+import { CommandPalette } from "@/app/_components/command-palette";
+import { KeyboardShortcutsHelp } from "@/app/_components/keyboard-shortcuts-help";
 
 const geistSans = Geist({
   variable: "--font-geist",
@@ -34,6 +36,8 @@ export default function RootLayout({
         <AuthProvider>
           <AnimationProvider>
             {children}
+            <CommandPalette />
+            <KeyboardShortcutsHelp />
             <Toaster
               position="bottom-right"
               toastOptions={{

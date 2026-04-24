@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listCases, listAnalysts } from "./api";
 import { CaseQueue } from "./_components/case-queue";
 import { ClientAnalystSwitcher } from "./_components/client-analyst-switcher";
+import { CasesKeyboardShortcuts } from "./_components/cases-keyboard-shortcuts";
 
 export default async function CasesPage({
   searchParams,
@@ -30,6 +31,7 @@ export default async function CasesPage({
 
   return (
     <div className="mx-auto max-w-5xl p-6 md:p-10 animate-slide-in">
+      <CasesKeyboardShortcuts />
       {/* Header */}
       <div className="mb-10">
         <div className="flex items-center justify-between mb-6">
