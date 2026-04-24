@@ -2,10 +2,12 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
@@ -73,6 +75,10 @@ func (s JobsStore) CreateSeedProjectionRun(ctx context.Context) (jobs.RunSummary
 		Status:  "pending",
 	})
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return jobs.RunSummary{}, jobs.ErrActiveRun
+		}
 		return jobs.RunSummary{}, err
 	}
 
