@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
-import { initSmoothScroll } from "@/app/_lib/smooth-scroll";
+import { MotionConfig } from "framer-motion";
+import { initSmoothScroll, destroySmoothScroll } from "@/app/_lib/smooth-scroll";
 
 export function AnimationProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    initSmoothScroll();
+    const cleanup = initSmoothScroll();
+    return cleanup;
   }, []);
 
-  return <>{children}</>;
+  return (
+    <MotionConfig reducedMotion="user">
+      {children}
+    </MotionConfig>
+  );
 }

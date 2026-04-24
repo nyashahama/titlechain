@@ -80,7 +80,7 @@
 
 @layer utilities {
   .animate-shimmer {
-    background: linear-gradient(90deg, #0a0a0a 25%, #141414 50%, #0a0a0a 75%);
+    background: linear-gradient(90deg, var(--color-card) 25%, var(--color-card-hover) 50%, var(--color-card) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
@@ -91,9 +91,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .animate-shimmer,
+  .animate-page-enter {
+    animation: none !important;
+    transition: none !important;
   }
 }
