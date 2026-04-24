@@ -302,6 +302,41 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		}
 	}
 
+	if req.LinkedPropertyID != "" {
+		propID, err := parseUUID(req.LinkedPropertyID)
+		if err != nil {
+			return cases.CaseDetail{}, fmt.Errorf("invalid linked_property_id: %w", err)
+		}
+
+		// Try to get property summary
+		propRow, err := queries.GetPropertySummary(ctx, propID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return cases.CaseDetail{}, errors.New("linked property not found")
+			}
+			return cases.CaseDetail{}, err
+		}
+
+		// Insert canonical evidence items
+		facts, _ := json.Marshal(map[string]any{
+			"property_id":     req.LinkedPropertyID,
+			"description":     propRow.PropertyDescription,
+			"title_reference": propRow.TitleReference,
+		})
+		_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+			CaseID:          c.ID,
+			EvidenceType:    "canonical_property",
+			SourceType:      "normalized_data",
+			SourceReference: req.LinkedPropertyID,
+			ExtractedFacts:  facts,
+			EvidenceStatus:  string(cases.EvidenceStatusConfirmed),
+			CreatedBy:       req.ActorID,
+		})
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}

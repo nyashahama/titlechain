@@ -63,3 +63,8 @@ INSERT INTO read.property_summaries (
     current_owner_name = EXCLUDED.current_owner_name,
     status = EXCLUDED.status,
     updated_at = NOW();
+
+-- name: GetPropertySummary :one
+SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office, title_reference, current_owner_name, status, updated_at
+FROM read.property_summaries
+WHERE property_id = $1;

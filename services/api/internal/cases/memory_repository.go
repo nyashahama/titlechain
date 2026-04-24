@@ -172,6 +172,22 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 		})
 	}
 
+	if req.LinkedPropertyID != "" {
+		c.LinkedPropertyID = req.LinkedPropertyID
+		// Hydrate canonical evidence
+		r.evidence[id] = append(r.evidence[id], EvidenceItem{
+			ID:                fmt.Sprintf("evi-%d-1", len(r.evidence[id])+1),
+			CaseID:            id,
+			EvidenceType:      "canonical_property",
+			SourceType:        "normalized_data",
+			SourceReference:   req.LinkedPropertyID,
+			ExtractedFacts:    map[string]any{"linked_property_id": req.LinkedPropertyID},
+			EvidenceStatus:    EvidenceStatusConfirmed,
+			CreatedBy:         req.ActorID,
+			CreatedAt:         now,
+		})
+	}
+
 	return r.getCaseDetailLocked(id)
 }
 

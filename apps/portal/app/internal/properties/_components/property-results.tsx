@@ -22,7 +22,7 @@ export function PropertyResults({ properties }: { properties: PropertySummary[] 
     <div className="space-y-2">
       {properties.map((p, i) => {
         const params = new URLSearchParams({
-          seed_property_id: p.property_id,
+          linked_property_id: p.property_id,
           property_description: p.property_description,
           locality_or_area: p.locality_or_area,
           municipality_or_deeds_office: p.municipality_or_deeds_office,
