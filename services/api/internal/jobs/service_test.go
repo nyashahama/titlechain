@@ -2,13 +2,15 @@ package jobs
 
 import (
 	"context"
+	"reflect"
 	"testing"
 )
 
 type stubRepo struct {
-	runs      []RunSummary
-	activeRun *RunSummary
-	createErr error
+	runs            []RunSummary
+	activeRun       *RunSummary
+	createErr       error
+	createdJobKinds []string
 }
 
 func (r *stubRepo) ListRunsWithCounts(_ context.Context, _ int32) ([]RunSummary, error) {
@@ -26,6 +28,15 @@ func (r *stubRepo) CreateSeedProjectionRun(_ context.Context) (RunSummary, error
 	return RunSummary{
 		ID:      "run-1",
 		RunType: RunTypeSeedPropertyProjection,
+		Status:  "pending",
+	}, nil
+}
+
+func (r *stubRepo) CreateSourceIngestionRun(_ context.Context, _ StartSourceIngestionRequest) (RunSummary, error) {
+	r.createdJobKinds = []string{"raw_landing", "stage_normalization", "core_materialization", "read_refresh"}
+	return RunSummary{
+		ID:      "run-2",
+		RunType: RunTypeSourceIngestionV1,
 		Status:  "pending",
 	}, nil
 }
@@ -99,5 +110,46 @@ func TestService_StartSeedPropertyProjectionAllowsSequentialRuns(t *testing.T) {
 	_, err = svc.StartSeedPropertyProjection(ctx)
 	if err != nil {
 		t.Fatalf("second run: %v", err)
+	}
+}
+
+func TestService_StartSourceIngestionRejectsActiveRun(t *testing.T) {
+	repo := &stubRepo{
+		activeRun: &RunSummary{
+			ID:      "run-active",
+			RunType: RunTypeSourceIngestionV1,
+			Status:  "running",
+		},
+	}
+	svc := NewService(repo)
+
+	_, err := svc.StartSourceIngestion(context.Background(), StartSourceIngestionRequest{
+		SourceName: "pilot.deeds_snapshot",
+		BatchKey:   "2026-04-25-main",
+	})
+	if err == nil {
+		t.Fatal("expected error for active run, got nil")
+	}
+	if err != ErrActiveRun {
+		t.Errorf("error = %v, want ErrActiveRun", err)
+	}
+}
+
+func TestService_StartSourceIngestionCreatesFourStageRun(t *testing.T) {
+	repo := &stubRepo{}
+	svc := NewService(repo)
+
+	run, err := svc.StartSourceIngestion(context.Background(), StartSourceIngestionRequest{
+		SourceName: "pilot.deeds_snapshot",
+		BatchKey:   "2026-04-25-main",
+	})
+	if err != nil {
+		t.Fatalf("start source ingestion: %v", err)
+	}
+	if run.RunType != RunTypeSourceIngestionV1 {
+		t.Fatalf("run_type = %s, want %s", run.RunType, RunTypeSourceIngestionV1)
+	}
+	if got := repo.createdJobKinds; !reflect.DeepEqual(got, []string{"raw_landing", "stage_normalization", "core_materialization", "read_refresh"}) {
+		t.Fatalf("job_kinds = %v, want four-stage ingestion", got)
 	}
 }

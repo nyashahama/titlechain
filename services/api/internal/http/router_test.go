@@ -58,6 +58,10 @@ func (r *stubJobsRepo) CreateSeedProjectionRun(_ context.Context) (jobs.RunSumma
 	}, nil
 }
 
+func (r *stubJobsRepo) CreateSourceIngestionRun(_ context.Context, _ jobs.StartSourceIngestionRequest) (jobs.RunSummary, error) {
+	return jobs.RunSummary{}, nil
+}
+
 func TestRouter_HealthAndInternalRoutes(t *testing.T) {
 	router := newTestRouter()
 

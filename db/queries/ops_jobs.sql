@@ -39,6 +39,16 @@ GROUP BY r.id
 ORDER BY r.created_at DESC
 LIMIT $1;
 
+-- name: CreateIngestionRun :one
+INSERT INTO ops.runs (batch_id, run_type, status)
+VALUES ($1, 'source_ingestion_v1', 'pending')
+RETURNING id, batch_id, run_type, status, started_at, finished_at, created_at, updated_at;
+
+-- name: CreateIngestionJob :one
+INSERT INTO ops.jobs (run_id, job_kind, status, checkpoint)
+VALUES ($1, $2, 'pending', '{}'::jsonb)
+RETURNING id, run_id, job_kind, status, lease_owner, lease_expires_at, retry_count, checkpoint, error_message, created_at, updated_at;
+
 -- name: ClaimNextJob :one
 WITH candidate AS (
     SELECT id

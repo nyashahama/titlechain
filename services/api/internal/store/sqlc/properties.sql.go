@@ -76,6 +76,78 @@ func (q *Queries) ListPropertySummaries(ctx context.Context, arg ListPropertySum
 	return items, nil
 }
 
+const refreshPropertySummaryFromCore = `-- name: RefreshPropertySummaryFromCore :exec
+INSERT INTO read.property_summaries (
+    property_id, property_description, locality_or_area,
+    municipality_or_deeds_office, title_reference,
+    current_owner_name, status, updated_at
+)
+SELECT p.id,
+       p.property_description,
+       p.municipality_or_deeds_office,
+       p.municipality_or_deeds_office,
+       p.latest_title_reference,
+       MAX(pp.party_name) FILTER (WHERE pp.party_role = 'owner'),
+       COALESCE(MAX(e.status) FILTER (WHERE e.status != ''), 'normalized'),
+       NOW()
+FROM core.properties p
+LEFT JOIN core.property_parties pp ON pp.property_id = p.id
+LEFT JOIN core.encumbrances e ON e.property_id = p.id
+WHERE p.id = $1
+GROUP BY p.id, p.property_description, p.municipality_or_deeds_office, p.latest_title_reference
+ON CONFLICT (property_id) DO UPDATE
+SET property_description = EXCLUDED.property_description,
+    locality_or_area = EXCLUDED.locality_or_area,
+    municipality_or_deeds_office = EXCLUDED.municipality_or_deeds_office,
+    title_reference = EXCLUDED.title_reference,
+    current_owner_name = EXCLUDED.current_owner_name,
+    status = EXCLUDED.status,
+    updated_at = NOW()
+`
+
+func (q *Queries) RefreshPropertySummaryFromCore(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, refreshPropertySummaryFromCore, id)
+	return err
+}
+
+const upsertCoreProperty = `-- name: UpsertCoreProperty :one
+INSERT INTO core.properties (property_fingerprint, municipality_or_deeds_office, property_description, latest_title_reference)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (property_fingerprint) DO UPDATE
+SET municipality_or_deeds_office = EXCLUDED.municipality_or_deeds_office,
+    property_description = EXCLUDED.property_description,
+    latest_title_reference = EXCLUDED.latest_title_reference,
+    updated_at = NOW()
+RETURNING id, property_fingerprint, municipality_or_deeds_office, property_description, latest_title_reference, created_at, updated_at
+`
+
+type UpsertCorePropertyParams struct {
+	PropertyFingerprint       string `json:"property_fingerprint"`
+	MunicipalityOrDeedsOffice string `json:"municipality_or_deeds_office"`
+	PropertyDescription       string `json:"property_description"`
+	LatestTitleReference      string `json:"latest_title_reference"`
+}
+
+func (q *Queries) UpsertCoreProperty(ctx context.Context, arg UpsertCorePropertyParams) (CoreProperty, error) {
+	row := q.db.QueryRow(ctx, upsertCoreProperty,
+		arg.PropertyFingerprint,
+		arg.MunicipalityOrDeedsOffice,
+		arg.PropertyDescription,
+		arg.LatestTitleReference,
+	)
+	var i CoreProperty
+	err := row.Scan(
+		&i.ID,
+		&i.PropertyFingerprint,
+		&i.MunicipalityOrDeedsOffice,
+		&i.PropertyDescription,
+		&i.LatestTitleReference,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const upsertPropertySummary = `-- name: UpsertPropertySummary :exec
 INSERT INTO read.property_summaries (
     property_id, property_description, locality_or_area,

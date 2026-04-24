@@ -21,13 +21,17 @@ type Querier interface {
 	CreateCaseAuditEvent(ctx context.Context, arg CreateCaseAuditEventParams) (OpsCaseAuditEvent, error)
 	CreateCaseDecision(ctx context.Context, arg CreateCaseDecisionParams) (OpsCaseDecision, error)
 	CreateCaseRecord(ctx context.Context, arg CreateCaseRecordParams) (OpsCaseRecord, error)
+	CreateIngestionJob(ctx context.Context, arg CreateIngestionJobParams) (OpsJob, error)
+	CreateIngestionRun(ctx context.Context, batchID pgtype.UUID) (OpsRun, error)
 	CreateJob(ctx context.Context, arg CreateJobParams) (OpsJob, error)
 	CreatePropertyMatch(ctx context.Context, arg CreatePropertyMatchParams) (OpsCasePropertyMatch, error)
 	CreateRun(ctx context.Context, arg CreateRunParams) (OpsRun, error)
+	CreateSourceBatch(ctx context.Context, arg CreateSourceBatchParams) (RawBatch, error)
 	FindActiveRun(ctx context.Context, runType string) (OpsRun, error)
 	GetAnalyst(ctx context.Context, id string) (OpsAnalyst, error)
 	GetCaseRecord(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
 	GetSeedProperty(ctx context.Context, id pgtype.UUID) (OpsSeedProperty, error)
+	InsertRawRecord(ctx context.Context, arg InsertRawRecordParams) error
 	LinkCaseSeedProperty(ctx context.Context, arg LinkCaseSeedPropertyParams) (OpsCaseRecord, error)
 	ListAnalysts(ctx context.Context) ([]OpsAnalyst, error)
 	ListCaseAuditEvents(ctx context.Context, caseID pgtype.UUID) ([]OpsCaseAuditEvent, error)
@@ -43,10 +47,12 @@ type Querier interface {
 	ListRunsWithCounts(ctx context.Context, limit int32) ([]ListRunsWithCountsRow, error)
 	ListSeedPropertyMatches(ctx context.Context, arg ListSeedPropertyMatchesParams) ([]OpsSeedProperty, error)
 	ReassignCase(ctx context.Context, arg ReassignCaseParams) (OpsCaseRecord, error)
+	RefreshPropertySummaryFromCore(ctx context.Context, id pgtype.UUID) error
 	RejectCasePropertyMatches(ctx context.Context, caseID pgtype.UUID) error
 	ReopenCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
 	ResolveCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)
 	SupersedeCurrentDecisions(ctx context.Context, caseID pgtype.UUID) error
+	UpsertCoreProperty(ctx context.Context, arg UpsertCorePropertyParams) (CoreProperty, error)
 	UpsertPropertySummary(ctx context.Context, arg UpsertPropertySummaryParams) error
 }
 

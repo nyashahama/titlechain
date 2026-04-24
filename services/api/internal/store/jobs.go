@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
@@ -88,6 +89,52 @@ func (s JobsStore) CreateSeedProjectionRun(ctx context.Context) (jobs.RunSummary
 	})
 	if err != nil {
 		return jobs.RunSummary{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return jobs.RunSummary{}, err
+	}
+
+	return runSummaryFromOpsRun(run), nil
+}
+
+func (s JobsStore) CreateSourceIngestionRun(ctx context.Context, req jobs.StartSourceIngestionRequest) (jobs.RunSummary, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return jobs.RunSummary{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	queries := sqlc.New(s.pool).WithTx(tx)
+
+	batch, err := queries.CreateSourceBatch(ctx, sqlc.CreateSourceBatchParams{
+		SourceName:     req.SourceName,
+		SourceBatchKey: req.BatchKey,
+		PayloadUri:     pgtype.Text{Valid: false},
+		PayloadSha256:  "placeholder",
+	})
+	if err != nil {
+		return jobs.RunSummary{}, err
+	}
+
+	run, err := queries.CreateIngestionRun(ctx, batch.ID)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return jobs.RunSummary{}, jobs.ErrActiveRun
+		}
+		return jobs.RunSummary{}, err
+	}
+
+	jobKinds := []string{"raw_landing", "stage_normalization", "core_materialization", "read_refresh"}
+	for _, kind := range jobKinds {
+		_, err = queries.CreateIngestionJob(ctx, sqlc.CreateIngestionJobParams{
+			RunID:   run.ID,
+			JobKind: kind,
+		})
+		if err != nil {
+			return jobs.RunSummary{}, err
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {

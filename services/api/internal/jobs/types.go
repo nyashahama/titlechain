@@ -12,3 +12,8 @@ type RunSummary struct {
 	FinishedAt    string `json:"finished_at,omitempty"`
 	CreatedAt     string `json:"created_at"`
 }
+
+type StartSourceIngestionRequest struct {
+	SourceName string `json:"source_name"`
+	BatchKey   string `json:"batch_key"`
+}

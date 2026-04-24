@@ -80,6 +80,58 @@ func (q *Queries) CreateBatch(ctx context.Context, arg CreateBatchParams) (RawBa
 	return i, err
 }
 
+const createIngestionJob = `-- name: CreateIngestionJob :one
+INSERT INTO ops.jobs (run_id, job_kind, status, checkpoint)
+VALUES ($1, $2, 'pending', '{}'::jsonb)
+RETURNING id, run_id, job_kind, status, lease_owner, lease_expires_at, retry_count, checkpoint, error_message, created_at, updated_at
+`
+
+type CreateIngestionJobParams struct {
+	RunID   pgtype.UUID `json:"run_id"`
+	JobKind string      `json:"job_kind"`
+}
+
+func (q *Queries) CreateIngestionJob(ctx context.Context, arg CreateIngestionJobParams) (OpsJob, error) {
+	row := q.db.QueryRow(ctx, createIngestionJob, arg.RunID, arg.JobKind)
+	var i OpsJob
+	err := row.Scan(
+		&i.ID,
+		&i.RunID,
+		&i.JobKind,
+		&i.Status,
+		&i.LeaseOwner,
+		&i.LeaseExpiresAt,
+		&i.RetryCount,
+		&i.Checkpoint,
+		&i.ErrorMessage,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createIngestionRun = `-- name: CreateIngestionRun :one
+INSERT INTO ops.runs (batch_id, run_type, status)
+VALUES ($1, 'source_ingestion_v1', 'pending')
+RETURNING id, batch_id, run_type, status, started_at, finished_at, created_at, updated_at
+`
+
+func (q *Queries) CreateIngestionRun(ctx context.Context, batchID pgtype.UUID) (OpsRun, error) {
+	row := q.db.QueryRow(ctx, createIngestionRun, batchID)
+	var i OpsRun
+	err := row.Scan(
+		&i.ID,
+		&i.BatchID,
+		&i.RunType,
+		&i.Status,
+		&i.StartedAt,
+		&i.FinishedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createJob = `-- name: CreateJob :one
 INSERT INTO ops.jobs (run_id, job_kind, status)
 VALUES ($1, $2, 'pending')
