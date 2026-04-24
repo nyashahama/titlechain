@@ -110,7 +110,8 @@ pub async fn insert_core_source_link(
     sqlx::query(
         r#"INSERT INTO core.source_links (
             property_id, batch_id, source_record_id, fact_table, fact_id
-        ) VALUES ($1, $2, $3, $4, $5)"#,
+        ) VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT DO NOTHING"#,
     )
     .bind(property_id)
     .bind(batch_id)
