@@ -1,5 +1,7 @@
 import { listProperties } from "./api";
-import { PropertyResults } from "./_components/property-results";
+import { BentoGrid, BentoGridItem } from "@/app/_components/bento-grid";
+import { PropertyCard } from "@/app/_components/property-card";
+import { EmptyState } from "@/app/_components/ui/empty-state";
 
 export default async function PropertiesPage({
   searchParams,
@@ -49,7 +51,20 @@ export default async function PropertiesPage({
         </form>
       </div>
 
-      <PropertyResults properties={properties} />
+      {properties.length === 0 ? (
+        <EmptyState
+          title="No properties found"
+          description="Try adjusting your search or trigger a property sync."
+        />
+      ) : (
+        <BentoGrid>
+          {properties.map((p) => (
+            <BentoGridItem key={p.property_id}>
+              <PropertyCard property={p} />
+            </BentoGridItem>
+          ))}
+        </BentoGrid>
+      )}
     </div>
   );
 }
