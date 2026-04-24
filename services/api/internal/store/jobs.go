@@ -53,94 +53,92 @@ func (s JobsStore) FindActiveRun(ctx context.Context, runType string) (*jobs.Run
 }
 
 func (s JobsStore) CreateSeedProjectionRun(ctx context.Context) (jobs.RunSummary, error) {
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return jobs.RunSummary{}, err
-	}
-	defer tx.Rollback(ctx)
-
-	queries := sqlc.New(s.pool).WithTx(tx)
-
-	batch, err := queries.CreateBatch(ctx, sqlc.CreateBatchParams{
-		SourceName:     "ops.seed_properties",
-		SourceBatchKey: fmt.Sprintf("seed-property-projection-%d", time.Now().UnixNano()),
-		PayloadSha256:  "placeholder",
-	})
-	if err != nil {
-		return jobs.RunSummary{}, err
-	}
-
-	run, err := queries.CreateRun(ctx, sqlc.CreateRunParams{
-		BatchID: batch.ID,
-		RunType: jobs.RunTypeSeedPropertyProjection,
-		Status:  "pending",
-	})
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return jobs.RunSummary{}, jobs.ErrActiveRun
+	return s.execRunInTx(ctx, func(q *sqlc.Queries) (sqlc.OpsRun, error) {
+		batch, err := q.CreateBatch(ctx, sqlc.CreateBatchParams{
+			SourceName:     "ops.seed_properties",
+			SourceBatchKey: fmt.Sprintf("seed-property-projection-%d", time.Now().UnixNano()),
+			PayloadSha256:  "placeholder",
+		})
+		if err != nil {
+			return sqlc.OpsRun{}, err
 		}
-		return jobs.RunSummary{}, err
-	}
 
-	_, err = queries.CreateJob(ctx, sqlc.CreateJobParams{
-		RunID:   run.ID,
-		JobKind: "seed_property_projection",
+		run, err := q.CreateRun(ctx, sqlc.CreateRunParams{
+			BatchID: batch.ID,
+			RunType: jobs.RunTypeSeedPropertyProjection,
+			Status:  "pending",
+		})
+		if err != nil {
+			return sqlc.OpsRun{}, mapPgDuplicate(err)
+		}
+
+		_, err = q.CreateJob(ctx, sqlc.CreateJobParams{
+			RunID:   run.ID,
+			JobKind: "seed_property_projection",
+		})
+		if err != nil {
+			return sqlc.OpsRun{}, err
+		}
+
+		return run, nil
 	})
-	if err != nil {
-		return jobs.RunSummary{}, err
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return jobs.RunSummary{}, err
-	}
-
-	return runSummaryFromOpsRun(run), nil
 }
 
 func (s JobsStore) CreateSourceIngestionRun(ctx context.Context, req jobs.StartSourceIngestionRequest) (jobs.RunSummary, error) {
+	return s.execRunInTx(ctx, func(q *sqlc.Queries) (sqlc.OpsRun, error) {
+		batch, err := q.CreateSourceBatch(ctx, sqlc.CreateSourceBatchParams{
+			SourceName:     req.SourceName,
+			SourceBatchKey: req.BatchKey,
+			PayloadUri:     pgtype.Text{String: req.PayloadURI, Valid: req.PayloadURI != ""},
+			PayloadSha256:  req.PayloadSHA256,
+		})
+		if err != nil {
+			return sqlc.OpsRun{}, err
+		}
+
+		run, err := q.CreateIngestionRun(ctx, batch.ID)
+		if err != nil {
+			return sqlc.OpsRun{}, mapPgDuplicate(err)
+		}
+
+		for _, kind := range jobs.IngestionJobKinds {
+			_, err = q.CreateIngestionJob(ctx, sqlc.CreateIngestionJobParams{
+				RunID:   run.ID,
+				JobKind: kind,
+			})
+			if err != nil {
+				return sqlc.OpsRun{}, err
+			}
+		}
+
+		return run, nil
+	})
+}
+
+func (s JobsStore) execRunInTx(ctx context.Context, fn func(*sqlc.Queries) (sqlc.OpsRun, error)) (jobs.RunSummary, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return jobs.RunSummary{}, err
 	}
 	defer tx.Rollback(ctx)
 
-	queries := sqlc.New(s.pool).WithTx(tx)
-
-	batch, err := queries.CreateSourceBatch(ctx, sqlc.CreateSourceBatchParams{
-		SourceName:     req.SourceName,
-		SourceBatchKey: req.BatchKey,
-		PayloadUri:     pgtype.Text{String: req.PayloadURI, Valid: req.PayloadURI != ""},
-		PayloadSha256:  req.PayloadSHA256,
-	})
+	run, err := fn(sqlc.New(s.pool).WithTx(tx))
 	if err != nil {
 		return jobs.RunSummary{}, err
-	}
-
-	run, err := queries.CreateIngestionRun(ctx, batch.ID)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return jobs.RunSummary{}, jobs.ErrActiveRun
-		}
-		return jobs.RunSummary{}, err
-	}
-
-	for _, kind := range jobs.IngestionJobKinds {
-		_, err = queries.CreateIngestionJob(ctx, sqlc.CreateIngestionJobParams{
-			RunID:   run.ID,
-			JobKind: kind,
-		})
-		if err != nil {
-			return jobs.RunSummary{}, err
-		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
 		return jobs.RunSummary{}, err
 	}
-
 	return runSummaryFromOpsRun(run), nil
+}
+
+func mapPgDuplicate(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return jobs.ErrActiveRun
+	}
+	return err
 }
 
 func runSummaryFromRow(row sqlc.ListRunsWithCountsRow) jobs.RunSummary {

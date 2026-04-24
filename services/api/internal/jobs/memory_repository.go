@@ -63,64 +63,45 @@ func (r *MemoryRepository) CreateSeedProjectionRun(_ context.Context) (RunSummar
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.batchCounter++
-	batchID := fmt.Sprintf("batch-%d", r.batchCounter)
-	r.batches[batchID] = memoryBatch{
-		ID:             batchID,
+	batch := memoryBatch{
 		SourceName:     "ops.seed_properties",
-		SourceBatchKey: fmt.Sprintf("seed-property-projection-%d", r.batchCounter),
+		SourceBatchKey: fmt.Sprintf("seed-property-projection-%d", r.batchCounter+1),
 	}
-
-	r.runCounter++
-	runID := fmt.Sprintf("run-%d", r.runCounter)
-	now := time.Now().UTC()
-	run := RunSummary{
-		ID:        runID,
-		RunType:   RunTypeSeedPropertyProjection,
-		Status:    "pending",
-		CreatedAt: now,
-	}
-	r.runs = append(r.runs, run)
-	r.activeRun = &run
-
-	r.jobCounter++
-	jobID := fmt.Sprintf("job-%d", r.jobCounter)
-	r.runJobs[runID] = append(r.runJobs[runID], memoryJob{
-		ID:      jobID,
-		RunID:   runID,
-		JobKind: "seed_property_projection",
-	})
-
-	return run, nil
+	return r.createRunLocked(RunTypeSeedPropertyProjection, batch, []string{"seed_property_projection"}), nil
 }
 
 func (r *MemoryRepository) CreateSourceIngestionRun(_ context.Context, req StartSourceIngestionRequest) (RunSummary, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.batchCounter++
-	batchID := fmt.Sprintf("batch-%d", r.batchCounter)
-	r.batches[batchID] = memoryBatch{
-		ID:             batchID,
+	batch := memoryBatch{
 		SourceName:     req.SourceName,
 		SourceBatchKey: req.BatchKey,
 		PayloadURI:     req.PayloadURI,
 		PayloadSHA256:  req.PayloadSHA256,
 	}
+	return r.createRunLocked(RunTypeSourceIngestionV1, batch, IngestionJobKinds), nil
+}
+
+func (r *MemoryRepository) createRunLocked(runType string, batch memoryBatch, jobKinds []string) RunSummary {
+	r.batchCounter++
+	batchID := fmt.Sprintf("batch-%d", r.batchCounter)
+	batch.ID = batchID
+	r.batches[batchID] = batch
 
 	r.runCounter++
 	runID := fmt.Sprintf("run-%d", r.runCounter)
 	now := time.Now().UTC()
 	run := RunSummary{
 		ID:        runID,
-		RunType:   RunTypeSourceIngestionV1,
+		RunType:   runType,
 		Status:    "pending",
 		CreatedAt: now,
 	}
 	r.runs = append(r.runs, run)
 	r.activeRun = &run
 
-	for _, kind := range IngestionJobKinds {
+	for _, kind := range jobKinds {
 		r.jobCounter++
 		jobID := fmt.Sprintf("job-%d", r.jobCounter)
 		r.runJobs[runID] = append(r.runJobs[runID], memoryJob{
@@ -130,7 +111,7 @@ func (r *MemoryRepository) CreateSourceIngestionRun(_ context.Context, req Start
 		})
 	}
 
-	return run, nil
+	return run
 }
 
 // Batches returns a copy of all created batches for test inspection.

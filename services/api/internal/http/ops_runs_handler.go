@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	stdhttp "net/http"
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
@@ -46,6 +47,10 @@ func (h opsRunsHandler) startSourceIngestion(w stdhttp.ResponseWriter, r *stdhtt
 
 	run, err := h.service.StartSourceIngestion(r.Context(), req)
 	if err != nil {
+		if errors.Is(err, jobs.ErrValidation) {
+			h.respondJSON(w, stdhttp.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
 		if err == jobs.ErrActiveRun {
 			h.respondJSON(w, stdhttp.StatusConflict, map[string]string{"error": err.Error()})
 			return

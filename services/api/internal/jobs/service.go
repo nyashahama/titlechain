@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -10,6 +11,7 @@ const RunTypeSeedPropertyProjection = "seed_property_projection"
 const RunTypeSourceIngestionV1 = "source_ingestion_v1"
 
 var ErrActiveRun = errors.New("an active run of this type already exists")
+var ErrValidation = errors.New("validation error")
 
 type Service struct {
 	repo Repository
@@ -36,10 +38,10 @@ func (s Service) StartSeedPropertyProjection(ctx context.Context) (RunSummary, e
 
 func (s Service) StartSourceIngestion(ctx context.Context, req StartSourceIngestionRequest) (RunSummary, error) {
 	if strings.TrimSpace(req.SourceName) == "" {
-		return RunSummary{}, errors.New("source_name is required")
+		return RunSummary{}, fmt.Errorf("%w: source_name is required", ErrValidation)
 	}
 	if strings.TrimSpace(req.BatchKey) == "" {
-		return RunSummary{}, errors.New("batch_key is required")
+		return RunSummary{}, fmt.Errorf("%w: batch_key is required", ErrValidation)
 	}
 	active, err := s.repo.FindActiveRun(ctx, RunTypeSourceIngestionV1)
 	if err != nil {

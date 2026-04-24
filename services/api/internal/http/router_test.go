@@ -38,8 +38,9 @@ func (r *stubPropertyRepo) ListProperties(_ context.Context, _ property.ListFilt
 }
 
 type stubJobsRepo struct {
-	runs      []jobs.RunSummary
-	activeRun *jobs.RunSummary
+	runs                   []jobs.RunSummary
+	activeRun              *jobs.RunSummary
+	lastSourceIngestionReq *jobs.StartSourceIngestionRequest
 }
 
 func (r *stubJobsRepo) ListRunsWithCounts(_ context.Context, _ int32) ([]jobs.RunSummary, error) {
@@ -58,8 +59,13 @@ func (r *stubJobsRepo) CreateSeedProjectionRun(_ context.Context) (jobs.RunSumma
 	}, nil
 }
 
-func (r *stubJobsRepo) CreateSourceIngestionRun(_ context.Context, _ jobs.StartSourceIngestionRequest) (jobs.RunSummary, error) {
-	return jobs.RunSummary{}, nil
+func (r *stubJobsRepo) CreateSourceIngestionRun(_ context.Context, req jobs.StartSourceIngestionRequest) (jobs.RunSummary, error) {
+	r.lastSourceIngestionReq = &req
+	return jobs.RunSummary{
+		ID:      "run-ingest-1",
+		RunType: jobs.RunTypeSourceIngestionV1,
+		Status:  "pending",
+	}, nil
 }
 
 func TestRouter_HealthAndInternalRoutes(t *testing.T) {

@@ -2,6 +2,8 @@ package jobs
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"testing"
 )
 
@@ -200,8 +202,11 @@ func TestService_StartSourceIngestionRejectsEmptySourceName(t *testing.T) {
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}
-			if err.Error() != tt.wantErr {
-				t.Errorf("error = %q, want %q", err.Error(), tt.wantErr)
+			if !errors.Is(err, ErrValidation) {
+				t.Errorf("error = %v, want ErrValidation", err)
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("error = %q, want containing %q", err.Error(), tt.wantErr)
 			}
 		})
 	}

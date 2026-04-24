@@ -85,7 +85,7 @@ func TestOpsRunsHandler_ListRunsReturns200(t *testing.T) {
 }
 
 func TestOpsRunsHandler_StartSourceIngestion(t *testing.T) {
-	repo := jobs.NewMemoryRepository()
+	repo := &stubJobsRepo{}
 	svc := jobs.NewService(repo)
 	router := NewRouter(RouterDeps{Jobs: svc})
 
@@ -97,5 +97,92 @@ func TestOpsRunsHandler_StartSourceIngestion(t *testing.T) {
 
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusCreated)
+	}
+
+	var run jobs.RunSummary
+	if err := json.Unmarshal(rec.Body.Bytes(), &run); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if run.RunType != jobs.RunTypeSourceIngestionV1 {
+		t.Errorf("run_type = %s, want %s", run.RunType, jobs.RunTypeSourceIngestionV1)
+	}
+	if run.Status != "pending" {
+		t.Errorf("status = %s, want pending", run.Status)
+	}
+	if repo.lastSourceIngestionReq == nil {
+		t.Fatal("expected request to reach repository, got nil")
+	}
+	if repo.lastSourceIngestionReq.SourceName != "pilot.deeds_snapshot" {
+		t.Errorf("source_name = %s, want pilot.deeds_snapshot", repo.lastSourceIngestionReq.SourceName)
+	}
+	if repo.lastSourceIngestionReq.BatchKey != "2026-04-25-main" {
+		t.Errorf("batch_key = %s, want 2026-04-25-main", repo.lastSourceIngestionReq.BatchKey)
+	}
+}
+
+func TestOpsRunsHandler_StartSourceIngestionReturns400ForInvalidJSON(t *testing.T) {
+	repo := &stubJobsRepo{}
+	svc := jobs.NewService(repo)
+	router := NewRouter(RouterDeps{Jobs: svc})
+
+	body := strings.NewReader(`{invalid json`)
+	req := httptest.NewRequest(http.MethodPost, "/api/internal/ops/source-batches", body)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusBadRequest)
+	}
+}
+
+func TestOpsRunsHandler_StartSourceIngestionReturns400ForMissingFields(t *testing.T) {
+	tests := []struct {
+		name string
+		body string
+	}{
+		{"empty source_name", `{"source_name":"","batch_key":"2026-04-25-main"}`},
+		{"missing source_name", `{"batch_key":"2026-04-25-main"}`},
+		{"empty batch_key", `{"source_name":"pilot.deeds_snapshot","batch_key":""}`},
+		{"missing batch_key", `{"source_name":"pilot.deeds_snapshot"}`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &stubJobsRepo{}
+			svc := jobs.NewService(repo)
+			router := NewRouter(RouterDeps{Jobs: svc})
+
+			req := httptest.NewRequest(http.MethodPost, "/api/internal/ops/source-batches", strings.NewReader(tt.body))
+			rec := httptest.NewRecorder()
+
+			router.ServeHTTP(rec, req)
+
+			if rec.Code != http.StatusBadRequest {
+				t.Fatalf("status = %d, want %d", rec.Code, http.StatusBadRequest)
+			}
+		})
+	}
+}
+
+func TestOpsRunsHandler_StartSourceIngestionReturns409WhenActiveRun(t *testing.T) {
+	repo := &stubJobsRepo{
+		activeRun: &jobs.RunSummary{
+			ID:      "run-active",
+			RunType: jobs.RunTypeSourceIngestionV1,
+			Status:  "running",
+		},
+	}
+	svc := jobs.NewService(repo)
+	router := NewRouter(RouterDeps{Jobs: svc})
+
+	body := strings.NewReader(`{"source_name":"pilot.deeds_snapshot","batch_key":"2026-04-25-main"}`)
+	req := httptest.NewRequest(http.MethodPost, "/api/internal/ops/source-batches", body)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusConflict {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusConflict)
 	}
 }
