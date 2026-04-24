@@ -334,11 +334,14 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		}
 
 		// Insert canonical evidence items
-		facts, _ := json.Marshal(map[string]any{
+		facts, err := json.Marshal(map[string]any{
 			"linked_property_id":   req.LinkedPropertyID,
 			"property_description": propRow.PropertyDescription,
 			"title_reference":      propRow.TitleReference,
 		})
+		if err != nil {
+			return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
+		}
 		_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
 			CaseID:          c.ID,
 			EvidenceType:    "canonical_property",

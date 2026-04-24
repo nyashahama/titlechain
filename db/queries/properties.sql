@@ -26,6 +26,7 @@ INSERT INTO read.property_summaries (
     municipality_or_deeds_office, title_reference,
     current_owner_name, status, updated_at
 )
+-- locality_or_area falls back to municipality_or_deeds_office since core.properties does not have a separate locality column
 SELECT p.id,
        p.property_description,
        p.municipality_or_deeds_office,

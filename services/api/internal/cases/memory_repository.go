@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -435,8 +434,4 @@ func (r *memoryRepository) addPropertyMatch(caseID string, match PropertyMatch) 
 	r.matches[caseID] = append(r.matches[caseID], match)
 }
 
-// Helper for tests to add a reason code
-func parseFloat(s string) float64 {
-	f, _ := strconv.ParseFloat(s, 64)
-	return f
-}
+
