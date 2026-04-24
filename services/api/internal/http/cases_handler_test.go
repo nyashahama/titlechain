@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
+	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
+	"github.com/nyasha-hama/titlechain/services/api/internal/property"
 )
 
 func TestCasesHandler_CreateCaseReturnsCreatedDetail(t *testing.T) {
@@ -137,6 +139,26 @@ func TestCasesHandler_ListReasonCodes(t *testing.T) {
 	}
 	if len(codes) == 0 {
 		t.Error("expected reason codes, got none")
+	}
+}
+
+func TestCasesHandler_CreateCaseWithSeedPropertyID(t *testing.T) {
+	repo := cases.NewMemoryRepository()
+	svc := cases.NewService(repo)
+	router := NewRouter(RouterDeps{Cases: svc, Properties: property.NewService(&stubPropertyRepo{}), Jobs: jobs.NewService(&stubJobsRepo{})})
+
+	reqBody, _ := json.Marshal(map[string]string{
+		"actor_id":                   "ana-001",
+		"property_description":        "Erf 412 Rosebank Township",
+		"locality_or_area":            "Rosebank",
+		"municipality_or_deeds_office": "Johannesburg",
+		"seed_property_id":           "seed-prop-1",
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/internal/cases", bytes.NewReader(reqBody))
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("expected %d, got %d: %s", http.StatusCreated, rec.Code, rec.Body.String())
 	}
 }
 

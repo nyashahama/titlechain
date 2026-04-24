@@ -122,6 +122,13 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 	id := fmt.Sprintf("case-%d", r.caseRefSeq)
 	now := time.Now()
 
+	status := CaseStatusOpen
+	linkedSeedPropertyID := ""
+	if req.SeedPropertyID != "" {
+		status = CaseStatusInReview
+		linkedSeedPropertyID = req.SeedPropertyID
+	}
+
 	c := &caseRecord{
 		CaseSummary: CaseSummary{
 			ID:                        id,
@@ -131,9 +138,10 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 			MunicipalityOrDeedsOffice: req.MunicipalityOrDeedsOffice,
 			TitleReference:            req.TitleReference,
 			MatterReference:           req.MatterReference,
-			Status:                    CaseStatusOpen,
+			Status:                    status,
 			AssigneeID:                req.ActorID,
 			CreatedBy:                 req.ActorID,
+			LinkedSeedPropertyID:      linkedSeedPropertyID,
 			CreatedAt:                 now,
 			UpdatedAt:                 now,
 		},
@@ -144,6 +152,25 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 	r.addAuditEventLocked(id, req.ActorID, AuditCaseCreated, map[string]any{
 		"case_reference": caseReference,
 	})
+
+	if req.SeedPropertyID != "" {
+		matchID := fmt.Sprintf("match-%d", len(r.matches[id])+1)
+		r.matches[id] = append(r.matches[id], PropertyMatch{
+			ID:             matchID,
+			CaseID:         id,
+			SeedPropertyID: req.SeedPropertyID,
+			MatchSource:    "property_selection",
+			Confidence:     100,
+			Status:         "confirmed",
+			ConfirmedBy:    req.ActorID,
+			ConfirmedAt:    now,
+			CreatedAt:      now,
+		})
+		r.addAuditEventLocked(id, req.ActorID, AuditPropertyMatchConfirmed, map[string]any{
+			"match_id":        matchID,
+			"seed_property_id": req.SeedPropertyID,
+		})
+	}
 
 	return r.getCaseDetailLocked(id)
 }

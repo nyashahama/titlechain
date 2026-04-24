@@ -79,6 +79,7 @@ type CreateCaseRequest struct {
 	TitleReference            string `json:"title_reference"`
 	MatterReference           string `json:"matter_reference"`
 	IntakeNote                string `json:"intake_note"`
+	SeedPropertyID            string `json:"seed_property_id"`
 }
 
 type RecordDecisionRequest struct {

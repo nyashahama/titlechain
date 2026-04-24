@@ -231,6 +231,61 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		return cases.CaseDetail{}, err
 	}
 
+	if req.SeedPropertyID != "" {
+		seedID, err := parseUUID(req.SeedPropertyID)
+		if err != nil {
+			return cases.CaseDetail{}, fmt.Errorf("invalid seed_property_id: %w", err)
+		}
+
+		_, err = queries.GetSeedProperty(ctx, seedID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return cases.CaseDetail{}, errors.New("seed property not found")
+			}
+			return cases.CaseDetail{}, err
+		}
+
+		var confidence pgtype.Numeric
+		_ = confidence.Scan("100")
+		match, err := queries.CreatePropertyMatch(ctx, sqlc.CreatePropertyMatchParams{
+			CaseID:         c.ID,
+			SeedPropertyID: seedID,
+			MatchSource:    "property_selection",
+			Confidence:     confidence,
+		})
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+
+		_, err = queries.ConfirmCasePropertyMatch(ctx, sqlc.ConfirmCasePropertyMatchParams{
+			CaseID:      c.ID,
+			ID:          match.ID,
+			ConfirmedBy: pgtype.Text{String: req.ActorID, Valid: true},
+		})
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+
+		_, err = queries.LinkCaseSeedProperty(ctx, sqlc.LinkCaseSeedPropertyParams{
+			ID:                   c.ID,
+			LinkedSeedPropertyID: seedID,
+		})
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+
+		matchMeta, _ := json.Marshal(map[string]any{"match_id": uuidToString(match.ID), "seed_property_id": req.SeedPropertyID})
+		_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
+			CaseID:    c.ID,
+			ActorID:   req.ActorID,
+			EventType: cases.AuditPropertyMatchConfirmed,
+			Metadata:  matchMeta,
+		})
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}

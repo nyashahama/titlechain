@@ -32,6 +32,12 @@ RETURNING id, case_reference, property_description, locality_or_area, municipali
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
     linked_seed_property_id, resolved_at, created_at, updated_at;
 
+-- name: GetSeedProperty :one
+SELECT id, property_description, locality_or_area, municipality_or_deeds_office,
+       title_reference, current_owner_name, status_summary, seeded_risk, created_at
+FROM ops.seed_properties
+WHERE id = $1;
+
 -- name: ListSeedPropertyMatches :many
 SELECT id, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, current_owner_name, status_summary, seeded_risk, created_at

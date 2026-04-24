@@ -394,6 +394,30 @@ func (q *Queries) GetCaseRecord(ctx context.Context, id pgtype.UUID) (OpsCaseRec
 	return i, err
 }
 
+const getSeedProperty = `-- name: GetSeedProperty :one
+SELECT id, property_description, locality_or_area, municipality_or_deeds_office,
+       title_reference, current_owner_name, status_summary, seeded_risk, created_at
+FROM ops.seed_properties
+WHERE id = $1
+`
+
+func (q *Queries) GetSeedProperty(ctx context.Context, id pgtype.UUID) (OpsSeedProperty, error) {
+	row := q.db.QueryRow(ctx, getSeedProperty, id)
+	var i OpsSeedProperty
+	err := row.Scan(
+		&i.ID,
+		&i.PropertyDescription,
+		&i.LocalityOrArea,
+		&i.MunicipalityOrDeedsOffice,
+		&i.TitleReference,
+		&i.CurrentOwnerName,
+		&i.StatusSummary,
+		&i.SeededRisk,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const linkCaseSeedProperty = `-- name: LinkCaseSeedProperty :one
 UPDATE ops.case_records
 SET linked_seed_property_id = $2, status = 'in_review', updated_at = NOW()
