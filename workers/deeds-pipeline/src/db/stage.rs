@@ -1,9 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::normalization::{
-    StageEncumbranceRow, StagePartyRow, StagePropertyRow, StageTitleRow,
-};
+use crate::normalization::{StageEncumbranceRow, StagePartyRow, StagePropertyRow, StageTitleRow};
 
 #[derive(Debug)]
 pub struct QuarantinedRow {
@@ -32,7 +30,7 @@ pub async fn get_run_batch_id(pool: &PgPool, run_id: Uuid) -> sqlx::Result<Uuid>
     sqlx::query_scalar::<_, Uuid>("SELECT batch_id FROM ops.runs WHERE id = $1")
         .bind(run_id)
         .fetch_one(pool)
-        .await~
+        .await
 }
 
 pub async fn insert_stage_property(
@@ -147,7 +145,7 @@ pub async fn read_stage_properties(
     )
     .bind(batch_id)
     .fetch_all(pool)
-    .await~
+    .await
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -170,7 +168,7 @@ pub async fn read_stage_titles(
     )
     .bind(batch_id)
     .fetch_all(pool)
-    .await~
+    .await
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -193,7 +191,7 @@ pub async fn read_stage_parties(
     )
     .bind(batch_id)
     .fetch_all(pool)
-    .await~
+    .await
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -216,7 +214,5 @@ pub async fn read_stage_encumbrances(
     )
     .bind(batch_id)
     .fetch_all(pool)
-    .await~
+    .await
 }
-EOF~
-echo "Done writing stage.rs"
