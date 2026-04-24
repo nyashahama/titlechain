@@ -105,4 +105,21 @@ describe("case console", () => {
     expect(screen.getByRole("heading", { name: /Activity/i })).toBeInTheDocument();
     expect(screen.getByText(/case created/i)).toBeInTheDocument();
   });
+
+  it("prefills the case intake form from a selected property", () => {
+    render(
+      <CaseIntakeForm
+        analysts={[{ id: "ana-001", display_name: "Nyasha Hama", email: "nyasha@test", active: true }]}
+        defaultActorId="ana-001"
+        initialValues={{
+          seed_property_id: "prop-1",
+          property_description: "Erf 412 Rosebank Township",
+          locality_or_area: "Rosebank",
+          municipality_or_deeds_office: "Johannesburg",
+          title_reference: "T12345/2024",
+        }}
+      />
+    );
+    expect(screen.getByDisplayValue("Erf 412 Rosebank Township")).toBeInTheDocument();
+  });
 });

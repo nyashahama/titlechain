@@ -5,7 +5,15 @@ import { createCaseAction } from "../actions";
 import { useRouter } from "next/navigation";
 import { Analyst } from "../types";
 
-export function CaseIntakeForm({ analysts, defaultActorId }: { analysts: Analyst[]; defaultActorId: string }) {
+type InitialValues = {
+  seed_property_id?: string;
+  property_description?: string;
+  locality_or_area?: string;
+  municipality_or_deeds_office?: string;
+  title_reference?: string;
+};
+
+export function CaseIntakeForm({ analysts, defaultActorId, initialValues }: { analysts: Analyst[]; defaultActorId: string; initialValues?: InitialValues }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -25,6 +33,9 @@ export function CaseIntakeForm({ analysts, defaultActorId }: { analysts: Analyst
 
   return (
     <form action={handleSubmit} className="space-y-5">
+      {initialValues?.seed_property_id && (
+        <input type="hidden" name="seed_property_id" defaultValue={initialValues.seed_property_id} />
+      )}
       <div>
         <label htmlFor="actor_id" className="block text-[11px] uppercase tracking-[0.1em] text-muted font-medium mb-2">
           Creating Analyst
@@ -48,12 +59,13 @@ export function CaseIntakeForm({ analysts, defaultActorId }: { analysts: Analyst
         <label htmlFor="property_description" className="block text-[11px] uppercase tracking-[0.1em] text-muted font-medium mb-2">
           Property Description *
         </label>
-        <input
-          id="property_description"
-          name="property_description"
-          required
-          className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
-        />
+<input
+            id="property_description"
+            name="property_description"
+            required
+            defaultValue={initialValues?.property_description}
+            className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
+          />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -65,6 +77,7 @@ export function CaseIntakeForm({ analysts, defaultActorId }: { analysts: Analyst
             id="locality_or_area"
             name="locality_or_area"
             required
+            defaultValue={initialValues?.locality_or_area}
             className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
           />
         </div>
@@ -76,6 +89,7 @@ export function CaseIntakeForm({ analysts, defaultActorId }: { analysts: Analyst
             id="municipality_or_deeds_office"
             name="municipality_or_deeds_office"
             required
+            defaultValue={initialValues?.municipality_or_deeds_office}
             className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
           />
         </div>
@@ -89,6 +103,7 @@ export function CaseIntakeForm({ analysts, defaultActorId }: { analysts: Analyst
           <input
             id="title_reference"
             name="title_reference"
+            defaultValue={initialValues?.title_reference}
             className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors"
           />
         </div>

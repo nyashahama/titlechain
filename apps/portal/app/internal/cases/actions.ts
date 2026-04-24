@@ -13,7 +13,7 @@ import {
 } from "./api";
 
 export async function createCaseAction(formData: FormData) {
-  const detail = await createCase({
+  const input: Record<string, unknown> = {
     actor_id: formData.get("actor_id") as string,
     property_description: formData.get("property_description") as string,
     locality_or_area: formData.get("locality_or_area") as string,
@@ -21,7 +21,12 @@ export async function createCaseAction(formData: FormData) {
     title_reference: (formData.get("title_reference") as string) || undefined,
     matter_reference: (formData.get("matter_reference") as string) || undefined,
     intake_note: (formData.get("intake_note") as string) || undefined,
-  });
+  };
+  const seedPropertyId = (formData.get("seed_property_id") as string) || undefined;
+  if (seedPropertyId) {
+    input.seed_property_id = seedPropertyId;
+  }
+  const detail = await createCase(input as any);
   revalidatePath("/internal/cases");
   return detail;
 }
