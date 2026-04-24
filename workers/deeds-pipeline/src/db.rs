@@ -4,6 +4,7 @@ use uuid::Uuid;
 use crate::projection::{PropertySummaryRow, SeedPropertyRow};
 
 #[derive(Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct ClaimedJob {
     pub id: Uuid,
     pub run_id: Uuid,
