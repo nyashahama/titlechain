@@ -126,8 +126,7 @@ func (s JobsStore) CreateSourceIngestionRun(ctx context.Context, req jobs.StartS
 		return jobs.RunSummary{}, err
 	}
 
-	jobKinds := []string{"raw_landing", "stage_normalization", "core_materialization", "read_refresh"}
-	for _, kind := range jobKinds {
+	for _, kind := range jobs.IngestionJobKinds {
 		_, err = queries.CreateIngestionJob(ctx, sqlc.CreateIngestionJobParams{
 			RunID:   run.ID,
 			JobKind: kind,

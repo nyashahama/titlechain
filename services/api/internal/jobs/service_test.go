@@ -2,15 +2,15 @@ package jobs
 
 import (
 	"context"
-	"reflect"
 	"testing"
 )
 
 type stubRepo struct {
-	runs            []RunSummary
-	activeRun       *RunSummary
-	createErr       error
-	createdJobKinds []string
+	runs                   []RunSummary
+	activeRun              *RunSummary
+	createErr              error
+	lastSourceIngestionReq *StartSourceIngestionRequest
+	sourceIngestionRun     RunSummary
 }
 
 func (r *stubRepo) ListRunsWithCounts(_ context.Context, _ int32) ([]RunSummary, error) {
@@ -32,8 +32,11 @@ func (r *stubRepo) CreateSeedProjectionRun(_ context.Context) (RunSummary, error
 	}, nil
 }
 
-func (r *stubRepo) CreateSourceIngestionRun(_ context.Context, _ StartSourceIngestionRequest) (RunSummary, error) {
-	r.createdJobKinds = []string{"raw_landing", "stage_normalization", "core_materialization", "read_refresh"}
+func (r *stubRepo) CreateSourceIngestionRun(_ context.Context, req StartSourceIngestionRequest) (RunSummary, error) {
+	r.lastSourceIngestionReq = &req
+	if r.sourceIngestionRun.ID != "" {
+		return r.sourceIngestionRun, nil
+	}
 	return RunSummary{
 		ID:      "run-2",
 		RunType: RunTypeSourceIngestionV1,
@@ -136,7 +139,14 @@ func TestService_StartSourceIngestionRejectsActiveRun(t *testing.T) {
 }
 
 func TestService_StartSourceIngestionCreatesFourStageRun(t *testing.T) {
-	repo := &stubRepo{}
+	repo := &stubRepo{
+		sourceIngestionRun: RunSummary{
+			ID:        "run-svc-2",
+			RunType:   RunTypeSourceIngestionV1,
+			Status:    "pending",
+			TotalJobs: 4,
+		},
+	}
 	svc := NewService(repo)
 
 	run, err := svc.StartSourceIngestion(context.Background(), StartSourceIngestionRequest{
@@ -146,10 +156,53 @@ func TestService_StartSourceIngestionCreatesFourStageRun(t *testing.T) {
 	if err != nil {
 		t.Fatalf("start source ingestion: %v", err)
 	}
-	if run.RunType != RunTypeSourceIngestionV1 {
-		t.Fatalf("run_type = %s, want %s", run.RunType, RunTypeSourceIngestionV1)
+	if run.ID != "run-svc-2" {
+		t.Errorf("run id = %s, want run-svc-2", run.ID)
 	}
-	if got := repo.createdJobKinds; !reflect.DeepEqual(got, []string{"raw_landing", "stage_normalization", "core_materialization", "read_refresh"}) {
-		t.Fatalf("job_kinds = %v, want four-stage ingestion", got)
+	if run.RunType != RunTypeSourceIngestionV1 {
+		t.Errorf("run_type = %s, want %s", run.RunType, RunTypeSourceIngestionV1)
+	}
+	if run.TotalJobs != 4 {
+		t.Errorf("total_jobs = %d, want 4", run.TotalJobs)
+	}
+	if repo.lastSourceIngestionReq == nil {
+		t.Fatal("expected request to be passed to repository, got nil")
+	}
+	if repo.lastSourceIngestionReq.SourceName != "pilot.deeds_snapshot" {
+		t.Errorf("source_name = %s, want pilot.deeds_snapshot", repo.lastSourceIngestionReq.SourceName)
+	}
+	if repo.lastSourceIngestionReq.BatchKey != "2026-04-25-main" {
+		t.Errorf("batch_key = %s, want 2026-04-25-main", repo.lastSourceIngestionReq.BatchKey)
+	}
+}
+
+func TestService_StartSourceIngestionRejectsEmptySourceName(t *testing.T) {
+	tests := []struct {
+		name       string
+		sourceName string
+		batchKey   string
+		wantErr    string
+	}{
+		{"empty source_name", "", "2026-04-25-main", "source_name is required"},
+		{"whitespace source_name", "   ", "2026-04-25-main", "source_name is required"},
+		{"empty batch_key", "pilot.deeds_snapshot", "", "batch_key is required"},
+		{"whitespace batch_key", "pilot.deeds_snapshot", "\t\n", "batch_key is required"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &stubRepo{}
+			svc := NewService(repo)
+			_, err := svc.StartSourceIngestion(context.Background(), StartSourceIngestionRequest{
+				SourceName: tt.sourceName,
+				BatchKey:   tt.batchKey,
+			})
+			if err == nil {
+				t.Fatal("expected error, got nil")
+			}
+			if err.Error() != tt.wantErr {
+				t.Errorf("error = %q, want %q", err.Error(), tt.wantErr)
+			}
+		})
 	}
 }

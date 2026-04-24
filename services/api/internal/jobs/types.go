@@ -17,3 +17,5 @@ type StartSourceIngestionRequest struct {
 	SourceName string `json:"source_name"`
 	BatchKey   string `json:"batch_key"`
 }
+
+var IngestionJobKinds = []string{"raw_landing", "stage_normalization", "core_materialization", "read_refresh"}
