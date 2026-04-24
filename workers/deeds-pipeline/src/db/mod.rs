@@ -5,7 +5,7 @@ pub mod read;
 pub mod stage;
 
 pub use core::{read_core_properties, upsert_core_property};
-pub use jobs::{claim_next_job, mark_job_completed, mark_job_failed, mark_job_running};
+pub use jobs::{begin_job_attempt, claim_next_job, mark_job_completed, mark_job_failed, mark_job_running};
 pub use raw::read_raw_records_for_run;
 pub use read::{read_seed_properties, upsert_property_summaries};
 pub use stage::{

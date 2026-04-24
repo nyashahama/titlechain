@@ -48,6 +48,7 @@ type Querier interface {
 	ListRunsWithCounts(ctx context.Context, limit int32) ([]ListRunsWithCountsRow, error)
 	ListSeedPropertyMatches(ctx context.Context, arg ListSeedPropertyMatchesParams) ([]OpsSeedProperty, error)
 	ReassignCase(ctx context.Context, arg ReassignCaseParams) (OpsCaseRecord, error)
+	// locality_or_area falls back to municipality_or_deeds_office since core.properties does not have a separate locality column
 	RefreshPropertySummaryFromCore(ctx context.Context, id pgtype.UUID) error
 	RejectCasePropertyMatches(ctx context.Context, caseID pgtype.UUID) error
 	ReopenCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error)

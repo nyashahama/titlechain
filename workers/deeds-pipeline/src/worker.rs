@@ -17,6 +17,7 @@ pub async fn run(
         match db::claim_next_job(&pool, &worker_id).await? {
             Some(job) => {
                 db::mark_job_running(&pool, job.id).await?;
+                db::begin_job_attempt(&pool, job.id, &worker_id).await?;
                 let result = match job.job_kind.as_str() {
                     "raw_landing" => ingestion::run(&pool, job.run_id).await,
                     "stage_normalization" => normalization::run(&pool, job.run_id).await,

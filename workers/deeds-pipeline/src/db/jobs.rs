@@ -32,6 +32,17 @@ pub async fn claim_next_job(pool: &PgPool, worker_id: &str) -> sqlx::Result<Opti
     .await
 }
 
+pub async fn begin_job_attempt(pool: &PgPool, job_id: Uuid, worker_id: &str) -> sqlx::Result<()> {
+    sqlx::query(
+        "INSERT INTO ops.job_attempts (job_id, attempt_number, worker_id, outcome) VALUES ($1, COALESCE((SELECT MAX(attempt_number) + 1 FROM ops.job_attempts WHERE job_id = $1), 1), $2, 'running')",
+    )
+    .bind(job_id)
+    .bind(worker_id)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 pub async fn mark_job_running(pool: &PgPool, job_id: Uuid) -> sqlx::Result<()> {
     let mut tx = pool.begin().await?;
 
@@ -58,6 +69,13 @@ pub async fn mark_job_completed(pool: &PgPool, job_id: Uuid) -> sqlx::Result<()>
         .bind(job_id)
         .execute(&mut *tx)
         .await?;
+
+    sqlx::query(
+        "UPDATE ops.job_attempts SET outcome = 'completed', finished_at = NOW() WHERE job_id = $1 AND outcome = 'running'",
+    )
+    .bind(job_id)
+    .execute(&mut *tx)
+    .await?;
 
     sqlx::query(
         r#"UPDATE ops.runs
@@ -89,6 +107,14 @@ pub async fn mark_job_failed(pool: &PgPool, job_id: Uuid, error_message: &str) -
     .await?;
 
     sqlx::query(
+        "UPDATE ops.job_attempts SET outcome = 'failed', finished_at = NOW(), error_message = $2 WHERE job_id = $1 AND outcome = 'running'",
+    )
+    .bind(job_id)
+    .bind(error_message)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
         "UPDATE ops.runs SET status = 'failed', finished_at = NOW(), updated_at = NOW() WHERE id = (SELECT run_id FROM ops.jobs WHERE id = $1)",
     )
     .bind(job_id)
@@ -97,4 +123,21 @@ pub async fn mark_job_failed(pool: &PgPool, job_id: Uuid, error_message: &str) -
 
     tx.commit().await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn begin_job_attempt_signature_is_valid() {
+        // Compile-time check that the function exists with the expected signature
+        fn _check<'a>(
+            pool: &'a sqlx::PgPool,
+            job_id: Uuid,
+            worker_id: &'a str,
+        ) -> impl std::future::Future<Output = sqlx::Result<()>> + use<'a> {
+            begin_job_attempt(pool, job_id, worker_id)
+        }
+    }
 }

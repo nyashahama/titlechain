@@ -51,3 +51,15 @@ npm run test --workspace @titlechain/portal
 cargo test --workspace
 ```
 
+## Phase 2 Source Ingestion Verification
+
+Run these commands after applying migrations:
+
+```bash
+sqlc generate
+cd services/api && go test ./...
+cargo test --workspace
+npm run test --workspace @titlechain/portal
+docker compose -f infra/docker/docker-compose.yml config
+```
+

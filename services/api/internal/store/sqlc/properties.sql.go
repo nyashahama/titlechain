@@ -138,6 +138,7 @@ SET property_description = EXCLUDED.property_description,
     updated_at = NOW()
 `
 
+// locality_or_area falls back to municipality_or_deeds_office since core.properties does not have a separate locality column
 func (q *Queries) RefreshPropertySummaryFromCore(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, refreshPropertySummaryFromCore, id)
 	return err
