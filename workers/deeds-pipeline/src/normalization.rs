@@ -88,8 +88,8 @@ pub async fn run(
 
 #[cfg(test)]
 mod tests {
-    use pipeline_core::RawRecord;
     use crate::normalization::{normalize_record, NormalizationResult};
+    use pipeline_core::RawRecord;
 
     #[test]
     fn run_stage_normalization_quarantines_invalid_rows() {

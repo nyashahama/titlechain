@@ -3,7 +3,11 @@ pub fn normalize_title_reference(input: &str) -> String {
 }
 
 pub fn normalize_party_name(input: &str) -> String {
-    input.split_whitespace().collect::<Vec<_>>().join(" ").to_uppercase()
+    input
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_uppercase()
 }
 
 #[cfg(test)]
