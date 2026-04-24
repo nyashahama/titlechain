@@ -418,7 +418,7 @@ export default function LandingPage() {
               <p className="text-[24px] font-bold tracking-[-0.02em] text-foreground">
                 {stat.prefix}<NumberFlow value={stat.num} />{stat.suffix}
               </p>
-              <p className="text-[11px] text-muted uppercase tracking-wider font-medium mt-1">{stat.desc}</p>
+              <p className="text-[11px] text-muted uppercase tracking-wider font-medium mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
