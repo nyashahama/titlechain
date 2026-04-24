@@ -3,6 +3,7 @@ import { listCases, listAnalysts } from "./api";
 import { CaseQueue } from "./_components/case-queue";
 import { ClientAnalystSwitcher } from "./_components/client-analyst-switcher";
 import { CasesKeyboardShortcuts } from "./_components/cases-keyboard-shortcuts";
+import { EmptyState } from "@/app/_components/ui/empty-state";
 
 export default async function CasesPage({
   searchParams,
@@ -72,7 +73,24 @@ export default async function CasesPage({
       </div>
 
       {/* Queue */}
-      <CaseQueue cases={cases} analystMap={analystMap} />
+      {cases.length === 0 ? (
+        <EmptyState
+          icon={
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          }
+          title="No cases found"
+          description="Create a new case to get started with your review queue."
+          action={
+            <Link href="/internal/cases/new" className="bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80">
+              New Case
+            </Link>
+          }
+        />
+      ) : (
+        <CaseQueue cases={cases} analystMap={analystMap} />
+      )}
     </div>
   );
 }

@@ -22,7 +22,7 @@ interface BadgeProps {
 
 export function Badge({ status, pulse = false, className = "" }: BadgeProps) {
   const style = statusStyles[status] || statusStyles.open;
-  const label = status.replace(/_/g, " ");
+  const label = status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <span
