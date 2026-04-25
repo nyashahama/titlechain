@@ -67,8 +67,14 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 	queries := sqlc.New(s.pool).WithTx(tx)
 
 	caseReference := fmt.Sprintf("TC-%d", time.Now().UnixNano())
-	userUUID, _ := parseUUID(user.ID)
-	orgUUID, _ := parseUUID(user.Organization.ID)
+	userUUID, err := parseUUID(user.ID)
+	if err != nil {
+		return pilot.MatterSummary{}, err
+	}
+	orgUUID, err := parseUUID(user.Organization.ID)
+	if err != nil {
+		return pilot.MatterSummary{}, err
+	}
 
 	c, err := queries.CreateCaseRecord(ctx, sqlc.CreateCaseRecordParams{
 		CaseReference:             caseReference,
@@ -111,22 +117,27 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 		return pilot.MatterSummary{}, err
 	}
 
+	caseStore := CasesStore{pool: s.pool}
+	if _, err := caseStore.reevaluateCaseInTx(ctx, queries, c.ID); err != nil {
+		return pilot.MatterSummary{}, err
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return pilot.MatterSummary{}, err
 	}
 
 	return pilot.MatterSummary{
-		ID:                         uuidToString(ml.ID),
-		CaseID:                     uuidToString(ml.CaseID),
-		CaseReference:              caseReference,
-		CustomerReference:          textToString(ml.CustomerReference),
-		CustomerStatus:             ml.CustomerStatus,
-		PropertyDescription:        req.PropertyDescription,
-		LocalityOrArea:             req.LocalityOrArea,
-		MunicipalityOrDeedsOffice:  req.MunicipalityOrDeedsOffice,
-		TitleReference:             req.TitleReference,
-		SubmittedAt:                ml.SubmittedAt.Time,
-		UpdatedAt:                  ml.UpdatedAt.Time,
+		ID:                        uuidToString(ml.ID),
+		CaseID:                    uuidToString(ml.CaseID),
+		CaseReference:             caseReference,
+		CustomerReference:         textToString(ml.CustomerReference),
+		CustomerStatus:            ml.CustomerStatus,
+		PropertyDescription:       req.PropertyDescription,
+		LocalityOrArea:            req.LocalityOrArea,
+		MunicipalityOrDeedsOffice: req.MunicipalityOrDeedsOffice,
+		TitleReference:            req.TitleReference,
+		SubmittedAt:               ml.SubmittedAt.Time,
+		UpdatedAt:                 ml.UpdatedAt.Time,
 	}, nil
 }
 
@@ -148,18 +159,18 @@ func (s PilotStore) ListMatters(ctx context.Context, user pilot.User, status str
 	summaries := make([]pilot.MatterSummary, 0, len(rows))
 	for _, row := range rows {
 		s := pilot.MatterSummary{
-			ID:                         uuidToString(row.MatterID),
-			CaseID:                     uuidToString(row.CaseID),
-			CaseReference:              row.CaseReference,
-			CustomerReference:          textToString(row.CustomerReference),
-			CustomerStatus:             row.CustomerStatus,
-			PropertyDescription:        row.PropertyDescription,
-			LocalityOrArea:             row.LocalityOrArea,
-			MunicipalityOrDeedsOffice:  row.MunicipalityOrDeedsOffice,
-			TitleReference:             textToString(row.TitleReference),
-			Decision:                   textToString(row.CurrentDecision),
-			SubmittedAt:                row.SubmittedAt.Time,
-			UpdatedAt:                  row.UpdatedAt.Time,
+			ID:                        uuidToString(row.MatterID),
+			CaseID:                    uuidToString(row.CaseID),
+			CaseReference:             row.CaseReference,
+			CustomerReference:         textToString(row.CustomerReference),
+			CustomerStatus:            row.CustomerStatus,
+			PropertyDescription:       row.PropertyDescription,
+			LocalityOrArea:            row.LocalityOrArea,
+			MunicipalityOrDeedsOffice: row.MunicipalityOrDeedsOffice,
+			TitleReference:            textToString(row.TitleReference),
+			Decision:                  textToString(row.CurrentDecision),
+			SubmittedAt:               row.SubmittedAt.Time,
+			UpdatedAt:                 row.UpdatedAt.Time,
 		}
 		summaries = append(summaries, s)
 	}
@@ -244,18 +255,18 @@ func (s PilotStore) GetMatterDetail(ctx context.Context, user pilot.User, matter
 	}
 
 	summary := pilot.MatterSummary{
-		ID:                         uuidToString(ml.ID),
-		CaseID:                     uuidToString(ml.CaseID),
-		CaseReference:              caseRow.CaseReference,
-		CustomerReference:          textToString(ml.CustomerReference),
-		CustomerStatus:             ml.CustomerStatus,
-		PropertyDescription:        caseRow.PropertyDescription,
-		LocalityOrArea:             caseRow.LocalityOrArea,
-		MunicipalityOrDeedsOffice:  caseRow.MunicipalityOrDeedsOffice,
-		TitleReference:             textToString(caseRow.TitleReference),
-		Decision:                   decision,
-		SubmittedAt:                ml.SubmittedAt.Time,
-		UpdatedAt:                  ml.UpdatedAt.Time,
+		ID:                        uuidToString(ml.ID),
+		CaseID:                    uuidToString(ml.CaseID),
+		CaseReference:             caseRow.CaseReference,
+		CustomerReference:         textToString(ml.CustomerReference),
+		CustomerStatus:            ml.CustomerStatus,
+		PropertyDescription:       caseRow.PropertyDescription,
+		LocalityOrArea:            caseRow.LocalityOrArea,
+		MunicipalityOrDeedsOffice: caseRow.MunicipalityOrDeedsOffice,
+		TitleReference:            textToString(caseRow.TitleReference),
+		Decision:                  decision,
+		SubmittedAt:               ml.SubmittedAt.Time,
+		UpdatedAt:                 ml.UpdatedAt.Time,
 	}
 
 	return pilot.MatterDetail{
@@ -333,12 +344,26 @@ func (s PilotStore) CreateSummaryExport(ctx context.Context, user pilot.User, ma
 	if err != nil {
 		return pilot.SummaryExport{}, err
 	}
-	userUUID, _ := parseUUID(user.ID)
+	orgUUID, err := parseUUID(user.Organization.ID)
+	if err != nil {
+		return pilot.SummaryExport{}, err
+	}
+	userUUID, err := parseUUID(user.ID)
+	if err != nil {
+		return pilot.SummaryExport{}, err
+	}
 
 	queries := sqlc.New(s.pool)
+	ml, err := queries.GetPilotMatterLinkForOrg(ctx, sqlc.GetPilotMatterLinkForOrgParams{
+		ID:             matterUUID,
+		OrganizationID: orgUUID,
+	})
+	if err != nil {
+		return pilot.SummaryExport{}, err
+	}
 	_, err = queries.CreatePilotSummaryExport(ctx, sqlc.CreatePilotSummaryExportParams{
-		MatterLinkID:       matterUUID,
-		RequestedByUserID:  userUUID,
+		MatterLinkID:      ml.ID,
+		RequestedByUserID: userUUID,
 	})
 	if err != nil {
 		return pilot.SummaryExport{}, err
