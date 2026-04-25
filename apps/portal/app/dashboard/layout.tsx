@@ -87,7 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div className="min-w-0">
               <p className="text-[12px] font-medium text-foreground/90 truncate">{user.display_name}</p>
-              <p className="text-[11px] text-muted truncate">{user.firm_name}</p>
+              <p className="text-[11px] text-muted truncate">{user.organization.name}</p>
             </div>
           </div>
           <button

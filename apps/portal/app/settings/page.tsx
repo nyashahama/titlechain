@@ -52,7 +52,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[11px] text-muted mb-1.5 font-medium">Firm Name</label>
-                <input readOnly value={user?.firm_name || ""} className="w-full bg-card border border-border-light rounded-xl px-4 py-[9px] text-[13px] text-foreground opacity-50 cursor-not-allowed" />
+                <input readOnly value={user?.organization.name || ""} className="w-full bg-card border border-border-light rounded-xl px-4 py-[9px] text-[13px] text-foreground opacity-50 cursor-not-allowed" />
               </div>
               <div>
                 <label className="block text-[11px] text-muted mb-1.5 font-medium">Firm ID</label>
