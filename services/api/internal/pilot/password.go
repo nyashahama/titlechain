@@ -1,23 +1,17 @@
 package pilot
 
 import (
-	"crypto/sha256"
-	"crypto/subtle"
-	"encoding/hex"
-	"strings"
+	"golang.org/x/crypto/bcrypt"
 )
 
-const devHashPrefix = "phase4-dev-sha256:"
-
 func hashPasswordForDev(password string) string {
-	sum := sha256.Sum256([]byte(password))
-	return devHashPrefix + hex.EncodeToString(sum[:])
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	return string(hash)
 }
 
 func verifyPassword(password, storedHash string) bool {
-	if !strings.HasPrefix(storedHash, devHashPrefix) {
-		return false
-	}
-	expected := hashPasswordForDev(password)
-	return subtle.ConstantTimeCompare([]byte(expected), []byte(storedHash)) == 1
+	return bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(password)) == nil
 }
