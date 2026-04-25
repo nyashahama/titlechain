@@ -110,9 +110,10 @@ type RecordDecisionRequest struct {
 }
 
 type ListCasesFilter struct {
-	Status     string
-	AssigneeID string
-	Limit      int32
+	Status         string
+	AssigneeID     string
+	OrganizationID string
+	Limit          int32
 }
 
 type SeedProperty struct {
