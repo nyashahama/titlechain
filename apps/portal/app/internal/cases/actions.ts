@@ -22,9 +22,9 @@ export async function createCaseAction(formData: FormData) {
     matter_reference: (formData.get("matter_reference") as string) || undefined,
     intake_note: (formData.get("intake_note") as string) || undefined,
   };
-  const seedPropertyId = (formData.get("seed_property_id") as string) || undefined;
-  if (seedPropertyId) {
-    input.seed_property_id = seedPropertyId;
+  const linkedPropertyId = (formData.get("linked_property_id") as string) || undefined;
+  if (linkedPropertyId) {
+    input.linked_property_id = linkedPropertyId;
   }
   const detail = await createCase(input as any);
   revalidatePath("/internal/cases");

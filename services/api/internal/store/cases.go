@@ -19,10 +19,55 @@ type CasesStore struct {
 	pool *pgxpool.Pool
 }
 
+type canonicalSourceLink struct {
+	ID             string
+	BatchID        string
+	SourceRecordID string
+	FactTable      string
+	FactID         string
+}
+
+type canonicalEvidenceDraft struct {
+	SourceReference   string
+	ExternalReference string
+	Facts             map[string]any
+}
+
 var _ cases.Repository = CasesStore{}
 
 func NewCasesStore(pool *pgxpool.Pool) CasesStore {
 	return CasesStore{pool: pool}
+}
+
+func buildCanonicalEvidenceDrafts(
+	propertyID string,
+	propertyDescription string,
+	titleReference string,
+	links []canonicalSourceLink,
+) ([]canonicalEvidenceDraft, error) {
+	if len(links) == 0 {
+		return nil, errors.New("linked property has no source provenance")
+	}
+
+	drafts := make([]canonicalEvidenceDraft, 0, len(links))
+	for _, link := range links {
+		drafts = append(drafts, canonicalEvidenceDraft{
+			SourceReference:   link.ID,
+			ExternalReference: link.FactTable,
+			Facts: map[string]any{
+				"linked_property_id":   propertyID,
+				"property_description": propertyDescription,
+				"title_reference":      titleReference,
+				"source_link_id":       link.ID,
+				"batch_id":             link.BatchID,
+				"source_record_id":     link.SourceRecordID,
+				"fact_table":           link.FactTable,
+				"fact_id":              link.FactID,
+			},
+		})
+	}
+
+	return drafts, nil
 }
 
 func (s CasesStore) ListAnalysts(ctx context.Context) ([]cases.Analyst, error) {
@@ -176,6 +221,22 @@ func (s CasesStore) GetCaseDetail(ctx context.Context, caseID string) (cases.Cas
 		detail.Decisions = append(detail.Decisions, dec)
 	}
 
+	// Derive LinkedPropertyID from canonical evidence to avoid schema migration
+	for _, ev := range detail.Evidence {
+		if ev.EvidenceType == "canonical_property" {
+			if facts, ok := ev.ExtractedFacts["linked_property_id"]; ok {
+				if str, ok := facts.(string); ok && str != "" {
+					detail.Case.LinkedPropertyID = str
+					break
+				}
+			}
+			if detail.Case.LinkedPropertyID == "" && ev.SourceReference != "" {
+				detail.Case.LinkedPropertyID = ev.SourceReference
+				break
+			}
+		}
+	}
+
 	return detail, nil
 }
 
@@ -216,6 +277,11 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		titleReference = pgtype.Text{String: req.TitleReference, Valid: req.TitleReference != ""}
 	}
 
+	var linkedPropID pgtype.UUID
+	if req.LinkedPropertyID != "" {
+		linkedPropID.Scan(req.LinkedPropertyID)
+	}
+
 	c, err := queries.CreateCaseRecord(ctx, sqlc.CreateCaseRecordParams{
 		CaseReference:             caseReference,
 		PropertyDescription:       propertyDescription,
@@ -225,6 +291,7 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		MatterReference:           pgtype.Text{String: req.MatterReference, Valid: req.MatterReference != ""},
 		IntakeNote:                pgtype.Text{String: req.IntakeNote, Valid: req.IntakeNote != ""},
 		AssigneeID:                req.ActorID,
+		LinkedPropertyID:          linkedPropID,
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -365,6 +432,68 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		}
 	}
 
+	if req.LinkedPropertyID != "" {
+		propID, err := parseUUID(req.LinkedPropertyID)
+		if err != nil {
+			return cases.CaseDetail{}, fmt.Errorf("invalid linked_property_id: %w", err)
+		}
+
+		// Try to get property summary
+		propRow, err := queries.GetPropertySummary(ctx, propID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return cases.CaseDetail{}, errors.New("linked property not found")
+			}
+			return cases.CaseDetail{}, err
+		}
+
+		sourceLinkRows, err := queries.ListCoreSourceLinksByProperty(ctx, propID)
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+
+		sourceLinks := make([]canonicalSourceLink, 0, len(sourceLinkRows))
+		for _, row := range sourceLinkRows {
+			sourceLinks = append(sourceLinks, canonicalSourceLink{
+				ID:             uuidToString(row.ID),
+				BatchID:        uuidToString(row.BatchID),
+				SourceRecordID: uuidToString(row.SourceRecordID),
+				FactTable:      row.FactTable,
+				FactID:         uuidToString(row.FactID),
+			})
+		}
+
+		drafts, err := buildCanonicalEvidenceDrafts(
+			req.LinkedPropertyID,
+			propRow.PropertyDescription,
+			propRow.TitleReference,
+			sourceLinks,
+		)
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+
+		for _, draft := range drafts {
+			facts, err := json.Marshal(draft.Facts)
+			if err != nil {
+				return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
+			}
+			_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+				CaseID:            c.ID,
+				EvidenceType:      "canonical_property",
+				SourceType:        "normalized_data",
+				SourceReference:   draft.SourceReference,
+				ExternalReference: pgtype.Text{String: draft.ExternalReference, Valid: draft.ExternalReference != ""},
+				ExtractedFacts:    facts,
+				EvidenceStatus:    string(cases.EvidenceStatusConfirmed),
+				CreatedBy:         req.ActorID,
+			})
+			if err != nil {
+				return cases.CaseDetail{}, err
+			}
+		}
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -420,8 +549,8 @@ func (s CasesStore) ConfirmPropertyMatchWorkflow(ctx context.Context, caseID str
 
 	if req.Action == "confirm" {
 		confirmed, err := queries.ConfirmCasePropertyMatch(ctx, sqlc.ConfirmCasePropertyMatchParams{
-			CaseID: id,
-			ID:     matchID,
+			CaseID:      id,
+			ID:          matchID,
 			ConfirmedBy: pgtype.Text{String: req.ActorID, Valid: true},
 		})
 		if err != nil {
@@ -773,21 +902,44 @@ func caseSummaryFromRow(row sqlc.ListCaseSummariesRow) cases.CaseSummary {
 	}
 }
 
-func caseSummaryFromRecord(c sqlc.OpsCaseRecord) cases.CaseSummary {
-	return cases.CaseSummary{
-		ID:                        uuidToString(c.ID),
-		CaseReference:             c.CaseReference,
-		PropertyDescription:       c.PropertyDescription,
-		LocalityOrArea:            c.LocalityOrArea,
-		MunicipalityOrDeedsOffice: c.MunicipalityOrDeedsOffice,
-		TitleReference:            textToString(c.TitleReference),
-		MatterReference:           textToString(c.MatterReference),
-		Status:                    cases.CaseStatus(c.Status),
-		AssigneeID:                c.AssigneeID,
-		CreatedBy:                 c.CreatedBy,
-		LinkedSeedPropertyID:      uuidToString(c.LinkedSeedPropertyID),
-		CreatedAt:                 c.CreatedAt.Time,
-		UpdatedAt:                 c.UpdatedAt.Time,
+func caseSummaryFromRecord(c any) cases.CaseSummary {
+	switch r := c.(type) {
+	case sqlc.OpsCaseRecord:
+		return cases.CaseSummary{
+			ID:                        uuidToString(r.ID),
+			CaseReference:             r.CaseReference,
+			PropertyDescription:       r.PropertyDescription,
+			LocalityOrArea:            r.LocalityOrArea,
+			MunicipalityOrDeedsOffice: r.MunicipalityOrDeedsOffice,
+			TitleReference:            textToString(r.TitleReference),
+			MatterReference:           textToString(r.MatterReference),
+			Status:                    cases.CaseStatus(r.Status),
+			AssigneeID:                r.AssigneeID,
+			CreatedBy:                 r.CreatedBy,
+			LinkedSeedPropertyID:      uuidToString(r.LinkedSeedPropertyID),
+			LinkedPropertyID:          uuidToString(r.LinkedPropertyID),
+			CreatedAt:                 r.CreatedAt.Time,
+			UpdatedAt:                 r.UpdatedAt.Time,
+		}
+	case sqlc.GetCaseRecordRow:
+		return cases.CaseSummary{
+			ID:                        uuidToString(r.ID),
+			CaseReference:             r.CaseReference,
+			PropertyDescription:       r.PropertyDescription,
+			LocalityOrArea:            r.LocalityOrArea,
+			MunicipalityOrDeedsOffice: r.MunicipalityOrDeedsOffice,
+			TitleReference:            textToString(r.TitleReference),
+			MatterReference:           textToString(r.MatterReference),
+			Status:                    cases.CaseStatus(r.Status),
+			AssigneeID:                r.AssigneeID,
+			CreatedBy:                 r.CreatedBy,
+			LinkedSeedPropertyID:      uuidToString(r.LinkedSeedPropertyID),
+			LinkedPropertyID:          uuidToString(r.LinkedPropertyID),
+			CreatedAt:                 r.CreatedAt.Time,
+			UpdatedAt:                 r.UpdatedAt.Time,
+		}
+	default:
+		return cases.CaseSummary{}
 	}
 }
 

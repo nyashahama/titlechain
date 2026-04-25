@@ -6,7 +6,7 @@ export default async function NewCasePage({
   searchParams,
 }: {
   searchParams: Promise<{
-    seed_property_id?: string;
+    linked_property_id?: string;
     property_description?: string;
     locality_or_area?: string;
     municipality_or_deeds_office?: string;
@@ -17,9 +17,9 @@ export default async function NewCasePage({
   const analysts = await listAnalysts();
   const defaultActorId = analysts[0]?.id ?? "";
 
-  const initialValues = params.seed_property_id
+  const initialValues = params.linked_property_id
     ? {
-        seed_property_id: params.seed_property_id,
+        linked_property_id: params.linked_property_id,
         property_description: params.property_description,
         locality_or_area: params.locality_or_area,
         municipality_or_deeds_office: params.municipality_or_deeds_office,

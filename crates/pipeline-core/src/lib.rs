@@ -16,3 +16,10 @@ pub struct WorkUnit {
     pub kind: String,
     pub status: JobStatus,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct RawRecord {
+    pub record_key: String,
+    pub record_type: String,
+    pub payload: serde_json::Value,
+}

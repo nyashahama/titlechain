@@ -42,6 +42,7 @@ func NewRouter(deps RouterDeps) stdhttp.Handler {
 		r.Route("/ops", func(r chi.Router) {
 			r.Get("/runs", opsRunsHandler.listRuns)
 			r.Post("/runs/property-sync", opsRunsHandler.startSeedProjection)
+			r.Post("/source-batches", opsRunsHandler.startSourceIngestion)
 		})
 
 		casesHandler := newCasesHandler(deps.Cases)

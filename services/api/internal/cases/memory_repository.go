@@ -6,22 +6,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 )
 
 type memoryRepository struct {
-	mu            sync.RWMutex
-	analysts      []Analyst
-	reasonCodes   []ReasonCode
-	cases         map[string]*caseRecord
-	evidence      map[string][]EvidenceItem
-	parties       map[string][]Party
-	decisions     map[string][]Decision
-	matches       map[string][]PropertyMatch
-	auditEvents   map[string][]AuditEvent
-	caseRefSeq    int
+	mu          sync.RWMutex
+	analysts    []Analyst
+	reasonCodes []ReasonCode
+	cases       map[string]*caseRecord
+	evidence    map[string][]EvidenceItem
+	parties     map[string][]Party
+	decisions   map[string][]Decision
+	matches     map[string][]PropertyMatch
+	auditEvents map[string][]AuditEvent
+	caseRefSeq  int
 }
 
 type caseRecord struct {
@@ -173,29 +172,29 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 			CreatedAt:      now,
 		})
 		r.addAuditEventLocked(id, req.ActorID, AuditPropertyMatchConfirmed, map[string]any{
-			"match_id":        matchID,
+			"match_id":         matchID,
 			"seed_property_id": req.SeedPropertyID,
 		})
 	}
 
 	if req.LinkedPropertyID != "" {
+		c.LinkedPropertyID = req.LinkedPropertyID
 		r.evidence[id] = append(r.evidence[id], EvidenceItem{
-			ID:             fmt.Sprintf("evi-%d", len(r.evidence[id])+1),
-			CaseID:         id,
-			EvidenceType:   "property_description",
-			SourceType:     "canonical_property",
-			SourceReference: req.LinkedPropertyID,
-			EvidenceStatus: EvidenceStatusCaptured,
-			CreatedBy:      req.ActorID,
-			CreatedAt:      now,
-		})
-		r.evidence[id] = append(r.evidence[id], EvidenceItem{
-			ID:             fmt.Sprintf("evi-%d", len(r.evidence[id])+1),
-			CaseID:         id,
-			EvidenceType:   "title_reference",
-			SourceType:     "canonical_property",
-			SourceReference: req.LinkedPropertyID,
-			EvidenceStatus: EvidenceStatusCaptured,
+			ID:                fmt.Sprintf("evi-%d-1", len(r.evidence[id])+1),
+			CaseID:            id,
+			EvidenceType:      "canonical_property",
+			SourceType:        "normalized_data",
+			SourceReference:   "source-link-1",
+			ExternalReference: "core.properties",
+			ExtractedFacts: map[string]any{
+				"linked_property_id": req.LinkedPropertyID,
+				"source_link_id":     "source-link-1",
+				"batch_id":           "batch-1",
+				"source_record_id":   "record-1",
+				"fact_table":         "core.properties",
+				"fact_id":            req.LinkedPropertyID,
+			},
+			EvidenceStatus: EvidenceStatusConfirmed,
 			CreatedBy:      req.ActorID,
 			CreatedAt:      now,
 		})
@@ -446,10 +445,4 @@ func (r *memoryRepository) addPropertyMatch(caseID string, match PropertyMatch) 
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.matches[caseID] = append(r.matches[caseID], match)
-}
-
-// Helper for tests to add a reason code
-func parseFloat(s string) float64 {
-	f, _ := strconv.ParseFloat(s, 64)
-	return f
 }

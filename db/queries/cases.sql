@@ -26,11 +26,12 @@ INSERT INTO ops.case_records (
     intake_note,
     status,
     assignee_id,
-    created_by
-) VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $8)
+    created_by,
+    linked_property_id
+) VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $8, $9)
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at;
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at;
 
 -- name: GetSeedProperty :one
 SELECT id, property_description, locality_or_area, municipality_or_deeds_office,
@@ -68,7 +69,7 @@ LIMIT sqlc.arg('limit');
 -- name: GetCaseRecord :one
 SELECT id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 FROM ops.case_records
 WHERE id = $1;
 

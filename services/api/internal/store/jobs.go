@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
@@ -52,40 +53,81 @@ func (s JobsStore) FindActiveRun(ctx context.Context, runType string) (*jobs.Run
 }
 
 func (s JobsStore) CreateSeedProjectionRun(ctx context.Context) (jobs.RunSummary, error) {
+	return s.execRunInTx(ctx, func(q *sqlc.Queries) (sqlc.OpsRun, error) {
+		batch, err := q.CreateBatch(ctx, sqlc.CreateBatchParams{
+			SourceName:     "ops.seed_properties",
+			SourceBatchKey: fmt.Sprintf("seed-property-projection-%d", time.Now().UnixNano()),
+			PayloadSha256:  "placeholder",
+		})
+		if err != nil {
+			return sqlc.OpsRun{}, err
+		}
+
+		run, err := q.CreateRun(ctx, sqlc.CreateRunParams{
+			BatchID: batch.ID,
+			RunType: jobs.RunTypeSeedPropertyProjection,
+			Status:  "pending",
+		})
+		if err != nil {
+			return sqlc.OpsRun{}, mapPgDuplicate(err)
+		}
+
+		_, err = q.CreateJob(ctx, sqlc.CreateJobParams{
+			RunID:   run.ID,
+			JobKind: "seed_property_projection",
+		})
+		if err != nil {
+			return sqlc.OpsRun{}, err
+		}
+
+		return run, nil
+	})
+}
+
+func (s JobsStore) CreateSourceIngestionRun(ctx context.Context, req jobs.StartSourceIngestionRequest) (jobs.RunSummary, error) {
+	return s.execRunInTx(ctx, func(q *sqlc.Queries) (sqlc.OpsRun, error) {
+		batch, err := q.CreateSourceBatch(ctx, sqlc.CreateSourceBatchParams{
+			SourceName:     req.SourceName,
+			SourceBatchKey: req.BatchKey,
+			PayloadUri:     pgtype.Text{String: req.PayloadURI, Valid: req.PayloadURI != ""},
+			PayloadSha256:  req.PayloadSHA256,
+		})
+		if err != nil {
+			return sqlc.OpsRun{}, err
+		}
+
+		run, err := q.CreateIngestionRun(ctx, batch.ID)
+		if err != nil {
+			return sqlc.OpsRun{}, mapPgDuplicate(err)
+		}
+
+		for i, kind := range jobs.IngestionJobKinds {
+			status := "blocked"
+			if i == 0 {
+				status = "pending"
+			}
+			_, err = q.CreateIngestionJob(ctx, sqlc.CreateIngestionJobParams{
+				RunID:   run.ID,
+				JobKind: kind,
+				Status:  status,
+			})
+			if err != nil {
+				return sqlc.OpsRun{}, err
+			}
+		}
+
+		return run, nil
+	})
+}
+
+func (s JobsStore) execRunInTx(ctx context.Context, fn func(*sqlc.Queries) (sqlc.OpsRun, error)) (jobs.RunSummary, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return jobs.RunSummary{}, err
 	}
 	defer tx.Rollback(ctx)
 
-	queries := sqlc.New(s.pool).WithTx(tx)
-
-	batch, err := queries.CreateBatch(ctx, sqlc.CreateBatchParams{
-		SourceName:     "ops.seed_properties",
-		SourceBatchKey: fmt.Sprintf("seed-property-projection-%d", time.Now().UnixNano()),
-		PayloadSha256:  "placeholder",
-	})
-	if err != nil {
-		return jobs.RunSummary{}, err
-	}
-
-	run, err := queries.CreateRun(ctx, sqlc.CreateRunParams{
-		BatchID: batch.ID,
-		RunType: jobs.RunTypeSeedPropertyProjection,
-		Status:  "pending",
-	})
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return jobs.RunSummary{}, jobs.ErrActiveRun
-		}
-		return jobs.RunSummary{}, err
-	}
-
-	_, err = queries.CreateJob(ctx, sqlc.CreateJobParams{
-		RunID:   run.ID,
-		JobKind: "seed_property_projection",
-	})
+	run, err := fn(sqlc.New(s.pool).WithTx(tx))
 	if err != nil {
 		return jobs.RunSummary{}, err
 	}
@@ -93,8 +135,15 @@ func (s JobsStore) CreateSeedProjectionRun(ctx context.Context) (jobs.RunSummary
 	if err := tx.Commit(ctx); err != nil {
 		return jobs.RunSummary{}, err
 	}
-
 	return runSummaryFromOpsRun(run), nil
+}
+
+func mapPgDuplicate(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return jobs.ErrActiveRun
+	}
+	return err
 }
 
 func runSummaryFromRow(row sqlc.ListRunsWithCountsRow) jobs.RunSummary {
@@ -102,16 +151,18 @@ func runSummaryFromRow(row sqlc.ListRunsWithCountsRow) jobs.RunSummary {
 		ID:            uuidToString(row.ID),
 		RunType:       row.RunType,
 		Status:        row.Status,
+		CreatedAt:     row.CreatedAt.Time,
 		TotalJobs:     int(row.TotalJobs),
 		CompletedJobs: int(row.CompletedJobs),
 		FailedJobs:    int(row.FailedJobs),
-		CreatedAt:     row.CreatedAt.Time.Format("2006-01-02T15:04:05Z07:00"),
 	}
 	if row.StartedAt.Valid {
-		summary.StartedAt = row.StartedAt.Time.Format("2006-01-02T15:04:05Z07:00")
+		t := row.StartedAt.Time
+		summary.StartedAt = &t
 	}
 	if row.FinishedAt.Valid {
-		summary.FinishedAt = row.FinishedAt.Time.Format("2006-01-02T15:04:05Z07:00")
+		t := row.FinishedAt.Time
+		summary.FinishedAt = &t
 	}
 	if row.LatestError != nil {
 		if s, ok := row.LatestError.(string); ok {
@@ -126,13 +177,15 @@ func runSummaryFromOpsRun(run sqlc.OpsRun) jobs.RunSummary {
 		ID:        uuidToString(run.ID),
 		RunType:   run.RunType,
 		Status:    run.Status,
-		CreatedAt: run.CreatedAt.Time.Format("2006-01-02T15:04:05Z07:00"),
+		CreatedAt: run.CreatedAt.Time,
 	}
 	if run.StartedAt.Valid {
-		summary.StartedAt = run.StartedAt.Time.Format("2006-01-02T15:04:05Z07:00")
+		t := run.StartedAt.Time
+		summary.StartedAt = &t
 	}
 	if run.FinishedAt.Valid {
-		summary.FinishedAt = run.FinishedAt.Time.Format("2006-01-02T15:04:05Z07:00")
+		t := run.FinishedAt.Time
+		summary.FinishedAt = &t
 	}
 	return summary
 }

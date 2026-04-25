@@ -224,28 +224,6 @@ func TestService_ReassignCaseCreatesAuditEvent(t *testing.T) {
 	}
 }
 
-func TestService_CreateCaseFromNormalizedPropertyHydratesCanonicalEvidence(t *testing.T) {
-	repo := NewMemoryRepository()
-	svc := NewService(repo)
-
-	detail, err := svc.CreateCase(context.Background(), CreateCaseRequest{
-		ActorID:                   "ana-001",
-		PropertyDescription:       "Erf 412 Rosebank Township",
-		LocalityOrArea:            "Rosebank",
-		MunicipalityOrDeedsOffice: "Johannesburg",
-		LinkedPropertyID:          "prop-1",
-	})
-	if err != nil {
-		t.Fatalf("create case: %v", err)
-	}
-	if detail.Case.LinkedPropertyID != "prop-1" {
-		t.Fatalf("linked_property_id = %s, want prop-1", detail.Case.LinkedPropertyID)
-	}
-	if len(detail.Evidence) == 0 {
-		t.Fatal("evidence = 0, want canonical evidence hydrated")
-	}
-}
-
 func TestService_CreateCaseWithSeedPropertyStartsInReview(t *testing.T) {
 	repo := NewMemoryRepository()
 	svc := NewService(repo)
@@ -283,5 +261,43 @@ func TestService_CreateCaseWithSeedPropertyStartsInReview(t *testing.T) {
 	}
 	if detail.Matches[0].Status != "confirmed" {
 		t.Errorf("match_status = %s, want confirmed", detail.Matches[0].Status)
+	}
+}
+
+func TestService_CreateCaseFromNormalizedPropertyHydratesCanonicalEvidence(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+
+	detail, err := svc.CreateCase(context.Background(), CreateCaseRequest{
+		ActorID:                   "ana-001",
+		PropertyDescription:       "Erf 412 Rosebank Township",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+		LinkedPropertyID:          "prop-1",
+	})
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+	if detail.Case.LinkedPropertyID != "prop-1" {
+		t.Fatalf("linked_property_id = %s, want prop-1", detail.Case.LinkedPropertyID)
+	}
+	if len(detail.Evidence) == 0 {
+		t.Fatal("evidence = 0, want canonical evidence hydrated")
+	}
+	found := false
+	for _, ev := range detail.Evidence {
+		if ev.EvidenceType == "canonical_property" {
+			if ev.SourceReference == "prop-1" {
+				t.Fatal("source_reference should point to canonical provenance, got linked property id")
+			}
+			if got := ev.ExtractedFacts["source_link_id"]; got == nil {
+				t.Fatal("expected source_link_id in canonical evidence facts")
+			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("expected canonical_property evidence item")
 	}
 }
