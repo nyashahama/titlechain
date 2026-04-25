@@ -63,21 +63,31 @@ type ReasonCode struct {
 	SortOrder   int32          `json:"sort_order"`
 }
 
+type PilotContext struct {
+	MatterID          string    `json:"matter_id"`
+	OrganizationID    string    `json:"organization_id"`
+	OrganizationName  string    `json:"organization_name"`
+	CustomerReference string    `json:"customer_reference,omitempty"`
+	CustomerStatus    string    `json:"customer_status"`
+	SubmittedAt       time.Time `json:"submitted_at"`
+}
+
 type CaseSummary struct {
-	ID                        string     `json:"id"`
-	CaseReference             string     `json:"case_reference"`
-	PropertyDescription       string     `json:"property_description"`
-	LocalityOrArea            string     `json:"locality_or_area"`
-	MunicipalityOrDeedsOffice string     `json:"municipality_or_deeds_office"`
-	TitleReference            string     `json:"title_reference,omitempty"`
-	MatterReference           string     `json:"matter_reference,omitempty"`
-	Status                    CaseStatus `json:"status"`
-	AssigneeID                string     `json:"assignee_id"`
-	CreatedBy                 string     `json:"created_by"`
-	LinkedSeedPropertyID      string     `json:"linked_seed_property_id,omitempty"`
-	LinkedPropertyID          string     `json:"linked_property_id,omitempty"`
-	CreatedAt                 time.Time  `json:"created_at"`
-	UpdatedAt                 time.Time  `json:"updated_at"`
+	ID                        string        `json:"id"`
+	CaseReference             string        `json:"case_reference"`
+	PropertyDescription       string        `json:"property_description"`
+	LocalityOrArea            string        `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string        `json:"municipality_or_deeds_office"`
+	TitleReference            string        `json:"title_reference,omitempty"`
+	MatterReference           string        `json:"matter_reference,omitempty"`
+	Status                    CaseStatus    `json:"status"`
+	AssigneeID                string        `json:"assignee_id"`
+	CreatedBy                 string        `json:"created_by"`
+	LinkedSeedPropertyID      string        `json:"linked_seed_property_id,omitempty"`
+	LinkedPropertyID          string        `json:"linked_property_id,omitempty"`
+	Pilot                     *PilotContext `json:"pilot,omitempty"`
+	CreatedAt                 time.Time     `json:"created_at"`
+	UpdatedAt                 time.Time     `json:"updated_at"`
 }
 
 type CreateCaseRequest struct {

@@ -414,6 +414,8 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, c.ID, "open")
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -431,6 +433,7 @@ func (s CasesStore) maybeAutoReopen(ctx context.Context, queries *sqlc.Queries, 
 		if err != nil {
 			return err
 		}
+		syncPilotStatusInTx(ctx, queries, id, "reopened")
 		meta, _ := json.Marshal(map[string]any{"trigger": "auto_reopen"})
 		_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 			CaseID:    id,
@@ -517,6 +520,8 @@ func (s CasesStore) ConfirmPropertyMatchWorkflow(ctx context.Context, caseID str
 	if err != nil {
 		return cases.CaseDetail{}, err
 	}
+
+	syncPilotStatusInTx(ctx, queries, id, "in_review")
 
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
@@ -808,6 +813,8 @@ func (s CasesStore) AcceptProposalWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, id, "resolved")
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -893,6 +900,8 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, id, "resolved")
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -928,6 +937,8 @@ func (s CasesStore) CloseUnresolvedWorkflow(ctx context.Context, caseID string, 
 	if err != nil {
 		return cases.CaseDetail{}, err
 	}
+
+	syncPilotStatusInTx(ctx, queries, id, "closed_unresolved")
 
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
@@ -965,6 +976,8 @@ func (s CasesStore) ReopenCaseWorkflow(ctx context.Context, caseID string, req c
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, id, "reopened")
+
 	detail, err := s.reevaluateCaseInTx(ctx, queries, id)
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -973,7 +986,6 @@ func (s CasesStore) ReopenCaseWorkflow(ctx context.Context, caseID string, req c
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
-
 	return detail, nil
 }
 

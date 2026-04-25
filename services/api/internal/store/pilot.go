@@ -402,3 +402,23 @@ func userRecordFromRow(id, orgID pgtype.UUID, email, displayName, role string, a
 		Active:       active,
 	}
 }
+
+func customerStatusFromCaseStatus(status string) string {
+	switch status {
+	case "in_review":
+		return "in_review"
+	case "resolved", "closed_unresolved":
+		return "resolved"
+	case "reopened":
+		return "reopened"
+	default:
+		return "submitted"
+	}
+}
+
+func syncPilotStatusInTx(ctx context.Context, queries *sqlc.Queries, caseID pgtype.UUID, caseStatus string) {
+	_ = queries.UpdatePilotMatterStatusByCase(ctx, sqlc.UpdatePilotMatterStatusByCaseParams{
+		CaseID:         caseID,
+		CustomerStatus: customerStatusFromCaseStatus(caseStatus),
+	})
+}
