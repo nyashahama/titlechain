@@ -53,5 +53,6 @@ target
 .env.local
 services/api/api
 .superpowers/
+docs/superpowers/
 docs/
 .worktrees/
