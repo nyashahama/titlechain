@@ -123,9 +123,14 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 
 	status := CaseStatusOpen
 	linkedSeedPropertyID := ""
+	linkedPropertyID := ""
 	if req.SeedPropertyID != "" {
 		status = CaseStatusInReview
 		linkedSeedPropertyID = req.SeedPropertyID
+	}
+	if req.LinkedPropertyID != "" {
+		status = CaseStatusInReview
+		linkedPropertyID = req.LinkedPropertyID
 	}
 
 	c := &caseRecord{
@@ -141,6 +146,7 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 			AssigneeID:                req.ActorID,
 			CreatedBy:                 req.ActorID,
 			LinkedSeedPropertyID:      linkedSeedPropertyID,
+			LinkedPropertyID:          linkedPropertyID,
 			CreatedAt:                 now,
 			UpdatedAt:                 now,
 		},
@@ -173,7 +179,6 @@ func (r *memoryRepository) CreateCaseWorkflow(_ context.Context, req CreateCaseR
 
 	if req.LinkedPropertyID != "" {
 		c.LinkedPropertyID = req.LinkedPropertyID
-		// Hydrate canonical evidence
 		r.evidence[id] = append(r.evidence[id], EvidenceItem{
 			ID:                fmt.Sprintf("evi-%d-1", len(r.evidence[id])+1),
 			CaseID:            id,

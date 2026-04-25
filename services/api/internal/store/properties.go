@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,13 +25,13 @@ func (s PropertiesStore) ListProperties(ctx context.Context, filter property.Lis
 	queries := sqlc.New(s.pool)
 
 	var query, locality, status pgtype.Text
-	if filter.Query != "" {
+	if strings.TrimSpace(filter.Query) != "" {
 		query = pgtype.Text{String: filter.Query, Valid: true}
 	}
-	if filter.Locality != "" {
+	if strings.TrimSpace(filter.Locality) != "" {
 		locality = pgtype.Text{String: filter.Locality, Valid: true}
 	}
-	if filter.Status != "" {
+	if strings.TrimSpace(filter.Status) != "" {
 		status = pgtype.Text{String: filter.Status, Valid: true}
 	}
 
@@ -52,11 +53,15 @@ func (s PropertiesStore) ListProperties(ctx context.Context, filter property.Lis
 		return nil, err
 	}
 
+	return mapPropertySummaries(rows), nil
+}
+
+func mapPropertySummaries(rows []sqlc.ListPropertySummariesRow) []property.PropertySummary {
 	result := make([]property.PropertySummary, 0, len(rows))
 	for _, row := range rows {
 		result = append(result, propertySummaryFromRow(row))
 	}
-	return result, nil
+	return result
 }
 
 func propertySummaryFromRow(row sqlc.ListPropertySummariesRow) property.PropertySummary {
