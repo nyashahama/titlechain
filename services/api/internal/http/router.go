@@ -8,6 +8,7 @@ import (
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
+	"github.com/nyasha-hama/titlechain/services/api/internal/pilot"
 	"github.com/nyasha-hama/titlechain/services/api/internal/property"
 )
 
@@ -15,6 +16,7 @@ type RouterDeps struct {
 	Cases      cases.Service
 	Properties property.Service
 	Jobs       jobs.Service
+	Pilot      pilot.Service
 }
 
 func NewRouter(deps RouterDeps) stdhttp.Handler {

@@ -11,6 +11,7 @@ import (
 	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 	apihttp "github.com/nyasha-hama/titlechain/services/api/internal/http"
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
+	"github.com/nyasha-hama/titlechain/services/api/internal/pilot"
 	"github.com/nyasha-hama/titlechain/services/api/internal/platform"
 	"github.com/nyasha-hama/titlechain/services/api/internal/property"
 	"github.com/nyasha-hama/titlechain/services/api/internal/store"
@@ -36,9 +37,12 @@ func main() {
 	jobsStore := store.NewJobsStore(pool)
 	jobsService := jobs.NewService(jobsStore)
 
+	pilotStore := store.NewPilotStore(pool)
+	pilotService := pilot.NewService(pilotStore)
+
 	server := &http.Server{
 		Addr:    cfg.HTTPAddr,
-		Handler: apihttp.NewRouter(apihttp.RouterDeps{Cases: casesService, Properties: propertiesService, Jobs: jobsService}),
+		Handler: apihttp.NewRouter(apihttp.RouterDeps{Cases: casesService, Properties: propertiesService, Jobs: jobsService, Pilot: pilotService}),
 	}
 
 	log.Printf("api listening on %s", cfg.HTTPAddr)
