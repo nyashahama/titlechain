@@ -1,7 +1,11 @@
 mod config;
 mod db;
 mod http;
+mod ingestion;
+mod materialize;
+mod normalization;
 mod projection;
+mod read_model;
 mod worker;
 
 use sqlx::postgres::PgPoolOptions;

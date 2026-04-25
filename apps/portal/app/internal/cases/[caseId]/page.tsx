@@ -6,6 +6,7 @@ import { EvidenceForm } from "../_components/evidence-form";
 import { PartyForm } from "../_components/party-form";
 import { ReopenForm } from "../_components/reopen-form";
 import { CaseDetailAnalystSwitcher } from "../_components/case-detail-analyst-switcher";
+import { DecisionProposalCard } from "../_components/decision-proposal-card";
 
 export default async function CaseDetailPage({
   params,
@@ -73,8 +74,16 @@ export default async function CaseDetailPage({
         <div className="space-y-4 lg:sticky lg:top-8 lg:self-start">
           {isOpen && (
             <>
+              {detail.current_proposal && (
+                <DecisionProposalCard caseId={caseId} proposal={detail.current_proposal} actorId={actorId} />
+              )}
               <div className="border border-border rounded-2xl bg-card/20 p-5">
-                <RecordDecisionForm caseId={caseId} reasonCodes={reasonCodes} actorId={actorId} />
+                <RecordDecisionForm
+                  caseId={caseId}
+                  reasonCodes={reasonCodes}
+                  actorId={actorId}
+                  mode={detail.current_proposal ? "override" : "record"}
+                />
               </div>
               <div className="border border-border rounded-2xl bg-card/20 p-5">
                 <EvidenceForm caseId={caseId} actorId={actorId} />

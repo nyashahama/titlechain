@@ -11,6 +11,8 @@ import {
   confirmPropertyMatch,
   addParty,
   reopenCase,
+  reevaluateCase,
+  acceptProposal,
 } from "./api";
 
 export async function createCaseAction(formData: FormData) {
@@ -24,9 +26,9 @@ export async function createCaseAction(formData: FormData) {
       matter_reference: (formData.get("matter_reference") as string) || undefined,
       intake_note: (formData.get("intake_note") as string) || undefined,
     };
-    const seedPropertyId = (formData.get("seed_property_id") as string) || undefined;
-    if (seedPropertyId) {
-      input.seed_property_id = seedPropertyId;
+    const linkedPropertyId = (formData.get("linked_property_id") as string) || undefined;
+    if (linkedPropertyId) {
+      input.linked_property_id = linkedPropertyId;
     }
     const detail = await createCase(input as any);
     toast.success("Case created", { description: detail.case.case_reference });
@@ -173,4 +175,21 @@ export async function reopenCaseAction(caseId: string, formData: FormData) {
     toast.error("Failed to reopen case", { description: err instanceof Error ? err.message : "Unknown error" });
     throw err;
   }
+}
+
+export async function reevaluateCaseAction(caseId: string, formData: FormData) {
+  const detail = await reevaluateCase(caseId, {
+    actor_id: formData.get("actor_id") as string,
+  });
+  revalidatePath(`/internal/cases/${caseId}`);
+  return detail;
+}
+
+export async function acceptProposalAction(caseId: string, formData: FormData) {
+  const detail = await acceptProposal(caseId, {
+    actor_id: formData.get("actor_id") as string,
+    note: (formData.get("note") as string) || undefined,
+  });
+  revalidatePath(`/internal/cases/${caseId}`);
+  return detail;
 }

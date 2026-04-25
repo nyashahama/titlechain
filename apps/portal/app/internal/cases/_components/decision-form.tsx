@@ -64,10 +64,12 @@ export function RecordDecisionForm({
   caseId,
   reasonCodes,
   actorId,
+  mode = "record",
 }: {
   caseId: string;
   reasonCodes: ReasonCode[];
   actorId: string;
+  mode?: "record" | "override";
 }) {
   const [decision, setDecision] = useState<string>("clear");
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +99,9 @@ export function RecordDecisionForm({
   return (
     <form action={handleSubmit} className="space-y-4">
       <input type="hidden" name="actor_id" value={actorId} />
-      <h3 className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">Record Decision</h3>
+      <h3 className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">
+        {mode === "override" ? "Record Override Decision" : "Record Decision"}
+      </h3>
 
       <div>
         <label className="block text-[11px] text-muted mb-1.5">Decision</label>
@@ -146,7 +150,7 @@ export function RecordDecisionForm({
         type="submit"
         className="w-full bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
       >
-        Record Decision
+        {mode === "override" ? "Record Override" : "Record Decision"}
       </button>
     </form>
   );

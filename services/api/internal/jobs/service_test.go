@@ -2,13 +2,17 @@ package jobs
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"testing"
 )
 
 type stubRepo struct {
-	runs      []RunSummary
-	activeRun *RunSummary
-	createErr error
+	runs                   []RunSummary
+	activeRun              *RunSummary
+	createErr              error
+	lastSourceIngestionReq *StartSourceIngestionRequest
+	sourceIngestionRun     RunSummary
 }
 
 func (r *stubRepo) ListRunsWithCounts(_ context.Context, _ int32) ([]RunSummary, error) {
@@ -20,12 +24,30 @@ func (r *stubRepo) FindActiveRun(_ context.Context, _ string) (*RunSummary, erro
 }
 
 func (r *stubRepo) CreateSeedProjectionRun(_ context.Context) (RunSummary, error) {
+	if r.activeRun != nil {
+		return RunSummary{}, ErrActiveRun
+	}
 	if r.createErr != nil {
 		return RunSummary{}, r.createErr
 	}
 	return RunSummary{
 		ID:      "run-1",
 		RunType: RunTypeSeedPropertyProjection,
+		Status:  "pending",
+	}, nil
+}
+
+func (r *stubRepo) CreateSourceIngestionRun(_ context.Context, req StartSourceIngestionRequest) (RunSummary, error) {
+	r.lastSourceIngestionReq = &req
+	if r.activeRun != nil {
+		return RunSummary{}, ErrActiveRun
+	}
+	if r.sourceIngestionRun.ID != "" {
+		return r.sourceIngestionRun, nil
+	}
+	return RunSummary{
+		ID:      "run-2",
+		RunType: RunTypeSourceIngestionV1,
 		Status:  "pending",
 	}, nil
 }
@@ -99,5 +121,99 @@ func TestService_StartSeedPropertyProjectionAllowsSequentialRuns(t *testing.T) {
 	_, err = svc.StartSeedPropertyProjection(ctx)
 	if err != nil {
 		t.Fatalf("second run: %v", err)
+	}
+}
+
+func TestService_StartSourceIngestionRejectsActiveRun(t *testing.T) {
+	repo := &stubRepo{
+		activeRun: &RunSummary{
+			ID:      "run-active",
+			RunType: RunTypeSourceIngestionV1,
+			Status:  "running",
+		},
+	}
+	svc := NewService(repo)
+
+	_, err := svc.StartSourceIngestion(context.Background(), StartSourceIngestionRequest{
+		SourceName: "pilot.deeds_snapshot",
+		BatchKey:   "2026-04-25-main",
+	})
+	if err == nil {
+		t.Fatal("expected error for active run, got nil")
+	}
+	if err != ErrActiveRun {
+		t.Errorf("error = %v, want ErrActiveRun", err)
+	}
+}
+
+func TestService_StartSourceIngestionCreatesFourStageRun(t *testing.T) {
+	repo := &stubRepo{
+		sourceIngestionRun: RunSummary{
+			ID:        "run-svc-2",
+			RunType:   RunTypeSourceIngestionV1,
+			Status:    "pending",
+			TotalJobs: 4,
+		},
+	}
+	svc := NewService(repo)
+
+	run, err := svc.StartSourceIngestion(context.Background(), StartSourceIngestionRequest{
+		SourceName: "pilot.deeds_snapshot",
+		BatchKey:   "2026-04-25-main",
+	})
+	if err != nil {
+		t.Fatalf("start source ingestion: %v", err)
+	}
+	if run.ID != "run-svc-2" {
+		t.Errorf("run id = %s, want run-svc-2", run.ID)
+	}
+	if run.RunType != RunTypeSourceIngestionV1 {
+		t.Errorf("run_type = %s, want %s", run.RunType, RunTypeSourceIngestionV1)
+	}
+	if run.TotalJobs != 4 {
+		t.Errorf("total_jobs = %d, want 4", run.TotalJobs)
+	}
+	if repo.lastSourceIngestionReq == nil {
+		t.Fatal("expected request to be passed to repository, got nil")
+	}
+	if repo.lastSourceIngestionReq.SourceName != "pilot.deeds_snapshot" {
+		t.Errorf("source_name = %s, want pilot.deeds_snapshot", repo.lastSourceIngestionReq.SourceName)
+	}
+	if repo.lastSourceIngestionReq.BatchKey != "2026-04-25-main" {
+		t.Errorf("batch_key = %s, want 2026-04-25-main", repo.lastSourceIngestionReq.BatchKey)
+	}
+}
+
+func TestService_StartSourceIngestionRejectsEmptySourceName(t *testing.T) {
+	tests := []struct {
+		name       string
+		sourceName string
+		batchKey   string
+		wantErr    string
+	}{
+		{"empty source_name", "", "2026-04-25-main", "source_name is required"},
+		{"whitespace source_name", "   ", "2026-04-25-main", "source_name is required"},
+		{"empty batch_key", "pilot.deeds_snapshot", "", "batch_key is required"},
+		{"whitespace batch_key", "pilot.deeds_snapshot", "\t\n", "batch_key is required"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &stubRepo{}
+			svc := NewService(repo)
+			_, err := svc.StartSourceIngestion(context.Background(), StartSourceIngestionRequest{
+				SourceName: tt.sourceName,
+				BatchKey:   tt.batchKey,
+			})
+			if err == nil {
+				t.Fatal("expected error, got nil")
+			}
+			if !errors.Is(err, ErrValidation) {
+				t.Errorf("error = %v, want ErrValidation", err)
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("error = %q, want containing %q", err.Error(), tt.wantErr)
+			}
+		})
 	}
 }

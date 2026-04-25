@@ -8,6 +8,51 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type CoreEncumbrance struct {
+	ID              pgtype.UUID        `json:"id"`
+	PropertyID      pgtype.UUID        `json:"property_id"`
+	EncumbranceType string             `json:"encumbrance_type"`
+	Status          string             `json:"status"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+type CoreProperty struct {
+	ID                        pgtype.UUID        `json:"id"`
+	PropertyFingerprint       string             `json:"property_fingerprint"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	PropertyDescription       string             `json:"property_description"`
+	LatestTitleReference      string             `json:"latest_title_reference"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+type CorePropertyParty struct {
+	ID         pgtype.UUID        `json:"id"`
+	PropertyID pgtype.UUID        `json:"property_id"`
+	PartyName  string             `json:"party_name"`
+	PartyRole  string             `json:"party_role"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
+type CoreSourceLink struct {
+	ID             pgtype.UUID        `json:"id"`
+	PropertyID     pgtype.UUID        `json:"property_id"`
+	BatchID        pgtype.UUID        `json:"batch_id"`
+	SourceRecordID pgtype.UUID        `json:"source_record_id"`
+	FactTable      string             `json:"fact_table"`
+	FactID         pgtype.UUID        `json:"fact_id"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type CoreTitleRegistration struct {
+	ID                 pgtype.UUID        `json:"id"`
+	PropertyID         pgtype.UUID        `json:"property_id"`
+	TitleReference     string             `json:"title_reference"`
+	RegistrationStatus string             `json:"registration_status"`
+	EffectiveAt        pgtype.Timestamptz `json:"effective_at"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+}
+
 type OpsAnalyst struct {
 	ID          string             `json:"id"`
 	DisplayName string             `json:"display_name"`
@@ -26,14 +71,33 @@ type OpsCaseAuditEvent struct {
 }
 
 type OpsCaseDecision struct {
-	ID           pgtype.UUID        `json:"id"`
-	CaseID       pgtype.UUID        `json:"case_id"`
-	Decision     string             `json:"decision"`
-	Note         string             `json:"note"`
-	Status       string             `json:"status"`
-	CreatedBy    string             `json:"created_by"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	SupersededAt pgtype.Timestamptz `json:"superseded_at"`
+	ID             pgtype.UUID        `json:"id"`
+	CaseID         pgtype.UUID        `json:"case_id"`
+	Decision       string             `json:"decision"`
+	Note           string             `json:"note"`
+	Status         string             `json:"status"`
+	CreatedBy      string             `json:"created_by"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	SupersededAt   pgtype.Timestamptz `json:"superseded_at"`
+	DecisionSource string             `json:"decision_source"`
+	ProposalID     pgtype.UUID        `json:"proposal_id"`
+}
+
+type OpsCaseDecisionProposal struct {
+	ID            pgtype.UUID        `json:"id"`
+	CaseID        pgtype.UUID        `json:"case_id"`
+	EngineVersion string             `json:"engine_version"`
+	Decision      string             `json:"decision"`
+	Summary       string             `json:"summary"`
+	Explanation   []byte             `json:"explanation"`
+	Status        string             `json:"status"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	SupersededAt  pgtype.Timestamptz `json:"superseded_at"`
+}
+
+type OpsCaseDecisionProposalReasonCode struct {
+	ProposalID pgtype.UUID `json:"proposal_id"`
+	ReasonCode string      `json:"reason_code"`
 }
 
 type OpsCaseDecisionReasonCode struct {
@@ -96,6 +160,7 @@ type OpsCaseRecord struct {
 	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
 }
 
 type OpsJob struct {
@@ -166,6 +231,16 @@ type RawBatch struct {
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
+type RawRecord struct {
+	ID            pgtype.UUID        `json:"id"`
+	BatchID       pgtype.UUID        `json:"batch_id"`
+	RecordKey     string             `json:"record_key"`
+	RecordType    string             `json:"record_type"`
+	Payload       []byte             `json:"payload"`
+	PayloadSha256 string             `json:"payload_sha256"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
 type ReadPropertySummary struct {
 	PropertyID                pgtype.UUID        `json:"property_id"`
 	TitleReference            string             `json:"title_reference"`
@@ -175,4 +250,58 @@ type ReadPropertySummary struct {
 	LocalityOrArea            string             `json:"locality_or_area"`
 	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
 	CurrentOwnerName          pgtype.Text        `json:"current_owner_name"`
+}
+
+type StageEncumbranceRow struct {
+	ID              pgtype.UUID        `json:"id"`
+	BatchID         pgtype.UUID        `json:"batch_id"`
+	SourceRecordID  pgtype.UUID        `json:"source_record_id"`
+	RecordKey       string             `json:"record_key"`
+	TitleReference  string             `json:"title_reference"`
+	EncumbranceType string             `json:"encumbrance_type"`
+	Status          string             `json:"status"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+type StagePartyRow struct {
+	ID             pgtype.UUID        `json:"id"`
+	BatchID        pgtype.UUID        `json:"batch_id"`
+	SourceRecordID pgtype.UUID        `json:"source_record_id"`
+	RecordKey      string             `json:"record_key"`
+	TitleReference string             `json:"title_reference"`
+	PartyName      string             `json:"party_name"`
+	PartyRole      string             `json:"party_role"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type StagePropertyRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	BatchID                   pgtype.UUID        `json:"batch_id"`
+	SourceRecordID            pgtype.UUID        `json:"source_record_id"`
+	RecordKey                 string             `json:"record_key"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	PropertyDescription       string             `json:"property_description"`
+	TitleReference            string             `json:"title_reference"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+}
+
+type StageQuarantinedRecord struct {
+	ID             pgtype.UUID        `json:"id"`
+	BatchID        pgtype.UUID        `json:"batch_id"`
+	SourceRecordID pgtype.UUID        `json:"source_record_id"`
+	RecordKey      string             `json:"record_key"`
+	Reason         string             `json:"reason"`
+	Details        []byte             `json:"details"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type StageTitleRow struct {
+	ID                 pgtype.UUID        `json:"id"`
+	BatchID            pgtype.UUID        `json:"batch_id"`
+	SourceRecordID     pgtype.UUID        `json:"source_record_id"`
+	RecordKey          string             `json:"record_key"`
+	TitleReference     string             `json:"title_reference"`
+	RegistrationStatus string             `json:"registration_status"`
+	EffectiveAt        pgtype.Timestamptz `json:"effective_at"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 }

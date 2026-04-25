@@ -105,6 +105,21 @@ func (q *Queries) AddCaseParty(ctx context.Context, arg AddCasePartyParams) (Ops
 	return i, err
 }
 
+const addDecisionProposalReasonCode = `-- name: AddDecisionProposalReasonCode :exec
+INSERT INTO ops.case_decision_proposal_reason_codes (proposal_id, reason_code)
+VALUES ($1, $2)
+`
+
+type AddDecisionProposalReasonCodeParams struct {
+	ProposalID pgtype.UUID `json:"proposal_id"`
+	ReasonCode string      `json:"reason_code"`
+}
+
+func (q *Queries) AddDecisionProposalReasonCode(ctx context.Context, arg AddDecisionProposalReasonCodeParams) error {
+	_, err := q.db.Exec(ctx, addDecisionProposalReasonCode, arg.ProposalID, arg.ReasonCode)
+	return err
+}
+
 const addDecisionReasonCode = `-- name: AddDecisionReasonCode :exec
 INSERT INTO ops.case_decision_reason_codes (decision_id, reason_code)
 VALUES ($1, $2)
@@ -126,12 +141,31 @@ SET status = 'closed_unresolved', resolved_at = NOW(), updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 `
 
-func (q *Queries) CloseCaseUnresolved(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error) {
+type CloseCaseUnresolvedRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) CloseCaseUnresolved(ctx context.Context, id pgtype.UUID) (CloseCaseUnresolvedRow, error) {
 	row := q.db.QueryRow(ctx, closeCaseUnresolved, id)
-	var i OpsCaseRecord
+	var i CloseCaseUnresolvedRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -145,6 +179,7 @@ func (q *Queries) CloseCaseUnresolved(ctx context.Context, id pgtype.UUID) (OpsC
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -182,6 +217,44 @@ func (q *Queries) ConfirmCasePropertyMatch(ctx context.Context, arg ConfirmCaseP
 	return i, err
 }
 
+const createAcceptedDecisionFromProposal = `-- name: CreateAcceptedDecisionFromProposal :one
+INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by, decision_source, proposal_id)
+VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5)
+RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id
+`
+
+type CreateAcceptedDecisionFromProposalParams struct {
+	CaseID     pgtype.UUID `json:"case_id"`
+	Decision   string      `json:"decision"`
+	Note       string      `json:"note"`
+	CreatedBy  string      `json:"created_by"`
+	ProposalID pgtype.UUID `json:"proposal_id"`
+}
+
+func (q *Queries) CreateAcceptedDecisionFromProposal(ctx context.Context, arg CreateAcceptedDecisionFromProposalParams) (OpsCaseDecision, error) {
+	row := q.db.QueryRow(ctx, createAcceptedDecisionFromProposal,
+		arg.CaseID,
+		arg.Decision,
+		arg.Note,
+		arg.CreatedBy,
+		arg.ProposalID,
+	)
+	var i OpsCaseDecision
+	err := row.Scan(
+		&i.ID,
+		&i.CaseID,
+		&i.Decision,
+		&i.Note,
+		&i.Status,
+		&i.CreatedBy,
+		&i.CreatedAt,
+		&i.SupersededAt,
+		&i.DecisionSource,
+		&i.ProposalID,
+	)
+	return i, err
+}
+
 const createCaseAuditEvent = `-- name: CreateCaseAuditEvent :one
 INSERT INTO ops.case_audit_events (case_id, actor_id, event_type, metadata)
 VALUES ($1, $2, $3, $4)
@@ -215,16 +288,18 @@ func (q *Queries) CreateCaseAuditEvent(ctx context.Context, arg CreateCaseAuditE
 }
 
 const createCaseDecision = `-- name: CreateCaseDecision :one
-INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by)
-VALUES ($1, $2, $3, 'current', $4)
-RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at
+INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by, decision_source, proposal_id)
+VALUES ($1, $2, $3, 'current', $4, $5, $6)
+RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id
 `
 
 type CreateCaseDecisionParams struct {
-	CaseID    pgtype.UUID `json:"case_id"`
-	Decision  string      `json:"decision"`
-	Note      string      `json:"note"`
-	CreatedBy string      `json:"created_by"`
+	CaseID         pgtype.UUID `json:"case_id"`
+	Decision       string      `json:"decision"`
+	Note           string      `json:"note"`
+	CreatedBy      string      `json:"created_by"`
+	DecisionSource string      `json:"decision_source"`
+	ProposalID     pgtype.UUID `json:"proposal_id"`
 }
 
 func (q *Queries) CreateCaseDecision(ctx context.Context, arg CreateCaseDecisionParams) (OpsCaseDecision, error) {
@@ -233,6 +308,8 @@ func (q *Queries) CreateCaseDecision(ctx context.Context, arg CreateCaseDecision
 		arg.Decision,
 		arg.Note,
 		arg.CreatedBy,
+		arg.DecisionSource,
+		arg.ProposalID,
 	)
 	var i OpsCaseDecision
 	err := row.Scan(
@@ -244,6 +321,8 @@ func (q *Queries) CreateCaseDecision(ctx context.Context, arg CreateCaseDecision
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.SupersededAt,
+		&i.DecisionSource,
+		&i.ProposalID,
 	)
 	return i, err
 }
@@ -259,11 +338,12 @@ INSERT INTO ops.case_records (
     intake_note,
     status,
     assignee_id,
-    created_by
-) VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $8)
+    created_by,
+    linked_property_id
+) VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $8, $9)
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 `
 
 type CreateCaseRecordParams struct {
@@ -275,9 +355,29 @@ type CreateCaseRecordParams struct {
 	MatterReference           pgtype.Text `json:"matter_reference"`
 	IntakeNote                pgtype.Text `json:"intake_note"`
 	AssigneeID                string      `json:"assignee_id"`
+	LinkedPropertyID          pgtype.UUID `json:"linked_property_id"`
 }
 
-func (q *Queries) CreateCaseRecord(ctx context.Context, arg CreateCaseRecordParams) (OpsCaseRecord, error) {
+type CreateCaseRecordRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) CreateCaseRecord(ctx context.Context, arg CreateCaseRecordParams) (CreateCaseRecordRow, error) {
 	row := q.db.QueryRow(ctx, createCaseRecord,
 		arg.CaseReference,
 		arg.PropertyDescription,
@@ -287,8 +387,9 @@ func (q *Queries) CreateCaseRecord(ctx context.Context, arg CreateCaseRecordPara
 		arg.MatterReference,
 		arg.IntakeNote,
 		arg.AssigneeID,
+		arg.LinkedPropertyID,
 	)
-	var i OpsCaseRecord
+	var i CreateCaseRecordRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -302,9 +403,47 @@ func (q *Queries) CreateCaseRecord(ctx context.Context, arg CreateCaseRecordPara
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createDecisionProposal = `-- name: CreateDecisionProposal :one
+INSERT INTO ops.case_decision_proposals (case_id, engine_version, decision, summary, explanation, status)
+VALUES ($1, $2, $3, $4, $5, 'current')
+RETURNING id, case_id, engine_version, decision, summary, explanation, status, created_at, superseded_at
+`
+
+type CreateDecisionProposalParams struct {
+	CaseID        pgtype.UUID `json:"case_id"`
+	EngineVersion string      `json:"engine_version"`
+	Decision      string      `json:"decision"`
+	Summary       string      `json:"summary"`
+	Explanation   []byte      `json:"explanation"`
+}
+
+func (q *Queries) CreateDecisionProposal(ctx context.Context, arg CreateDecisionProposalParams) (OpsCaseDecisionProposal, error) {
+	row := q.db.QueryRow(ctx, createDecisionProposal,
+		arg.CaseID,
+		arg.EngineVersion,
+		arg.Decision,
+		arg.Summary,
+		arg.Explanation,
+	)
+	var i OpsCaseDecisionProposal
+	err := row.Scan(
+		&i.ID,
+		&i.CaseID,
+		&i.EngineVersion,
+		&i.Decision,
+		&i.Summary,
+		&i.Explanation,
+		&i.Status,
+		&i.CreatedAt,
+		&i.SupersededAt,
 	)
 	return i, err
 }
@@ -366,14 +505,33 @@ func (q *Queries) GetAnalyst(ctx context.Context, id string) (OpsAnalyst, error)
 const getCaseRecord = `-- name: GetCaseRecord :one
 SELECT id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 FROM ops.case_records
 WHERE id = $1
 `
 
-func (q *Queries) GetCaseRecord(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error) {
+type GetCaseRecordRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetCaseRecord(ctx context.Context, id pgtype.UUID) (GetCaseRecordRow, error) {
 	row := q.db.QueryRow(ctx, getCaseRecord, id)
-	var i OpsCaseRecord
+	var i GetCaseRecordRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -387,9 +545,33 @@ func (q *Queries) GetCaseRecord(ctx context.Context, id pgtype.UUID) (OpsCaseRec
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getCurrentDecisionProposal = `-- name: GetCurrentDecisionProposal :one
+SELECT id, case_id, engine_version, decision, summary, explanation, status, created_at, superseded_at
+FROM ops.case_decision_proposals
+WHERE case_id = $1 AND status = 'current'
+`
+
+func (q *Queries) GetCurrentDecisionProposal(ctx context.Context, caseID pgtype.UUID) (OpsCaseDecisionProposal, error) {
+	row := q.db.QueryRow(ctx, getCurrentDecisionProposal, caseID)
+	var i OpsCaseDecisionProposal
+	err := row.Scan(
+		&i.ID,
+		&i.CaseID,
+		&i.EngineVersion,
+		&i.Decision,
+		&i.Summary,
+		&i.Explanation,
+		&i.Status,
+		&i.CreatedAt,
+		&i.SupersededAt,
 	)
 	return i, err
 }
@@ -424,7 +606,7 @@ SET linked_seed_property_id = $2, status = 'in_review', updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 `
 
 type LinkCaseSeedPropertyParams struct {
@@ -432,9 +614,28 @@ type LinkCaseSeedPropertyParams struct {
 	LinkedSeedPropertyID pgtype.UUID `json:"linked_seed_property_id"`
 }
 
-func (q *Queries) LinkCaseSeedProperty(ctx context.Context, arg LinkCaseSeedPropertyParams) (OpsCaseRecord, error) {
+type LinkCaseSeedPropertyRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) LinkCaseSeedProperty(ctx context.Context, arg LinkCaseSeedPropertyParams) (LinkCaseSeedPropertyRow, error) {
 	row := q.db.QueryRow(ctx, linkCaseSeedProperty, arg.ID, arg.LinkedSeedPropertyID)
-	var i OpsCaseRecord
+	var i LinkCaseSeedPropertyRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -448,6 +649,7 @@ func (q *Queries) LinkCaseSeedProperty(ctx context.Context, arg LinkCaseSeedProp
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -523,7 +725,7 @@ func (q *Queries) ListCaseAuditEvents(ctx context.Context, caseID pgtype.UUID) (
 }
 
 const listCaseDecisions = `-- name: ListCaseDecisions :many
-SELECT id, case_id, decision, note, status, created_by, created_at, superseded_at
+SELECT id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id
 FROM ops.case_decisions
 WHERE case_id = $1
 ORDER BY created_at DESC
@@ -547,6 +749,8 @@ func (q *Queries) ListCaseDecisions(ctx context.Context, caseID pgtype.UUID) ([]
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.SupersededAt,
+			&i.DecisionSource,
+			&i.ProposalID,
 		); err != nil {
 			return nil, err
 		}
@@ -676,7 +880,7 @@ func (q *Queries) ListCasePropertyMatches(ctx context.Context, caseID pgtype.UUI
 const listCaseSummaries = `-- name: ListCaseSummaries :many
 SELECT id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 FROM ops.case_records
 WHERE ($1::text IS NULL OR status = $1::text)
   AND ($2::text IS NULL OR assignee_id = $2::text)
@@ -702,6 +906,7 @@ type ListCaseSummariesRow struct {
 	AssigneeID                string             `json:"assignee_id"`
 	CreatedBy                 string             `json:"created_by"`
 	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
 	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
@@ -728,9 +933,46 @@ func (q *Queries) ListCaseSummaries(ctx context.Context, arg ListCaseSummariesPa
 			&i.AssigneeID,
 			&i.CreatedBy,
 			&i.LinkedSeedPropertyID,
+			&i.LinkedPropertyID,
 			&i.ResolvedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDecisionProposalReasonCodes = `-- name: ListDecisionProposalReasonCodes :many
+SELECT rc.code, rc.label, rc.category, rc.is_hard_block, rc.active, rc.sort_order, rc.created_at
+FROM ops.case_decision_proposal_reason_codes prc
+JOIN ops.reason_codes rc ON rc.code = prc.reason_code
+WHERE prc.proposal_id = $1
+ORDER BY rc.sort_order
+`
+
+func (q *Queries) ListDecisionProposalReasonCodes(ctx context.Context, proposalID pgtype.UUID) ([]OpsReasonCode, error) {
+	rows, err := q.db.Query(ctx, listDecisionProposalReasonCodes, proposalID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OpsReasonCode
+	for rows.Next() {
+		var i OpsReasonCode
+		if err := rows.Scan(
+			&i.Code,
+			&i.Label,
+			&i.Category,
+			&i.IsHardBlock,
+			&i.Active,
+			&i.SortOrder,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -880,7 +1122,7 @@ SET assignee_id = $2, updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 `
 
 type ReassignCaseParams struct {
@@ -888,9 +1130,28 @@ type ReassignCaseParams struct {
 	AssigneeID string      `json:"assignee_id"`
 }
 
-func (q *Queries) ReassignCase(ctx context.Context, arg ReassignCaseParams) (OpsCaseRecord, error) {
+type ReassignCaseRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ReassignCase(ctx context.Context, arg ReassignCaseParams) (ReassignCaseRow, error) {
 	row := q.db.QueryRow(ctx, reassignCase, arg.ID, arg.AssigneeID)
-	var i OpsCaseRecord
+	var i ReassignCaseRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -904,6 +1165,7 @@ func (q *Queries) ReassignCase(ctx context.Context, arg ReassignCaseParams) (Ops
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -928,12 +1190,31 @@ SET status = 'reopened', resolved_at = NULL, updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 `
 
-func (q *Queries) ReopenCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error) {
+type ReopenCaseRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ReopenCase(ctx context.Context, id pgtype.UUID) (ReopenCaseRow, error) {
 	row := q.db.QueryRow(ctx, reopenCase, id)
-	var i OpsCaseRecord
+	var i ReopenCaseRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -947,6 +1228,7 @@ func (q *Queries) ReopenCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -960,12 +1242,31 @@ SET status = 'resolved', resolved_at = NOW(), updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 `
 
-func (q *Queries) ResolveCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecord, error) {
+type ResolveCaseRow struct {
+	ID                        pgtype.UUID        `json:"id"`
+	CaseReference             string             `json:"case_reference"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            pgtype.Text        `json:"title_reference"`
+	MatterReference           pgtype.Text        `json:"matter_reference"`
+	IntakeNote                pgtype.Text        `json:"intake_note"`
+	Status                    string             `json:"status"`
+	AssigneeID                string             `json:"assignee_id"`
+	CreatedBy                 string             `json:"created_by"`
+	LinkedSeedPropertyID      pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID          pgtype.UUID        `json:"linked_property_id"`
+	ResolvedAt                pgtype.Timestamptz `json:"resolved_at"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ResolveCase(ctx context.Context, id pgtype.UUID) (ResolveCaseRow, error) {
 	row := q.db.QueryRow(ctx, resolveCase, id)
-	var i OpsCaseRecord
+	var i ResolveCaseRow
 	err := row.Scan(
 		&i.ID,
 		&i.CaseReference,
@@ -979,11 +1280,23 @@ func (q *Queries) ResolveCase(ctx context.Context, id pgtype.UUID) (OpsCaseRecor
 		&i.AssigneeID,
 		&i.CreatedBy,
 		&i.LinkedSeedPropertyID,
+		&i.LinkedPropertyID,
 		&i.ResolvedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const supersedeCurrentDecisionProposal = `-- name: SupersedeCurrentDecisionProposal :exec
+UPDATE ops.case_decision_proposals
+SET status = 'superseded', superseded_at = NOW()
+WHERE case_id = $1 AND status = 'current'
+`
+
+func (q *Queries) SupersedeCurrentDecisionProposal(ctx context.Context, caseID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, supersedeCurrentDecisionProposal, caseID)
+	return err
 }
 
 const supersedeCurrentDecisions = `-- name: SupersedeCurrentDecisions :exec

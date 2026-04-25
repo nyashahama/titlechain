@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Analyst } from "../types";
 
 type InitialValues = {
-  seed_property_id?: string;
+  linked_property_id?: string;
   property_description?: string;
   locality_or_area?: string;
   municipality_or_deeds_office?: string;
@@ -37,8 +37,8 @@ export function CaseIntakeForm({ analysts, defaultActorId, initialValues }: { an
 
   return (
     <form action={handleSubmit} className="space-y-5">
-      {initialValues?.seed_property_id && (
-        <input type="hidden" name="seed_property_id" defaultValue={initialValues.seed_property_id} />
+      {initialValues?.linked_property_id && (
+        <input type="hidden" name="linked_property_id" defaultValue={initialValues.linked_property_id} />
       )}
       <div>
         <label htmlFor="actor_id" className="block text-[11px] uppercase tracking-[0.1em] text-muted font-medium mb-2">

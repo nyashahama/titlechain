@@ -41,6 +41,51 @@ func TestService_CreateCaseAutoAssignsActorAndCreatesAuditEvent(t *testing.T) {
 	if detail.AuditEvents[0].EventType != AuditCaseCreated {
 		t.Errorf("audit event type = %s, want %s", detail.AuditEvents[0].EventType, AuditCaseCreated)
 	}
+	if detail.CurrentProposal == nil {
+		t.Fatal("current_proposal = nil, want proposal")
+	}
+}
+
+func TestService_CreateCaseGeneratesCurrentProposal(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+
+	detail, err := svc.CreateCase(context.Background(), normalizedCleanCaseRequest())
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+	if detail.CurrentProposal == nil {
+		t.Fatal("current_proposal = nil, want proposal")
+	}
+	if detail.CurrentProposal.Decision != DecisionClear {
+		t.Fatalf("proposal decision = %s, want %s", detail.CurrentProposal.Decision, DecisionClear)
+	}
+}
+
+func TestService_AcceptProposalCreatesAcceptedDecision(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+
+	detail, err := svc.CreateCase(context.Background(), normalizedCleanCaseRequest())
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+
+	detail, err = svc.AcceptProposal(context.Background(), detail.Case.ID, AcceptProposalRequest{
+		ActorID: "ana-001",
+	})
+	if err != nil {
+		t.Fatalf("accept proposal: %v", err)
+	}
+	if len(detail.Decisions) != 1 {
+		t.Fatalf("decisions = %d, want 1", len(detail.Decisions))
+	}
+	if detail.Decisions[0].DecisionSource != DecisionSourceAcceptedProposal {
+		t.Fatalf("decision_source = %s, want %s", detail.Decisions[0].DecisionSource, DecisionSourceAcceptedProposal)
+	}
+	if detail.Decisions[0].ProposalID == "" {
+		t.Fatal("proposal_id = empty, want proposal back-reference")
+	}
 }
 
 func TestService_RecordDecisionRejectsStopWithoutHardBlock(t *testing.T) {
@@ -261,5 +306,43 @@ func TestService_CreateCaseWithSeedPropertyStartsInReview(t *testing.T) {
 	}
 	if detail.Matches[0].Status != "confirmed" {
 		t.Errorf("match_status = %s, want confirmed", detail.Matches[0].Status)
+	}
+}
+
+func TestService_CreateCaseFromNormalizedPropertyHydratesCanonicalEvidence(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+
+	detail, err := svc.CreateCase(context.Background(), CreateCaseRequest{
+		ActorID:                   "ana-001",
+		PropertyDescription:       "Erf 412 Rosebank Township",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+		LinkedPropertyID:          "prop-1",
+	})
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+	if detail.Case.LinkedPropertyID != "prop-1" {
+		t.Fatalf("linked_property_id = %s, want prop-1", detail.Case.LinkedPropertyID)
+	}
+	if len(detail.Evidence) == 0 {
+		t.Fatal("evidence = 0, want canonical evidence hydrated")
+	}
+	found := false
+	for _, ev := range detail.Evidence {
+		if ev.EvidenceType == "canonical_property" {
+			if ev.SourceReference == "prop-1" {
+				t.Fatal("source_reference should point to canonical provenance, got linked property id")
+			}
+			if got := ev.ExtractedFacts["source_link_id"]; got == nil {
+				t.Fatal("expected source_link_id in canonical evidence facts")
+			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("expected canonical_property evidence item")
 	}
 }

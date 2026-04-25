@@ -81,3 +81,34 @@ func TestService_ListPropertiesStatusFilter(t *testing.T) {
 	}
 }
 
+func TestService_ListPropertiesReturnsNormalizedFields(t *testing.T) {
+	repo := &stubRepository{
+		properties: []PropertySummary{
+			{
+				PropertyID:                "prop-1",
+				PropertyDescription:       "Erf 412 Rosebank Township",
+				LocalityOrArea:            "Rosebank",
+				MunicipalityOrDeedsOffice: "Johannesburg",
+				TitleReference:            "T12345/2024",
+				CurrentOwnerName:          "Maseko Family Trust",
+				Status:                    "No material blocker seeded",
+			},
+		},
+	}
+	svc := NewService(repo)
+
+	rows, err := svc.ListProperties(context.Background(), ListFilter{Limit: 50})
+	if err != nil {
+		t.Fatalf("list properties: %v", err)
+	}
+	if len(rows) != 1 {
+		t.Fatalf("rows = %d, want 1", len(rows))
+	}
+	if rows[0].CurrentOwnerName != "Maseko Family Trust" {
+		t.Errorf("current_owner_name = %s, want Maseko Family Trust", rows[0].CurrentOwnerName)
+	}
+	if rows[0].LocalityOrArea != "Rosebank" {
+		t.Errorf("locality_or_area = %s, want Rosebank", rows[0].LocalityOrArea)
+	}
+}
+

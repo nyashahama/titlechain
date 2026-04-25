@@ -2,8 +2,8 @@ package http
 
 import (
 	"encoding/json"
-	"strings"
 	stdhttp "net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 
@@ -149,6 +149,53 @@ func (h casesHandler) addParty(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	if err != nil {
 		if isNotFound(err) {
 			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
+		return
+	}
+	h.respondJSON(w, stdhttp.StatusOK, detail)
+}
+
+func (h casesHandler) reevaluateCase(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	caseID := chi.URLParam(r, "caseID")
+	var req struct {
+		ActorID string `json:"actor_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, stdhttp.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	detail, err := h.service.ReevaluateCase(r.Context(), caseID, req.ActorID)
+	if err != nil {
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+		} else {
+			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
+		}
+		return
+	}
+	h.respondJSON(w, stdhttp.StatusOK, detail)
+}
+
+func (h casesHandler) acceptProposal(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	caseID := chi.URLParam(r, "caseID")
+	var req cases.AcceptProposalRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, stdhttp.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	detail, err := h.service.AcceptProposal(r.Context(), caseID, req)
+	if err != nil {
+		if isNotFound(err) {
+			h.respondError(w, stdhttp.StatusNotFound, "case not found")
+			return
+		}
+		msg := strings.ToLower(err.Error())
+		if strings.Contains(msg, "superseded") {
+			h.respondError(w, stdhttp.StatusConflict, err.Error())
 		} else {
 			h.respondError(w, stdhttp.StatusBadRequest, err.Error())
 		}

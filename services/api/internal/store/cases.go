@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -12,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
+	"github.com/nyasha-hama/titlechain/services/api/internal/decisioning"
 	"github.com/nyasha-hama/titlechain/services/api/internal/store/sqlc"
 )
 
@@ -19,10 +22,55 @@ type CasesStore struct {
 	pool *pgxpool.Pool
 }
 
+type canonicalSourceLink struct {
+	ID             string
+	BatchID        string
+	SourceRecordID string
+	FactTable      string
+	FactID         string
+}
+
+type canonicalEvidenceDraft struct {
+	SourceReference   string
+	ExternalReference string
+	Facts             map[string]any
+}
+
 var _ cases.Repository = CasesStore{}
 
 func NewCasesStore(pool *pgxpool.Pool) CasesStore {
 	return CasesStore{pool: pool}
+}
+
+func buildCanonicalEvidenceDrafts(
+	propertyID string,
+	propertyDescription string,
+	titleReference string,
+	links []canonicalSourceLink,
+) ([]canonicalEvidenceDraft, error) {
+	if len(links) == 0 {
+		return nil, errors.New("linked property has no source provenance")
+	}
+
+	drafts := make([]canonicalEvidenceDraft, 0, len(links))
+	for _, link := range links {
+		drafts = append(drafts, canonicalEvidenceDraft{
+			SourceReference:   link.ID,
+			ExternalReference: link.FactTable,
+			Facts: map[string]any{
+				"linked_property_id":   propertyID,
+				"property_description": propertyDescription,
+				"title_reference":      titleReference,
+				"source_link_id":       link.ID,
+				"batch_id":             link.BatchID,
+				"source_record_id":     link.SourceRecordID,
+				"fact_table":           link.FactTable,
+				"fact_id":              link.FactID,
+			},
+		})
+	}
+
+	return drafts, nil
 }
 
 func (s CasesStore) ListAnalysts(ctx context.Context) ([]cases.Analyst, error) {
@@ -104,71 +152,7 @@ func (s CasesStore) GetCaseDetail(ctx context.Context, caseID string) (cases.Cas
 	if err != nil {
 		return cases.CaseDetail{}, err
 	}
-
-	c, err := queries.GetCaseRecord(ctx, id)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return cases.CaseDetail{}, errors.New("case not found")
-		}
-		return cases.CaseDetail{}, err
-	}
-
-	matches, err := queries.ListCasePropertyMatches(ctx, id)
-	if err != nil {
-		return cases.CaseDetail{}, err
-	}
-
-	evidence, err := queries.ListCaseEvidence(ctx, id)
-	if err != nil {
-		return cases.CaseDetail{}, err
-	}
-
-	parties, err := queries.ListCaseParties(ctx, id)
-	if err != nil {
-		return cases.CaseDetail{}, err
-	}
-
-	decisions, err := queries.ListCaseDecisions(ctx, id)
-	if err != nil {
-		return cases.CaseDetail{}, err
-	}
-
-	auditEvents, err := queries.ListCaseAuditEvents(ctx, id)
-	if err != nil {
-		return cases.CaseDetail{}, err
-	}
-
-	detail := cases.CaseDetail{
-		Case:        caseSummaryFromRecord(c),
-		Matches:     propertyMatchesFromRows(matches),
-		Evidence:    evidenceItemsFromRows(evidence),
-		Parties:     partiesFromRows(parties),
-		Decisions:   make([]cases.Decision, 0, len(decisions)),
-		AuditEvents: auditEventsFromRows(auditEvents),
-	}
-
-	// Enrich decisions with reason codes
-	for _, d := range decisions {
-		dec := decisionFromRow(d)
-		rcRows, err := queries.ListDecisionReasonCodes(ctx, d.ID)
-		if err != nil {
-			return cases.CaseDetail{}, err
-		}
-		dec.ReasonCodes = make([]cases.ReasonCode, 0, len(rcRows))
-		for _, rc := range rcRows {
-			dec.ReasonCodes = append(dec.ReasonCodes, cases.ReasonCode{
-				Code:        rc.Code,
-				Label:       rc.Label,
-				Category:    cases.ReasonCategory(rc.Category),
-				IsHardBlock: rc.IsHardBlock,
-				Active:      rc.Active,
-				SortOrder:   rc.SortOrder,
-			})
-		}
-		detail.Decisions = append(detail.Decisions, dec)
-	}
-
-	return detail, nil
+	return s.buildCaseDetail(ctx, queries, id)
 }
 
 func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCaseRequest, caseReference string) (cases.CaseDetail, error) {
@@ -208,6 +192,11 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		titleReference = pgtype.Text{String: req.TitleReference, Valid: req.TitleReference != ""}
 	}
 
+	var linkedPropID pgtype.UUID
+	if req.LinkedPropertyID != "" {
+		linkedPropID.Scan(req.LinkedPropertyID)
+	}
+
 	c, err := queries.CreateCaseRecord(ctx, sqlc.CreateCaseRecordParams{
 		CaseReference:             caseReference,
 		PropertyDescription:       propertyDescription,
@@ -217,6 +206,7 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		MatterReference:           pgtype.Text{String: req.MatterReference, Valid: req.MatterReference != ""},
 		IntakeNote:                pgtype.Text{String: req.IntakeNote, Valid: req.IntakeNote != ""},
 		AssigneeID:                req.ActorID,
+		LinkedPropertyID:          linkedPropID,
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -257,6 +247,61 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
+	}
+
+	if req.LinkedPropertyID != "" {
+		propID, err := parseUUID(req.LinkedPropertyID)
+		if err != nil {
+			return cases.CaseDetail{}, fmt.Errorf("invalid linked_property_id: %w", err)
+		}
+		prop, err := queries.GetPropertySummary(ctx, propID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return cases.CaseDetail{}, errors.New("linked property not found")
+			}
+			return cases.CaseDetail{}, err
+		}
+
+		canonicalEvidence := []struct {
+			EvidenceType string
+			Excerpt      string
+		}{
+			{"property_description", prop.PropertyDescription},
+			{"locality_or_area", prop.LocalityOrArea},
+			{"municipality_or_deeds_office", prop.MunicipalityOrDeedsOffice},
+		}
+		if prop.TitleReference != "" {
+			canonicalEvidence = append(canonicalEvidence, struct {
+				EvidenceType string
+				Excerpt      string
+			}{"title_reference", prop.TitleReference})
+		}
+		if prop.CurrentOwnerName.Valid {
+			canonicalEvidence = append(canonicalEvidence, struct {
+				EvidenceType string
+				Excerpt      string
+			}{"current_owner_name", prop.CurrentOwnerName.String})
+		}
+
+		for _, item := range canonicalEvidence {
+			facts, _ := json.Marshal(map[string]any{
+				"property_id": req.LinkedPropertyID,
+				"field":       item.EvidenceType,
+			})
+			_, err := queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+				CaseID:          c.ID,
+				EvidenceType:    item.EvidenceType,
+				SourceType:      "canonical_property",
+				SourceReference: req.LinkedPropertyID,
+				Excerpt:         pgtype.Text{String: item.Excerpt, Valid: true},
+				ExtractedFacts:  facts,
+				EvidenceStatus:  string(cases.EvidenceStatusCaptured),
+				CreatedBy:       req.ActorID,
+			})
+			if err != nil {
+				return cases.CaseDetail{}, err
+			}
+		}
 	}
 
 	if req.SeedPropertyID != "" {
@@ -302,11 +347,78 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		}
 	}
 
+	if req.LinkedPropertyID != "" {
+		propID, err := parseUUID(req.LinkedPropertyID)
+		if err != nil {
+			return cases.CaseDetail{}, fmt.Errorf("invalid linked_property_id: %w", err)
+		}
+
+		// Try to get property summary
+		propRow, err := queries.GetPropertySummary(ctx, propID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return cases.CaseDetail{}, errors.New("linked property not found")
+			}
+			return cases.CaseDetail{}, err
+		}
+
+		sourceLinkRows, err := queries.ListCoreSourceLinksByProperty(ctx, propID)
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+
+		sourceLinks := make([]canonicalSourceLink, 0, len(sourceLinkRows))
+		for _, row := range sourceLinkRows {
+			sourceLinks = append(sourceLinks, canonicalSourceLink{
+				ID:             uuidToString(row.ID),
+				BatchID:        uuidToString(row.BatchID),
+				SourceRecordID: uuidToString(row.SourceRecordID),
+				FactTable:      row.FactTable,
+				FactID:         uuidToString(row.FactID),
+			})
+		}
+
+		drafts, err := buildCanonicalEvidenceDrafts(
+			req.LinkedPropertyID,
+			propRow.PropertyDescription,
+			propRow.TitleReference,
+			sourceLinks,
+		)
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+
+		for _, draft := range drafts {
+			facts, err := json.Marshal(draft.Facts)
+			if err != nil {
+				return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
+			}
+			_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+				CaseID:            c.ID,
+				EvidenceType:      "canonical_property",
+				SourceType:        "normalized_data",
+				SourceReference:   draft.SourceReference,
+				ExternalReference: pgtype.Text{String: draft.ExternalReference, Valid: draft.ExternalReference != ""},
+				ExtractedFacts:    facts,
+				EvidenceStatus:    string(cases.EvidenceStatusConfirmed),
+				CreatedBy:         req.ActorID,
+			})
+			if err != nil {
+				return cases.CaseDetail{}, err
+			}
+		}
+	}
+
+	detail, err := s.reevaluateCaseInTx(ctx, queries, c.ID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
 
-	return s.GetCaseDetail(ctx, uuidToString(c.ID))
+	return detail, nil
 }
 
 func (s CasesStore) maybeAutoReopen(ctx context.Context, queries *sqlc.Queries, id pgtype.UUID, actorID string) error {
@@ -357,8 +469,8 @@ func (s CasesStore) ConfirmPropertyMatchWorkflow(ctx context.Context, caseID str
 
 	if req.Action == "confirm" {
 		confirmed, err := queries.ConfirmCasePropertyMatch(ctx, sqlc.ConfirmCasePropertyMatchParams{
-			CaseID: id,
-			ID:     matchID,
+			CaseID:      id,
+			ID:          matchID,
 			ConfirmedBy: pgtype.Text{String: req.ActorID, Valid: true},
 		})
 		if err != nil {
@@ -401,11 +513,16 @@ func (s CasesStore) ConfirmPropertyMatchWorkflow(ctx context.Context, caseID str
 		}
 	}
 
+	detail, err := s.reevaluateCaseInTx(ctx, queries, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
 
-	return s.GetCaseDetail(ctx, caseID)
+	return detail, nil
 }
 
 func (s CasesStore) AddEvidenceWorkflow(ctx context.Context, caseID string, req cases.AddEvidenceRequest) (cases.CaseDetail, error) {
@@ -453,11 +570,16 @@ func (s CasesStore) AddEvidenceWorkflow(ctx context.Context, caseID string, req 
 		return cases.CaseDetail{}, err
 	}
 
+	detail, err := s.reevaluateCaseInTx(ctx, queries, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
 
-	return s.GetCaseDetail(ctx, caseID)
+	return detail, nil
 }
 
 func (s CasesStore) AddPartyWorkflow(ctx context.Context, caseID string, req cases.AddPartyRequest) (cases.CaseDetail, error) {
@@ -501,11 +623,16 @@ func (s CasesStore) AddPartyWorkflow(ctx context.Context, caseID string, req cas
 		return cases.CaseDetail{}, err
 	}
 
+	detail, err := s.reevaluateCaseInTx(ctx, queries, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
 
-	return s.GetCaseDetail(ctx, caseID)
+	return detail, nil
 }
 
 func (s CasesStore) ReassignCaseWorkflow(ctx context.Context, caseID string, req cases.ReassignCaseRequest) (cases.CaseDetail, error) {
@@ -558,6 +685,135 @@ func (s CasesStore) ReassignCaseWorkflow(ctx context.Context, caseID string, req
 	return s.GetCaseDetail(ctx, caseID)
 }
 
+func (s CasesStore) ReevaluateCaseWorkflow(ctx context.Context, caseID, actorID string) (cases.CaseDetail, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	queries := sqlc.New(s.pool).WithTx(tx)
+	id, err := parseUUID(caseID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	detail, err := s.reevaluateCaseInTx(ctx, queries, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	meta, _ := json.Marshal(map[string]any{"engine_version": decisioning.EngineVersion})
+	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
+		CaseID:    id,
+		ActorID:   actorID,
+		EventType: "case_evaluated",
+		Metadata:  meta,
+	})
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	detail, err = s.buildCaseDetail(ctx, queries, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return cases.CaseDetail{}, err
+	}
+	return detail, nil
+}
+
+func (s CasesStore) AcceptProposalWorkflow(ctx context.Context, caseID string, req cases.AcceptProposalRequest) (cases.CaseDetail, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	queries := sqlc.New(s.pool).WithTx(tx)
+	id, err := parseUUID(caseID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	currentProposal, err := queries.GetCurrentDecisionProposal(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return cases.CaseDetail{}, errors.New("no current proposal")
+		}
+		return cases.CaseDetail{}, err
+	}
+
+	if err := queries.SupersedeCurrentDecisions(ctx, id); err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	note := strings.TrimSpace(req.Note)
+	if note == "" {
+		note = currentProposal.Summary
+	}
+
+	dec, err := queries.CreateAcceptedDecisionFromProposal(ctx, sqlc.CreateAcceptedDecisionFromProposalParams{
+		CaseID:     id,
+		Decision:   currentProposal.Decision,
+		Note:       note,
+		CreatedBy:  req.ActorID,
+		ProposalID: currentProposal.ID,
+	})
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	proposalCodes, err := queries.ListDecisionProposalReasonCodes(ctx, currentProposal.ID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+	for _, code := range proposalCodes {
+		if err := queries.AddDecisionReasonCode(ctx, sqlc.AddDecisionReasonCodeParams{
+			DecisionID: dec.ID,
+			ReasonCode: code.Code,
+		}); err != nil {
+			return cases.CaseDetail{}, err
+		}
+	}
+
+	if err := queries.SupersedeCurrentDecisionProposal(ctx, id); err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	if _, err := queries.ResolveCase(ctx, id); err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	meta, _ := json.Marshal(map[string]any{
+		"decision":        dec.Decision,
+		"decision_source": cases.DecisionSourceAcceptedProposal,
+		"proposal_id":     uuidToString(currentProposal.ID),
+		"decision_id":     uuidToString(dec.ID),
+	})
+	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
+		CaseID:    id,
+		ActorID:   req.ActorID,
+		EventType: cases.AuditDecisionRecorded,
+		Metadata:  meta,
+	})
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	detail, err := s.buildCaseDetail(ctx, queries, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return cases.CaseDetail{}, err
+	}
+	return detail, nil
+}
+
 func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, req cases.RecordDecisionRequest) (cases.CaseDetail, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -576,11 +832,33 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
+	decisionSource := cases.DecisionSourceManual
+	var proposalID pgtype.UUID
+	proposal, err := queries.GetCurrentDecisionProposal(ctx, id)
+	if err == nil {
+		proposalCodes, err := queries.ListDecisionProposalReasonCodes(ctx, proposal.ID)
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+		proposalCodeSet := make([]string, 0, len(proposalCodes))
+		for _, rc := range proposalCodes {
+			proposalCodeSet = append(proposalCodeSet, rc.Code)
+		}
+		if proposal.Decision != string(req.Decision) || !sameStringSet(proposalCodeSet, req.ReasonCodes) {
+			decisionSource = cases.DecisionSourceManualOverride
+			proposalID = proposal.ID
+		}
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return cases.CaseDetail{}, err
+	}
+
 	dec, err := queries.CreateCaseDecision(ctx, sqlc.CreateCaseDecisionParams{
-		CaseID:    id,
-		Decision:  string(req.Decision),
-		Note:      req.Note,
-		CreatedBy: req.ActorID,
+		CaseID:         id,
+		Decision:       string(req.Decision),
+		Note:           req.Note,
+		CreatedBy:      req.ActorID,
+		DecisionSource: string(decisionSource),
+		ProposalID:     proposalID,
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -600,7 +878,11 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
-	meta, _ := json.Marshal(map[string]any{"decision": req.Decision, "reason_codes": req.ReasonCodes})
+	meta, _ := json.Marshal(map[string]any{
+		"decision":        req.Decision,
+		"reason_codes":    req.ReasonCodes,
+		"decision_source": decisionSource,
+	})
 	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 		CaseID:    id,
 		ActorID:   req.ActorID,
@@ -683,11 +965,142 @@ func (s CasesStore) ReopenCaseWorkflow(ctx context.Context, caseID string, req c
 		return cases.CaseDetail{}, err
 	}
 
+	detail, err := s.reevaluateCaseInTx(ctx, queries, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
 
-	return s.GetCaseDetail(ctx, caseID)
+	return detail, nil
+}
+
+func (s CasesStore) reevaluateCaseInTx(ctx context.Context, queries *sqlc.Queries, caseID pgtype.UUID) (cases.CaseDetail, error) {
+	detail, err := s.buildCaseDetail(ctx, queries, caseID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	snapshot, err := NewDecisioningLoader(queries).LoadNormalizedSnapshot(ctx, detail.Case.LinkedPropertyID, detail)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+	facts := decisioning.BuildFacts(snapshot)
+	proposal := decisioning.Evaluate(facts)
+
+	if err := s.persistProposalInTx(ctx, queries, caseID, proposal); err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	return s.buildCaseDetail(ctx, queries, caseID)
+}
+
+func (s CasesStore) persistProposalInTx(
+	ctx context.Context,
+	queries *sqlc.Queries,
+	caseID pgtype.UUID,
+	proposal decisioning.Proposal,
+) error {
+	if err := queries.SupersedeCurrentDecisionProposal(ctx, caseID); err != nil {
+		return err
+	}
+
+	explanationJSON, err := json.Marshal(proposal.Explanation)
+	if err != nil {
+		return fmt.Errorf("marshal proposal explanation: %w", err)
+	}
+
+	created, err := queries.CreateDecisionProposal(ctx, sqlc.CreateDecisionProposalParams{
+		CaseID:        caseID,
+		EngineVersion: proposal.EngineVersion,
+		Decision:      string(proposal.Decision),
+		Summary:       proposal.Summary,
+		Explanation:   explanationJSON,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, code := range proposal.ReasonCodes {
+		if err := queries.AddDecisionProposalReasonCode(ctx, sqlc.AddDecisionProposalReasonCodeParams{
+			ProposalID: created.ID,
+			ReasonCode: code,
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s CasesStore) buildCaseDetail(ctx context.Context, queries sqlc.Querier, caseID pgtype.UUID) (cases.CaseDetail, error) {
+	c, err := queries.GetCaseRecord(ctx, caseID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return cases.CaseDetail{}, errors.New("case not found")
+		}
+		return cases.CaseDetail{}, err
+	}
+
+	matches, err := queries.ListCasePropertyMatches(ctx, caseID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	evidence, err := queries.ListCaseEvidence(ctx, caseID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	parties, err := queries.ListCaseParties(ctx, caseID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	decisions, err := queries.ListCaseDecisions(ctx, caseID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	auditEvents, err := queries.ListCaseAuditEvents(ctx, caseID)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+
+	detail := cases.CaseDetail{
+		Case:        caseSummaryFromRecord(c),
+		Matches:     propertyMatchesFromRows(matches),
+		Evidence:    evidenceItemsFromRows(evidence),
+		Parties:     partiesFromRows(parties),
+		Decisions:   make([]cases.Decision, 0, len(decisions)),
+		AuditEvents: auditEventsFromRows(auditEvents),
+	}
+
+	for _, d := range decisions {
+		dec := decisionFromRow(d)
+		rcRows, err := queries.ListDecisionReasonCodes(ctx, d.ID)
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+		dec.ReasonCodes = reasonCodesFromRows(rcRows)
+		detail.Decisions = append(detail.Decisions, dec)
+	}
+
+	proposal, err := queries.GetCurrentDecisionProposal(ctx, caseID)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return cases.CaseDetail{}, err
+	}
+	if err == nil {
+		proposalCodes, err := queries.ListDecisionProposalReasonCodes(ctx, proposal.ID)
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+		detail.CurrentProposal = decisionProposalFromRow(proposal, proposalCodes)
+	}
+
+	return detail, nil
 }
 
 // Conversion helpers
@@ -705,26 +1118,50 @@ func caseSummaryFromRow(row sqlc.ListCaseSummariesRow) cases.CaseSummary {
 		AssigneeID:                row.AssigneeID,
 		CreatedBy:                 row.CreatedBy,
 		LinkedSeedPropertyID:      uuidToString(row.LinkedSeedPropertyID),
+		LinkedPropertyID:          uuidToString(row.LinkedPropertyID),
 		CreatedAt:                 row.CreatedAt.Time,
 		UpdatedAt:                 row.UpdatedAt.Time,
 	}
 }
 
-func caseSummaryFromRecord(c sqlc.OpsCaseRecord) cases.CaseSummary {
-	return cases.CaseSummary{
-		ID:                        uuidToString(c.ID),
-		CaseReference:             c.CaseReference,
-		PropertyDescription:       c.PropertyDescription,
-		LocalityOrArea:            c.LocalityOrArea,
-		MunicipalityOrDeedsOffice: c.MunicipalityOrDeedsOffice,
-		TitleReference:            textToString(c.TitleReference),
-		MatterReference:           textToString(c.MatterReference),
-		Status:                    cases.CaseStatus(c.Status),
-		AssigneeID:                c.AssigneeID,
-		CreatedBy:                 c.CreatedBy,
-		LinkedSeedPropertyID:      uuidToString(c.LinkedSeedPropertyID),
-		CreatedAt:                 c.CreatedAt.Time,
-		UpdatedAt:                 c.UpdatedAt.Time,
+func caseSummaryFromRecord(c any) cases.CaseSummary {
+	switch r := c.(type) {
+	case sqlc.OpsCaseRecord:
+		return cases.CaseSummary{
+			ID:                        uuidToString(r.ID),
+			CaseReference:             r.CaseReference,
+			PropertyDescription:       r.PropertyDescription,
+			LocalityOrArea:            r.LocalityOrArea,
+			MunicipalityOrDeedsOffice: r.MunicipalityOrDeedsOffice,
+			TitleReference:            textToString(r.TitleReference),
+			MatterReference:           textToString(r.MatterReference),
+			Status:                    cases.CaseStatus(r.Status),
+			AssigneeID:                r.AssigneeID,
+			CreatedBy:                 r.CreatedBy,
+			LinkedSeedPropertyID:      uuidToString(r.LinkedSeedPropertyID),
+			LinkedPropertyID:          uuidToString(r.LinkedPropertyID),
+			CreatedAt:                 r.CreatedAt.Time,
+			UpdatedAt:                 r.UpdatedAt.Time,
+		}
+	case sqlc.GetCaseRecordRow:
+		return cases.CaseSummary{
+			ID:                        uuidToString(r.ID),
+			CaseReference:             r.CaseReference,
+			PropertyDescription:       r.PropertyDescription,
+			LocalityOrArea:            r.LocalityOrArea,
+			MunicipalityOrDeedsOffice: r.MunicipalityOrDeedsOffice,
+			TitleReference:            textToString(r.TitleReference),
+			MatterReference:           textToString(r.MatterReference),
+			Status:                    cases.CaseStatus(r.Status),
+			AssigneeID:                r.AssigneeID,
+			CreatedBy:                 r.CreatedBy,
+			LinkedSeedPropertyID:      uuidToString(r.LinkedSeedPropertyID),
+			LinkedPropertyID:          uuidToString(r.LinkedPropertyID),
+			CreatedAt:                 r.CreatedAt.Time,
+			UpdatedAt:                 r.UpdatedAt.Time,
+		}
+	default:
+		return cases.CaseSummary{}
 	}
 }
 
@@ -798,13 +1235,58 @@ func partiesFromRows(rows []sqlc.OpsCaseParty) []cases.Party {
 
 func decisionFromRow(row sqlc.OpsCaseDecision) cases.Decision {
 	return cases.Decision{
-		ID:        uuidToString(row.ID),
-		CaseID:    uuidToString(row.CaseID),
-		Decision:  cases.DecisionOutcome(row.Decision),
-		Note:      row.Note,
-		Status:    row.Status,
-		CreatedBy: row.CreatedBy,
-		CreatedAt: row.CreatedAt.Time,
+		ID:             uuidToString(row.ID),
+		CaseID:         uuidToString(row.CaseID),
+		Decision:       cases.DecisionOutcome(row.Decision),
+		Note:           row.Note,
+		Status:         row.Status,
+		CreatedBy:      row.CreatedBy,
+		CreatedAt:      row.CreatedAt.Time,
+		DecisionSource: cases.DecisionSource(row.DecisionSource),
+		ProposalID:     uuidToString(row.ProposalID),
+	}
+}
+
+func reasonCodesFromRows(rows []sqlc.ListDecisionReasonCodesRow) []cases.ReasonCode {
+	reasonCodes := make([]cases.ReasonCode, 0, len(rows))
+	for _, rc := range rows {
+		reasonCodes = append(reasonCodes, cases.ReasonCode{
+			Code:        rc.Code,
+			Label:       rc.Label,
+			Category:    cases.ReasonCategory(rc.Category),
+			IsHardBlock: rc.IsHardBlock,
+			Active:      rc.Active,
+			SortOrder:   rc.SortOrder,
+		})
+	}
+	return reasonCodes
+}
+
+func decisionProposalFromRow(proposal sqlc.OpsCaseDecisionProposal, codes []sqlc.OpsReasonCode) *cases.DecisionProposal {
+	explanation := map[string]any{}
+	_ = json.Unmarshal(proposal.Explanation, &explanation)
+
+	reasonCodes := make([]cases.ReasonCode, 0, len(codes))
+	for _, rc := range codes {
+		reasonCodes = append(reasonCodes, cases.ReasonCode{
+			Code:        rc.Code,
+			Label:       rc.Label,
+			Category:    cases.ReasonCategory(rc.Category),
+			IsHardBlock: rc.IsHardBlock,
+			Active:      rc.Active,
+			SortOrder:   rc.SortOrder,
+		})
+	}
+
+	return &cases.DecisionProposal{
+		ID:            uuidToString(proposal.ID),
+		EngineVersion: proposal.EngineVersion,
+		Decision:      cases.DecisionOutcome(proposal.Decision),
+		Summary:       proposal.Summary,
+		ReasonCodes:   reasonCodes,
+		Explanation:   explanation,
+		Status:        proposal.Status,
+		CreatedAt:     proposal.CreatedAt.Time,
 	}
 }
 
@@ -847,4 +1329,20 @@ func textToString(t pgtype.Text) string {
 		return ""
 	}
 	return t.String
+}
+
+func sameStringSet(left, right []string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	a := append([]string{}, left...)
+	b := append([]string{}, right...)
+	slices.Sort(a)
+	slices.Sort(b)
+	for i := range a {
+		if strings.TrimSpace(a[i]) != strings.TrimSpace(b[i]) {
+			return false
+		}
+	}
+	return true
 }
