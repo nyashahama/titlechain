@@ -224,3 +224,16 @@ SELECT id, case_id, actor_id, event_type, metadata, created_at
 FROM ops.case_audit_events
 WHERE case_id = $1
 ORDER BY created_at DESC;
+
+-- name: ListPilotCaseContexts :many
+SELECT ml.case_id,
+       ml.id AS matter_id,
+       ml.customer_reference,
+       ml.customer_status,
+       ml.submitted_at,
+       o.id AS organization_id,
+       o.name AS organization_name
+FROM pilot.matter_links ml
+JOIN pilot.organizations o ON o.id = ml.organization_id
+WHERE sqlc.narg('organization_id')::uuid IS NULL
+   OR ml.organization_id = sqlc.narg('organization_id')::uuid;

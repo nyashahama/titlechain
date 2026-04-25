@@ -221,6 +221,55 @@ type OpsSeedProperty struct {
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 }
 
+type PilotMatterLink struct {
+	ID                   pgtype.UUID        `json:"id"`
+	OrganizationID       pgtype.UUID        `json:"organization_id"`
+	CreatedByUserID      pgtype.UUID        `json:"created_by_user_id"`
+	CaseID               pgtype.UUID        `json:"case_id"`
+	CustomerReference    pgtype.Text        `json:"customer_reference"`
+	CustomerStatus       string             `json:"customer_status"`
+	SubmittedAt          pgtype.Timestamptz `json:"submitted_at"`
+	LastCustomerViewedAt pgtype.Timestamptz `json:"last_customer_viewed_at"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PilotOrganization struct {
+	ID        pgtype.UUID        `json:"id"`
+	Name      string             `json:"name"`
+	Slug      string             `json:"slug"`
+	Status    string             `json:"status"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type PilotSession struct {
+	ID        pgtype.UUID        `json:"id"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	TokenHash string             `json:"token_hash"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	RevokedAt pgtype.Timestamptz `json:"revoked_at"`
+}
+
+type PilotSummaryExport struct {
+	ID                pgtype.UUID        `json:"id"`
+	MatterLinkID      pgtype.UUID        `json:"matter_link_id"`
+	RequestedByUserID pgtype.UUID        `json:"requested_by_user_id"`
+	Format            string             `json:"format"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+}
+
+type PilotUser struct {
+	ID             pgtype.UUID        `json:"id"`
+	OrganizationID pgtype.UUID        `json:"organization_id"`
+	Email          string             `json:"email"`
+	DisplayName    string             `json:"display_name"`
+	Role           string             `json:"role"`
+	PasswordHash   string             `json:"password_hash"`
+	Active         bool               `json:"active"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 type RawBatch struct {
 	ID             pgtype.UUID        `json:"id"`
 	SourceName     string             `json:"source_name"`

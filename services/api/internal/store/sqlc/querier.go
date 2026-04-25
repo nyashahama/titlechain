@@ -27,6 +27,9 @@ type Querier interface {
 	CreateIngestionJob(ctx context.Context, arg CreateIngestionJobParams) (OpsJob, error)
 	CreateIngestionRun(ctx context.Context, batchID pgtype.UUID) (OpsRun, error)
 	CreateJob(ctx context.Context, arg CreateJobParams) (OpsJob, error)
+	CreatePilotMatterLink(ctx context.Context, arg CreatePilotMatterLinkParams) (PilotMatterLink, error)
+	CreatePilotSession(ctx context.Context, arg CreatePilotSessionParams) (PilotSession, error)
+	CreatePilotSummaryExport(ctx context.Context, arg CreatePilotSummaryExportParams) (PilotSummaryExport, error)
 	CreatePropertyMatch(ctx context.Context, arg CreatePropertyMatchParams) (OpsCasePropertyMatch, error)
 	CreateRun(ctx context.Context, arg CreateRunParams) (OpsRun, error)
 	CreateSourceBatch(ctx context.Context, arg CreateSourceBatchParams) (RawBatch, error)
@@ -35,6 +38,11 @@ type Querier interface {
 	GetCaseRecord(ctx context.Context, id pgtype.UUID) (GetCaseRecordRow, error)
 	GetCurrentDecisionProposal(ctx context.Context, caseID pgtype.UUID) (OpsCaseDecisionProposal, error)
 	GetDecisioningPropertySnapshot(ctx context.Context, id pgtype.UUID) (GetDecisioningPropertySnapshotRow, error)
+	GetPilotCaseContext(ctx context.Context, caseID pgtype.UUID) (GetPilotCaseContextRow, error)
+	GetPilotMatterLinkForOrg(ctx context.Context, arg GetPilotMatterLinkForOrgParams) (PilotMatterLink, error)
+	GetPilotMetrics(ctx context.Context) (GetPilotMetricsRow, error)
+	GetPilotUserByEmail(ctx context.Context, lower string) (GetPilotUserByEmailRow, error)
+	GetPilotUserBySessionTokenHash(ctx context.Context, tokenHash string) (GetPilotUserBySessionTokenHashRow, error)
 	GetPropertySummary(ctx context.Context, propertyID pgtype.UUID) (GetPropertySummaryRow, error)
 	GetSeedProperty(ctx context.Context, id pgtype.UUID) (OpsSeedProperty, error)
 	InsertRawRecord(ctx context.Context, arg InsertRawRecordParams) error
@@ -50,6 +58,8 @@ type Querier interface {
 	ListDecisionProposalReasonCodes(ctx context.Context, proposalID pgtype.UUID) ([]OpsReasonCode, error)
 	ListDecisionReasonCodes(ctx context.Context, decisionID pgtype.UUID) ([]ListDecisionReasonCodesRow, error)
 	ListDecisioningPropertyParties(ctx context.Context, propertyID pgtype.UUID) ([]ListDecisioningPropertyPartiesRow, error)
+	ListPilotCaseContexts(ctx context.Context, organizationID pgtype.UUID) ([]ListPilotCaseContextsRow, error)
+	ListPilotMatterSummaries(ctx context.Context, arg ListPilotMatterSummariesParams) ([]ListPilotMatterSummariesRow, error)
 	ListPropertySummaries(ctx context.Context, arg ListPropertySummariesParams) ([]ListPropertySummariesRow, error)
 	ListReasonCodes(ctx context.Context) ([]OpsReasonCode, error)
 	ListRuns(ctx context.Context, limit int32) ([]OpsRun, error)
@@ -61,9 +71,12 @@ type Querier interface {
 	RejectCasePropertyMatches(ctx context.Context, caseID pgtype.UUID) error
 	ReopenCase(ctx context.Context, id pgtype.UUID) (ReopenCaseRow, error)
 	ResolveCase(ctx context.Context, id pgtype.UUID) (ResolveCaseRow, error)
+	RevokePilotSession(ctx context.Context, tokenHash string) error
 	SupersedeCurrentDecisionProposal(ctx context.Context, caseID pgtype.UUID) error
 	SupersedeCurrentDecisions(ctx context.Context, caseID pgtype.UUID) error
+	TouchPilotMatterViewed(ctx context.Context, arg TouchPilotMatterViewedParams) error
 	UnblockNextJob(ctx context.Context, arg UnblockNextJobParams) error
+	UpdatePilotMatterStatusByCase(ctx context.Context, arg UpdatePilotMatterStatusByCaseParams) error
 	UpsertCoreProperty(ctx context.Context, arg UpsertCorePropertyParams) (CoreProperty, error)
 	UpsertPropertySummary(ctx context.Context, arg UpsertPropertySummaryParams) error
 }

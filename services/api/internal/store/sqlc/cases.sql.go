@@ -1032,6 +1032,58 @@ func (q *Queries) ListDecisionReasonCodes(ctx context.Context, decisionID pgtype
 	return items, nil
 }
 
+const listPilotCaseContexts = `-- name: ListPilotCaseContexts :many
+SELECT ml.case_id,
+       ml.id AS matter_id,
+       ml.customer_reference,
+       ml.customer_status,
+       ml.submitted_at,
+       o.id AS organization_id,
+       o.name AS organization_name
+FROM pilot.matter_links ml
+JOIN pilot.organizations o ON o.id = ml.organization_id
+WHERE $1::uuid IS NULL
+   OR ml.organization_id = $1::uuid
+`
+
+type ListPilotCaseContextsRow struct {
+	CaseID            pgtype.UUID        `json:"case_id"`
+	MatterID          pgtype.UUID        `json:"matter_id"`
+	CustomerReference pgtype.Text        `json:"customer_reference"`
+	CustomerStatus    string             `json:"customer_status"`
+	SubmittedAt       pgtype.Timestamptz `json:"submitted_at"`
+	OrganizationID    pgtype.UUID        `json:"organization_id"`
+	OrganizationName  string             `json:"organization_name"`
+}
+
+func (q *Queries) ListPilotCaseContexts(ctx context.Context, organizationID pgtype.UUID) ([]ListPilotCaseContextsRow, error) {
+	rows, err := q.db.Query(ctx, listPilotCaseContexts, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPilotCaseContextsRow
+	for rows.Next() {
+		var i ListPilotCaseContextsRow
+		if err := rows.Scan(
+			&i.CaseID,
+			&i.MatterID,
+			&i.CustomerReference,
+			&i.CustomerStatus,
+			&i.SubmittedAt,
+			&i.OrganizationID,
+			&i.OrganizationName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listReasonCodes = `-- name: ListReasonCodes :many
 SELECT code, label, category, is_hard_block, active, sort_order, created_at
 FROM ops.reason_codes
