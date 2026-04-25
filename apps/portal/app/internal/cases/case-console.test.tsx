@@ -4,6 +4,7 @@ import { CaseQueue } from "./_components/case-queue";
 import { CaseIntakeForm } from "./_components/case-intake-form";
 import { RecordDecisionForm } from "./_components/decision-form";
 import { CaseDetail } from "./_components/case-detail";
+import { DecisionProposalCard } from "./_components/decision-proposal-card";
 import { CaseSummary, CaseDetail as CaseDetailType, ReasonCode } from "./types";
 
 // Mock Next.js router
@@ -121,5 +122,35 @@ describe("case console", () => {
       />
     );
     expect(screen.getByDisplayValue("Erf 412 Rosebank Township")).toBeInTheDocument();
+  });
+
+  it("renders the current proposal with accept action", () => {
+    render(
+      <DecisionProposalCard
+        caseId="case-1"
+        proposal={{
+          id: "prop-1",
+          engine_version: "decision-engine-v1",
+          decision: "review",
+          summary: "Normalized source coverage is incomplete or conflicting.",
+          reason_codes: [
+            {
+              code: "SOURCE_RECORD_QUARANTINED",
+              label: "Source record quarantined",
+              category: "review_trigger",
+              is_hard_block: false,
+              sort_order: 220,
+            },
+          ],
+          explanation: { reasons: [] },
+          status: "current",
+          created_at: "2026-04-25T10:00:00Z",
+        }}
+        actorId="ana-001"
+      />
+    );
+
+    expect(screen.getByText(/Normalized source coverage/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Accept Recommendation/i })).toBeInTheDocument();
   });
 });

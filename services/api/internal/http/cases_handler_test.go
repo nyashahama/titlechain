@@ -148,11 +148,11 @@ func TestCasesHandler_CreateCaseWithSeedPropertyID(t *testing.T) {
 	router := NewRouter(RouterDeps{Cases: svc, Properties: property.NewService(&stubPropertyRepo{}), Jobs: jobs.NewService(&stubJobsRepo{})})
 
 	reqBody, _ := json.Marshal(map[string]string{
-		"actor_id":                   "ana-001",
-		"property_description":        "Erf 412 Rosebank Township",
-		"locality_or_area":            "Rosebank",
+		"actor_id":                     "ana-001",
+		"property_description":         "Erf 412 Rosebank Township",
+		"locality_or_area":             "Rosebank",
 		"municipality_or_deeds_office": "Johannesburg",
-		"seed_property_id":           "seed-prop-1",
+		"seed_property_id":             "seed-prop-1",
 	})
 	req := httptest.NewRequest(http.MethodPost, "/api/internal/cases", bytes.NewReader(reqBody))
 	rec := httptest.NewRecorder()
@@ -201,5 +201,47 @@ func TestCasesHandler_ReassignCase(t *testing.T) {
 	}
 	if reassigned.Case.AssigneeID != "ana-002" {
 		t.Errorf("assignee_id = %s, want ana-002", reassigned.Case.AssigneeID)
+	}
+}
+
+func TestCasesHandler_AcceptProposalWithoutCurrentProposalReturnsBadRequest(t *testing.T) {
+	repo := cases.NewMemoryRepository()
+	svc := cases.NewService(repo)
+	router := NewRouter(RouterDeps{Cases: svc})
+
+	createReqBody, _ := json.Marshal(cases.CreateCaseRequest{
+		ActorID:                   "ana-001",
+		PropertyDescription:       "Erf 412 Rosebank Township",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+		TitleReference:            "T12345/2024",
+		LinkedPropertyID:          "prop-1",
+	})
+	createReq := httptest.NewRequest(http.MethodPost, "/api/internal/cases", bytes.NewReader(createReqBody))
+	createRec := httptest.NewRecorder()
+	router.ServeHTTP(createRec, createReq)
+	if createRec.Code != http.StatusCreated {
+		t.Fatalf("create status = %d, want %d", createRec.Code, http.StatusCreated)
+	}
+
+	var detail cases.CaseDetail
+	if err := json.Unmarshal(createRec.Body.Bytes(), &detail); err != nil {
+		t.Fatalf("decode create response: %v", err)
+	}
+
+	firstAccept := httptest.NewRequest(http.MethodPost, "/api/internal/cases/"+detail.Case.ID+"/accept-proposal", bytes.NewBufferString(`{"actor_id":"ana-001"}`))
+	firstRec := httptest.NewRecorder()
+	router.ServeHTTP(firstRec, firstAccept)
+	if firstRec.Code != http.StatusOK {
+		t.Fatalf("first accept status = %d, want %d: %s", firstRec.Code, http.StatusOK, firstRec.Body.String())
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/api/internal/cases/"+detail.Case.ID+"/accept-proposal", bytes.NewBufferString(`{"actor_id":"ana-001"}`))
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusBadRequest)
 	}
 }

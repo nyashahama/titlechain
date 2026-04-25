@@ -20,6 +20,14 @@ const (
 	DecisionStop   DecisionOutcome = "stop"
 )
 
+type DecisionSource string
+
+const (
+	DecisionSourceManual           DecisionSource = "manual"
+	DecisionSourceAcceptedProposal DecisionSource = "accepted_proposal"
+	DecisionSourceManualOverride   DecisionSource = "manual_override"
+)
+
 type ReasonCategory string
 
 const (
@@ -175,14 +183,32 @@ type AddPartyRequest struct {
 }
 
 type Decision struct {
-	ID          string          `json:"id"`
-	CaseID      string          `json:"case_id"`
-	Decision    DecisionOutcome `json:"decision"`
-	ReasonCodes []ReasonCode    `json:"reason_codes"`
-	Note        string          `json:"note"`
-	Status      string          `json:"status"`
-	CreatedBy   string          `json:"created_by"`
-	CreatedAt   time.Time       `json:"created_at"`
+	ID             string          `json:"id"`
+	CaseID         string          `json:"case_id"`
+	Decision       DecisionOutcome `json:"decision"`
+	ReasonCodes    []ReasonCode    `json:"reason_codes"`
+	Note           string          `json:"note"`
+	Status         string          `json:"status"`
+	CreatedBy      string          `json:"created_by"`
+	CreatedAt      time.Time       `json:"created_at"`
+	DecisionSource DecisionSource  `json:"decision_source"`
+	ProposalID     string          `json:"proposal_id,omitempty"`
+}
+
+type DecisionProposal struct {
+	ID            string          `json:"id"`
+	EngineVersion string          `json:"engine_version"`
+	Decision      DecisionOutcome `json:"decision"`
+	Summary       string          `json:"summary"`
+	ReasonCodes   []ReasonCode    `json:"reason_codes"`
+	Explanation   map[string]any  `json:"explanation"`
+	Status        string          `json:"status"`
+	CreatedAt     time.Time       `json:"created_at"`
+}
+
+type AcceptProposalRequest struct {
+	ActorID string `json:"actor_id"`
+	Note    string `json:"note"`
 }
 
 type CloseUnresolvedRequest struct {
@@ -212,10 +238,11 @@ type AuditEvent struct {
 }
 
 type CaseDetail struct {
-	Case        CaseSummary     `json:"case"`
-	Matches     []PropertyMatch `json:"matches"`
-	Evidence    []EvidenceItem  `json:"evidence"`
-	Parties     []Party         `json:"parties"`
-	Decisions   []Decision      `json:"decisions"`
-	AuditEvents []AuditEvent    `json:"audit_events"`
+	Case            CaseSummary       `json:"case"`
+	Matches         []PropertyMatch   `json:"matches"`
+	Evidence        []EvidenceItem    `json:"evidence"`
+	Parties         []Party           `json:"parties"`
+	Decisions       []Decision        `json:"decisions"`
+	CurrentProposal *DecisionProposal `json:"current_proposal,omitempty"`
+	AuditEvents     []AuditEvent      `json:"audit_events"`
 }

@@ -55,6 +55,8 @@ func NewRouter(deps RouterDeps) stdhttp.Handler {
 		r.Post("/cases/{caseID}/property-match", casesHandler.confirmPropertyMatch)
 		r.Post("/cases/{caseID}/evidence", casesHandler.addEvidence)
 		r.Post("/cases/{caseID}/parties", casesHandler.addParty)
+		r.Post("/cases/{caseID}/evaluate", casesHandler.reevaluateCase)
+		r.Post("/cases/{caseID}/accept-proposal", casesHandler.acceptProposal)
 		r.Post("/cases/{caseID}/decision", casesHandler.recordDecision)
 		r.Post("/cases/{caseID}/close-unresolved", casesHandler.closeUnresolved)
 		r.Post("/cases/{caseID}/reopen", casesHandler.reopenCase)

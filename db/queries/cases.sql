@@ -59,7 +59,7 @@ RETURNING id, case_id, seed_property_id, match_source, confidence, status, confi
 -- name: ListCaseSummaries :many
 SELECT id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at
 FROM ops.case_records
 WHERE (sqlc.narg('status')::text IS NULL OR status = sqlc.narg('status')::text)
   AND (sqlc.narg('assignee_id')::text IS NULL OR assignee_id = sqlc.narg('assignee_id')::text)
@@ -96,7 +96,7 @@ SET linked_seed_property_id = $2, status = 'in_review', updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at;
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at;
 
 -- name: AddCaseEvidence :one
 INSERT INTO ops.case_evidence_items (
@@ -130,7 +130,7 @@ SET assignee_id = $2, updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at;
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at;
 
 -- name: SupersedeCurrentDecisions :exec
 UPDATE ops.case_decisions
@@ -138,9 +138,9 @@ SET status = 'superseded', superseded_at = NOW()
 WHERE case_id = $1 AND status = 'current';
 
 -- name: CreateCaseDecision :one
-INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by)
-VALUES ($1, $2, $3, 'current', $4)
-RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at;
+INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by, decision_source, proposal_id)
+VALUES ($1, $2, $3, 'current', $4, $5, $6)
+RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id;
 
 -- name: AddDecisionReasonCode :exec
 INSERT INTO ops.case_decision_reason_codes (decision_id, reason_code)
@@ -152,7 +152,7 @@ SET status = 'resolved', resolved_at = NOW(), updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at;
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at;
 
 -- name: CloseCaseUnresolved :one
 UPDATE ops.case_records
@@ -160,7 +160,7 @@ SET status = 'closed_unresolved', resolved_at = NOW(), updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at;
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at;
 
 -- name: ReopenCase :one
 UPDATE ops.case_records
@@ -168,10 +168,10 @@ SET status = 'reopened', resolved_at = NULL, updated_at = NOW()
 WHERE id = $1
 RETURNING id, case_reference, property_description, locality_or_area, municipality_or_deeds_office,
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
-    linked_seed_property_id, resolved_at, created_at, updated_at;
+    linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at;
 
 -- name: ListCaseDecisions :many
-SELECT id, case_id, decision, note, status, created_by, created_at, superseded_at
+SELECT id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id
 FROM ops.case_decisions
 WHERE case_id = $1
 ORDER BY created_at DESC;
@@ -182,6 +182,37 @@ FROM ops.case_decision_reason_codes drr
 JOIN ops.reason_codes rc ON rc.code = drr.reason_code
 WHERE drr.decision_id = $1
 ORDER BY rc.sort_order;
+
+-- name: GetCurrentDecisionProposal :one
+SELECT id, case_id, engine_version, decision, summary, explanation, status, created_at, superseded_at
+FROM ops.case_decision_proposals
+WHERE case_id = $1 AND status = 'current';
+
+-- name: ListDecisionProposalReasonCodes :many
+SELECT rc.code, rc.label, rc.category, rc.is_hard_block, rc.active, rc.sort_order, rc.created_at
+FROM ops.case_decision_proposal_reason_codes prc
+JOIN ops.reason_codes rc ON rc.code = prc.reason_code
+WHERE prc.proposal_id = $1
+ORDER BY rc.sort_order;
+
+-- name: SupersedeCurrentDecisionProposal :exec
+UPDATE ops.case_decision_proposals
+SET status = 'superseded', superseded_at = NOW()
+WHERE case_id = $1 AND status = 'current';
+
+-- name: CreateDecisionProposal :one
+INSERT INTO ops.case_decision_proposals (case_id, engine_version, decision, summary, explanation, status)
+VALUES ($1, $2, $3, $4, $5, 'current')
+RETURNING id, case_id, engine_version, decision, summary, explanation, status, created_at, superseded_at;
+
+-- name: AddDecisionProposalReasonCode :exec
+INSERT INTO ops.case_decision_proposal_reason_codes (proposal_id, reason_code)
+VALUES ($1, $2);
+
+-- name: CreateAcceptedDecisionFromProposal :one
+INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by, decision_source, proposal_id)
+VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5)
+RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id;
 
 -- name: CreateCaseAuditEvent :one
 INSERT INTO ops.case_audit_events (case_id, actor_id, event_type, metadata)

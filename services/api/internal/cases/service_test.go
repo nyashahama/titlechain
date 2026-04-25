@@ -41,6 +41,51 @@ func TestService_CreateCaseAutoAssignsActorAndCreatesAuditEvent(t *testing.T) {
 	if detail.AuditEvents[0].EventType != AuditCaseCreated {
 		t.Errorf("audit event type = %s, want %s", detail.AuditEvents[0].EventType, AuditCaseCreated)
 	}
+	if detail.CurrentProposal == nil {
+		t.Fatal("current_proposal = nil, want proposal")
+	}
+}
+
+func TestService_CreateCaseGeneratesCurrentProposal(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+
+	detail, err := svc.CreateCase(context.Background(), normalizedCleanCaseRequest())
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+	if detail.CurrentProposal == nil {
+		t.Fatal("current_proposal = nil, want proposal")
+	}
+	if detail.CurrentProposal.Decision != DecisionClear {
+		t.Fatalf("proposal decision = %s, want %s", detail.CurrentProposal.Decision, DecisionClear)
+	}
+}
+
+func TestService_AcceptProposalCreatesAcceptedDecision(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+
+	detail, err := svc.CreateCase(context.Background(), normalizedCleanCaseRequest())
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+
+	detail, err = svc.AcceptProposal(context.Background(), detail.Case.ID, AcceptProposalRequest{
+		ActorID: "ana-001",
+	})
+	if err != nil {
+		t.Fatalf("accept proposal: %v", err)
+	}
+	if len(detail.Decisions) != 1 {
+		t.Fatalf("decisions = %d, want 1", len(detail.Decisions))
+	}
+	if detail.Decisions[0].DecisionSource != DecisionSourceAcceptedProposal {
+		t.Fatalf("decision_source = %s, want %s", detail.Decisions[0].DecisionSource, DecisionSourceAcceptedProposal)
+	}
+	if detail.Decisions[0].ProposalID == "" {
+		t.Fatal("proposal_id = empty, want proposal back-reference")
+	}
 }
 
 func TestService_RecordDecisionRejectsStopWithoutHardBlock(t *testing.T) {

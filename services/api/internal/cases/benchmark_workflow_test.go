@@ -190,3 +190,35 @@ func TestBenchmarkWorkflow_UnresolvedCase(t *testing.T) {
 		t.Errorf("audit events = %d, want >= 3", len(detail.AuditEvents))
 	}
 }
+
+func TestBenchmarkWorkflow_AutomatedProposalOutcomes(t *testing.T) {
+	tests := []struct {
+		name     string
+		req      CreateCaseRequest
+		expected DecisionOutcome
+	}{
+		{name: "clear", req: normalizedCleanCaseRequest(), expected: DecisionClear},
+		{name: "review", req: normalizedReviewCaseRequest(), expected: DecisionReview},
+		{name: "stop", req: normalizedStopCaseRequest(), expected: DecisionStop},
+		{name: "quarantine becomes review", req: normalizedQuarantineCaseRequest(), expected: DecisionReview},
+	}
+
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			detail, err := svc.CreateCase(ctx, tt.req)
+			if err != nil {
+				t.Fatalf("create case: %v", err)
+			}
+			if detail.CurrentProposal == nil {
+				t.Fatal("current_proposal = nil, want proposal")
+			}
+			if detail.CurrentProposal.Decision != tt.expected {
+				t.Fatalf("decision = %s, want %s", detail.CurrentProposal.Decision, tt.expected)
+			}
+		})
+	}
+}
