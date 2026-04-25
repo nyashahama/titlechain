@@ -9,7 +9,7 @@ import (
 )
 
 type memoryRepository struct {
-	mu           sync.RWMutex
+	mu            sync.RWMutex
 	organizations map[string]Organization
 	users         map[string]UserRecord
 	sessions      map[string]sessionRecord
@@ -25,10 +25,11 @@ type sessionRecord struct {
 
 type memoryMatter struct {
 	MatterSummary
-	evidence []VisibleEvidence
-	reasons  []VisibleReason
-	timeline []VisibleTimelineEvent
-	reopened bool
+	organizationID string
+	evidence       []VisibleEvidence
+	reasons        []VisibleReason
+	timeline       []VisibleTimelineEvent
+	reopened       bool
 	summaryExports []SummaryExport
 }
 
@@ -71,6 +72,26 @@ func (r *memoryRepository) SuspendDemoOrganization() {
 	org := r.organizations["00000000-0000-4000-8000-000000000001"]
 	org.Status = "suspended"
 	r.organizations[org.ID] = org
+}
+
+func (r *memoryRepository) AddUser(email, password string, org Organization) User {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.organizations[org.ID] = org
+	user := User{
+		ID:           fmt.Sprintf("user-%d", len(r.users)+1),
+		Organization: org,
+		Email:        email,
+		DisplayName:  email,
+		Role:         "member",
+		Active:       true,
+	}
+	r.users[email] = UserRecord{
+		User:         user,
+		PasswordHash: hashPasswordForDev(password),
+	}
+	return user
 }
 
 func (r *memoryRepository) FindUserByEmail(ctx context.Context, email string) (UserRecord, error) {
@@ -136,23 +157,24 @@ func (r *memoryRepository) CreateMatter(ctx context.Context, user User, req Crea
 	now := time.Now()
 
 	summary := MatterSummary{
-		ID:                         id,
-		CaseID:                     caseID,
-		CaseReference:              caseRef,
-		CustomerReference:          req.CustomerReference,
-		CustomerStatus:             "submitted",
-		PropertyDescription:        req.PropertyDescription,
-		LocalityOrArea:             req.LocalityOrArea,
-		MunicipalityOrDeedsOffice:  req.MunicipalityOrDeedsOffice,
-		TitleReference:             req.TitleReference,
-		SubmittedAt:                now,
-		UpdatedAt:                  now,
+		ID:                        id,
+		CaseID:                    caseID,
+		CaseReference:             caseRef,
+		CustomerReference:         req.CustomerReference,
+		CustomerStatus:            "submitted",
+		PropertyDescription:       req.PropertyDescription,
+		LocalityOrArea:            req.LocalityOrArea,
+		MunicipalityOrDeedsOffice: req.MunicipalityOrDeedsOffice,
+		TitleReference:            req.TitleReference,
+		SubmittedAt:               now,
+		UpdatedAt:                 now,
 	}
 
 	r.matters[id] = &memoryMatter{
-		MatterSummary: summary,
-		evidence:      []VisibleEvidence{},
-		reasons:       []VisibleReason{},
+		MatterSummary:  summary,
+		organizationID: user.Organization.ID,
+		evidence:       []VisibleEvidence{},
+		reasons:        []VisibleReason{},
 		timeline: []VisibleTimelineEvent{
 			{Type: "submitted", Label: "Matter submitted", CreatedAt: now},
 		},
@@ -168,6 +190,9 @@ func (r *memoryRepository) ListMatters(ctx context.Context, user User, status st
 
 	var summaries []MatterSummary
 	for _, m := range r.matters {
+		if m.organizationID != user.Organization.ID {
+			continue
+		}
 		if status == "" || m.CustomerStatus == status {
 			summaries = append(summaries, m.MatterSummary)
 		}
@@ -181,6 +206,9 @@ func (r *memoryRepository) GetMatterDetail(ctx context.Context, user User, matte
 
 	m, ok := r.matters[matterID]
 	if !ok {
+		return MatterDetail{}, errors.New("matter not found")
+	}
+	if m.organizationID != user.Organization.ID {
 		return MatterDetail{}, errors.New("matter not found")
 	}
 
@@ -198,6 +226,9 @@ func (r *memoryRepository) ReopenMatter(ctx context.Context, user User, matterID
 
 	m, ok := r.matters[matterID]
 	if !ok {
+		return MatterDetail{}, errors.New("matter not found")
+	}
+	if m.organizationID != user.Organization.ID {
 		return MatterDetail{}, errors.New("matter not found")
 	}
 
@@ -222,9 +253,6 @@ func (r *memoryRepository) ReopenMatter(ctx context.Context, user User, matterID
 }
 
 func (r *memoryRepository) CreateSummaryExport(ctx context.Context, user User, matterID string) (SummaryExport, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
 	detail, err := r.GetMatterDetail(ctx, user, matterID)
 	if err != nil {
 		return SummaryExport{}, err
