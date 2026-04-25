@@ -118,11 +118,17 @@ func (s CasesStore) ListCases(ctx context.Context, filter cases.ListCasesFilter)
 	queries := sqlc.New(s.pool)
 
 	var status, assigneeID pgtype.Text
+	var organizationID pgtype.UUID
 	if filter.Status != "" {
 		status = pgtype.Text{String: filter.Status, Valid: true}
 	}
 	if filter.AssigneeID != "" {
 		assigneeID = pgtype.Text{String: filter.AssigneeID, Valid: true}
+	}
+	if filter.OrganizationID != "" {
+		if err := organizationID.Scan(filter.OrganizationID); err != nil {
+			return nil, err
+		}
 	}
 
 	limit := filter.Limit
@@ -143,6 +149,20 @@ func (s CasesStore) ListCases(ctx context.Context, filter cases.ListCasesFilter)
 	for _, row := range rows {
 		result = append(result, caseSummaryFromRow(row))
 	}
+	pilotContexts, err := s.listPilotContexts(ctx, queries, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	attachPilotContexts(result, pilotContexts)
+	if organizationID.Valid {
+		filtered := result[:0]
+		for _, summary := range result {
+			if summary.Pilot != nil {
+				filtered = append(filtered, summary)
+			}
+		}
+		result = filtered
+	}
 	return result, nil
 }
 
@@ -152,7 +172,59 @@ func (s CasesStore) GetCaseDetail(ctx context.Context, caseID string) (cases.Cas
 	if err != nil {
 		return cases.CaseDetail{}, err
 	}
-	return s.buildCaseDetail(ctx, queries, id)
+	detail, err := s.buildCaseDetail(ctx, queries, id)
+	if err != nil {
+		return cases.CaseDetail{}, err
+	}
+	if row, err := queries.GetPilotCaseContext(ctx, id); err == nil {
+		pilotCtx := pilotContextFromRow(row)
+		detail.Case.Pilot = &pilotCtx
+	}
+	return detail, nil
+}
+
+func (s CasesStore) listPilotContexts(ctx context.Context, queries *sqlc.Queries, organizationID pgtype.UUID) (map[string]cases.PilotContext, error) {
+	rows, err := queries.ListPilotCaseContexts(ctx, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]cases.PilotContext, len(rows))
+	for _, row := range rows {
+		result[uuidToString(row.CaseID)] = pilotContextFromListRow(row)
+	}
+	return result, nil
+}
+
+func attachPilotContexts(summaries []cases.CaseSummary, contexts map[string]cases.PilotContext) {
+	for i := range summaries {
+		ctx, ok := contexts[summaries[i].ID]
+		if !ok {
+			continue
+		}
+		summaries[i].Pilot = &ctx
+	}
+}
+
+func pilotContextFromListRow(row sqlc.ListPilotCaseContextsRow) cases.PilotContext {
+	return cases.PilotContext{
+		MatterID:          uuidToString(row.MatterID),
+		OrganizationID:    uuidToString(row.OrganizationID),
+		OrganizationName:  row.OrganizationName,
+		CustomerReference: textToString(row.CustomerReference),
+		CustomerStatus:    row.CustomerStatus,
+		SubmittedAt:       row.SubmittedAt.Time,
+	}
+}
+
+func pilotContextFromRow(row sqlc.GetPilotCaseContextRow) cases.PilotContext {
+	return cases.PilotContext{
+		MatterID:          uuidToString(row.MatterID),
+		OrganizationID:    uuidToString(row.OrganizationID),
+		OrganizationName:  row.OrganizationName,
+		CustomerReference: textToString(row.CustomerReference),
+		CustomerStatus:    row.CustomerStatus,
+		SubmittedAt:       row.SubmittedAt.Time,
+	}
 }
 
 func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCaseRequest, caseReference string) (cases.CaseDetail, error) {
@@ -414,6 +486,8 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, c.ID, "open")
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -431,6 +505,7 @@ func (s CasesStore) maybeAutoReopen(ctx context.Context, queries *sqlc.Queries, 
 		if err != nil {
 			return err
 		}
+		syncPilotStatusInTx(ctx, queries, id, "reopened")
 		meta, _ := json.Marshal(map[string]any{"trigger": "auto_reopen"})
 		_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 			CaseID:    id,
@@ -518,6 +593,8 @@ func (s CasesStore) ConfirmPropertyMatchWorkflow(ctx context.Context, caseID str
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, id, "in_review")
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -575,6 +652,8 @@ func (s CasesStore) AddEvidenceWorkflow(ctx context.Context, caseID string, req 
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, id, "in_review")
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -627,6 +706,8 @@ func (s CasesStore) AddPartyWorkflow(ctx context.Context, caseID string, req cas
 	if err != nil {
 		return cases.CaseDetail{}, err
 	}
+
+	syncPilotStatusInTx(ctx, queries, id, "in_review")
 
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
@@ -808,6 +889,8 @@ func (s CasesStore) AcceptProposalWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, id, "resolved")
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -893,6 +976,8 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, id, "resolved")
+
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
@@ -928,6 +1013,8 @@ func (s CasesStore) CloseUnresolvedWorkflow(ctx context.Context, caseID string, 
 	if err != nil {
 		return cases.CaseDetail{}, err
 	}
+
+	syncPilotStatusInTx(ctx, queries, id, "closed_unresolved")
 
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
@@ -965,6 +1052,8 @@ func (s CasesStore) ReopenCaseWorkflow(ctx context.Context, caseID string, req c
 		return cases.CaseDetail{}, err
 	}
 
+	syncPilotStatusInTx(ctx, queries, id, "reopened")
+
 	detail, err := s.reevaluateCaseInTx(ctx, queries, id)
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -973,7 +1062,6 @@ func (s CasesStore) ReopenCaseWorkflow(ctx context.Context, caseID string, req c
 	if err := tx.Commit(ctx); err != nil {
 		return cases.CaseDetail{}, err
 	}
-
 	return detail, nil
 }
 

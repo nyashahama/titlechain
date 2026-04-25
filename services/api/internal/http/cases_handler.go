@@ -38,8 +38,9 @@ func (h casesHandler) listReasonCodes(w stdhttp.ResponseWriter, r *stdhttp.Reque
 
 func (h casesHandler) listCases(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	filter := cases.ListCasesFilter{
-		Status:     r.URL.Query().Get("status"),
-		AssigneeID: r.URL.Query().Get("assignee_id"),
+		Status:         r.URL.Query().Get("status"),
+		AssigneeID:     r.URL.Query().Get("assignee_id"),
+		OrganizationID: r.URL.Query().Get("organization_id"),
 	}
 	// Default limit
 	filter.Limit = 100

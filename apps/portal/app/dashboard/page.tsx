@@ -15,7 +15,8 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
-import { listMatters } from "../_lib/mock-data";
+import { listMatters } from "../matters/api";
+import type { MatterSummary } from "../matters/types";
 import { StatusDot } from "../internal/cases/_components/status-dot";
 import { RelativeTime } from "../internal/cases/_components/relative-time";
 import { CopyButton } from "../_components/ui/copy-button";
@@ -38,13 +39,17 @@ function AnimatedCounter({ value, duration = 1000 }: { value: number; duration?:
 }
 
 export default function DashboardPage() {
-  const matters = listMatters();
+  const [matters, setMatters] = useState<MatterSummary[]>([]);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
+  useEffect(() => {
+    listMatters().then(setMatters).catch(() => {});
+  }, []);
 
   const clearCount = matters.filter((m) => m.decision === "clear").length;
   const reviewCount = matters.filter((m) => m.decision === "review").length;
   const stopCount = matters.filter((m) => m.decision === "stop").length;
-  const pendingCount = matters.filter((m) => m.status === "pending").length;
+  const pendingCount = matters.filter((m) => m.customer_status === "submitted").length;
 
   // Mock sparkline data
   const clearTrend = [12, 15, 13, 18, 20, 22, 25, 23, 28, 30, 32, 35];
@@ -57,12 +62,12 @@ export default function DashboardPage() {
     { key: "clear", label: "Clear", icon: <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#4ade80" }} /> },
     { key: "review", label: "Review", icon: <AlertCircle className="h-3.5 w-3.5" style={{ color: "#fbbf24" }} /> },
     { key: "stop", label: "Stop", icon: <XCircle className="h-3.5 w-3.5" style={{ color: "#ef4444" }} /> },
-    { key: "pending", label: "Pending", icon: <Clock className="h-3.5 w-3.5" style={{ color: "#a1a1aa" }} /> },
+    { key: "submitted", label: "Pending", icon: <Clock className="h-3.5 w-3.5" style={{ color: "#a1a1aa" }} /> },
   ];
 
   const filteredMatters =
     activeFilters.length > 0
-      ? matters.filter((m) => activeFilters.includes(m.status))
+      ? matters.filter((m) => activeFilters.includes(m.decision ?? m.customer_status))
       : matters;
 
   return (
@@ -149,13 +154,13 @@ export default function DashboardPage() {
                     className="group flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 hover:bg-white/[0.03] border border-transparent hover:border-border/40"
                   >
                     <div className="shrink-0 w-[90px]">
-                      <StatusDot status={m.status} pulse={m.status === "pending"} />
+                      <StatusDot status={m.customer_status === "submitted" ? "open" : m.customer_status === "in_review" ? "in_review" : m.customer_status === "resolved" ? "resolved" : "reopened"} pulse={m.customer_status === "submitted"} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-[11px] font-mono text-muted-more tabular-nums tracking-tight">{m.reference}</span>
+                        <span className="text-[11px] font-mono text-muted-more tabular-nums tracking-tight">{m.case_reference}</span>
                         <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                          <CopyButton value={m.reference} />
+                          <CopyButton value={m.case_reference} />
                         </span>
                       </div>
                       <p className="text-[13px] text-foreground/90 font-medium truncate">{m.property_description}</p>
@@ -163,8 +168,8 @@ export default function DashboardPage() {
                     </div>
                     {m.decision && (
                       <div className="hidden sm:block shrink-0 text-right w-[60px]">
-                        <span className="text-[11px] font-mono" style={{ color: m.decision === "clear" ? "#4ade80" : m.decision === "stop" ? "#ef4444" : "#fbbf24" }}>
-                          {m.confidence}%
+                        <span className="text-[11px] capitalize" style={{ color: m.decision === "clear" ? "#4ade80" : m.decision === "stop" ? "#ef4444" : "#fbbf24" }}>
+                          {m.decision}
                         </span>
                       </div>
                     )}
@@ -182,31 +187,26 @@ export default function DashboardPage() {
 
           {/* Activity Feed */}
           <div className="border border-border rounded-2xl bg-card/20 p-5">
-            <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Activity Feed</h2>
+            <h2 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Recent Matters</h2>
             <div className="space-y-0">
-              {matters.slice(0, 4).flatMap((m, mi) =>
-                m.audit_log.slice(0, 2).map((log, li) => (
-                  <div key={`${m.id}-${log.id}`} className="flex gap-3 relative py-2">
-                    {!(mi === 3 && li === 1) && (
-                      <div className="absolute left-[15px] top-6 bottom-0 w-px bg-border/30" />
-                    )}
-                    <div className="shrink-0 w-8 h-8 rounded-full bg-card border border-border/40 flex items-center justify-center text-muted z-10">
-                      <ActivityDot status={m.status} />
-                    </div>
-                    <div className="flex-1 min-w-0 pb-3">
-                      <p className="text-[13px] text-foreground/80">{log.event_type}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[11px] text-muted">{log.actor_name}</span>
-                        <span className="text-[11px] text-muted">·</span>
-                        <span className="text-[11px] text-muted-more"><RelativeTime date={log.created_at} /></span>
-                      </div>
-                    </div>
-                    <div className="shrink-0">
-                      <span className="text-[10px] font-mono text-muted-more">{m.reference}</span>
+              {matters.slice(0, 4).map((m) => (
+                <Link key={m.id} href={`/matters/${m.id}`} className="flex gap-3 relative py-2 group">
+                  <div className="shrink-0 w-8 h-8 rounded-full bg-card border border-border/40 flex items-center justify-center text-muted z-10">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: m.decision === "clear" ? "#4ade80" : m.decision === "stop" ? "#ef4444" : "#fbbf24" }} />
+                  </div>
+                  <div className="flex-1 min-w-0 pb-3">
+                    <p className="text-[13px] text-foreground/80 truncate">{m.property_description}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[11px] text-muted capitalize">{m.customer_status.replace(/_/g, " ")}</span>
+                      <span className="text-[11px] text-muted">·</span>
+                      <span className="text-[11px] text-muted-more"><RelativeTime date={m.updated_at} /></span>
                     </div>
                   </div>
-                ))
-              )}
+                  <div className="shrink-0">
+                    <span className="text-[10px] font-mono text-muted-more">{m.case_reference}</span>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3 text-[11px] text-muted">
-                <span>Confidence: <span className="text-foreground/70 font-medium">{recentMatter.confidence}%</span></span>
+                {recentMatter.decision && <span>Decision: <span className="text-foreground/70 font-medium capitalize">{recentMatter.decision}</span></span>}
                 <RelativeTime date={recentMatter.updated_at} />
               </div>
             </div>
@@ -326,11 +326,6 @@ function QuickActionButton({ href, icon: Icon, label, desc }: { href: string; ic
       </div>
     </Link>
   );
-}
-
-function ActivityDot({ status }: { status: string }) {
-  const color = status === "clear" ? "#4ade80" : status === "stop" ? "#ef4444" : status === "review" ? "#fbbf24" : "#a1a1aa";
-  return <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />;
 }
 
 function DecisionIcon({ decision }: { decision: string }) {

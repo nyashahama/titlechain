@@ -19,7 +19,7 @@ export default function SignInPage() {
     setLoading(true);
     try {
       await signIn(email, password);
-      router.push("/dashboard");
+      router.push("/matters");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");
     } finally {
@@ -102,12 +102,7 @@ export default function SignInPage() {
           </div>
         </div>
 
-        <p className="text-center text-[13px] text-muted mt-8">
-          Don&apos;t have an account?{" "}
-          <Link href="/auth/signup" className="text-foreground hover:underline font-medium transition-colors">
-            Create one
-          </Link>
-        </p>
+
       </div>
     </div>
   );

@@ -1,6 +1,11 @@
 package store
 
-import "testing"
+import (
+	"testing"
+	"time"
+
+	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
+)
 
 func TestBuildCanonicalEvidenceDraftsUsesSourceLinksAsProvenance(t *testing.T) {
 	links := []canonicalSourceLink{
@@ -45,5 +50,35 @@ func TestBuildCanonicalEvidenceDraftsUsesSourceLinksAsProvenance(t *testing.T) {
 		if got := draft.Facts["linked_property_id"]; got != "prop-1" {
 			t.Fatalf("draft[%d].facts[linked_property_id] = %v, want prop-1", i, got)
 		}
+	}
+}
+
+func TestAttachPilotContextsAddsPilotMetadataToCaseSummaries(t *testing.T) {
+	submittedAt := time.Date(2026, 4, 26, 9, 0, 0, 0, time.UTC)
+	summaries := []cases.CaseSummary{
+		{ID: "case-1", CaseReference: "TC-1"},
+		{ID: "case-2", CaseReference: "TC-2"},
+	}
+	contexts := map[string]cases.PilotContext{
+		"case-2": {
+			MatterID:          "matter-2",
+			OrganizationID:    "org-1",
+			OrganizationName:  "Hama & Associates Inc",
+			CustomerReference: "MAT-2",
+			CustomerStatus:    "submitted",
+			SubmittedAt:       submittedAt,
+		},
+	}
+
+	attachPilotContexts(summaries, contexts)
+
+	if summaries[0].Pilot != nil {
+		t.Fatal("case-1 pilot context present, want nil")
+	}
+	if summaries[1].Pilot == nil {
+		t.Fatal("case-2 pilot context nil, want metadata")
+	}
+	if summaries[1].Pilot.OrganizationName != "Hama & Associates Inc" {
+		t.Fatalf("organization = %q, want Hama & Associates Inc", summaries[1].Pilot.OrganizationName)
 	}
 }

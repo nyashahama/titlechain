@@ -8,6 +8,7 @@ import (
 
 	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
+	"github.com/nyasha-hama/titlechain/services/api/internal/pilot"
 	"github.com/nyasha-hama/titlechain/services/api/internal/property"
 )
 
@@ -15,6 +16,7 @@ type RouterDeps struct {
 	Cases      cases.Service
 	Properties property.Service
 	Jobs       jobs.Service
+	Pilot      pilot.Service
 }
 
 func NewRouter(deps RouterDeps) stdhttp.Handler {
@@ -60,6 +62,23 @@ func NewRouter(deps RouterDeps) stdhttp.Handler {
 		r.Post("/cases/{caseID}/decision", casesHandler.recordDecision)
 		r.Post("/cases/{caseID}/close-unresolved", casesHandler.closeUnresolved)
 		r.Post("/cases/{caseID}/reopen", casesHandler.reopenCase)
+
+		pilotMetrics := newPilotMetricsHandler(deps.Pilot)
+		r.Get("/pilot/metrics", pilotMetrics.get)
+	})
+
+	pilotAuth := newPilotAuthHandler(deps.Pilot)
+	pilotMatters := newPilotMattersHandler(deps.Pilot)
+	r.Route("/api/pilot", func(r chi.Router) {
+		r.Post("/auth/sign-in", pilotAuth.signIn)
+		r.Post("/auth/sign-out", pilotAuth.signOut)
+		r.Get("/me", pilotAuth.me)
+
+		r.Get("/matters", pilotMatters.list)
+		r.Post("/matters", pilotMatters.create)
+		r.Get("/matters/{matterID}", pilotMatters.get)
+		r.Post("/matters/{matterID}/reopen", pilotMatters.reopen)
+		r.Post("/matters/{matterID}/summary", pilotMatters.summary)
 	})
 
 	return r

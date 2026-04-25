@@ -39,6 +39,17 @@ export function CaseRow({ caseItem, index, analystMap }: CaseRowProps) {
           </div>
           <p className="text-[13px] text-foreground/90 font-medium truncate">{caseItem.property_description}</p>
           <p className="text-[11px] text-muted truncate">{caseItem.locality_or_area} · {caseItem.municipality_or_deeds_office}</p>
+          {caseItem.pilot ? (
+            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted">
+              <span className="rounded-full border border-sky-400/30 bg-sky-400/10 px-2 py-0.5 font-medium text-sky-200">
+                Pilot customer
+              </span>
+              <span className="truncate">{caseItem.pilot.organization_name}</span>
+              {caseItem.pilot.customer_reference ? (
+                <span className="font-mono text-muted-more">{caseItem.pilot.customer_reference}</span>
+              ) : null}
+            </p>
+          ) : null}
         </div>
 
         <div className="hidden sm:flex items-center gap-2 shrink-0 w-[140px]">

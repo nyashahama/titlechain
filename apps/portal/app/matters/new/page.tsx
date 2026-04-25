@@ -3,51 +3,42 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createMatter } from "../../_lib/mock-data";
-import { useAuth } from "../../_providers/auth-provider";
+import { createMatter } from "../api";
 
 export default function NewMatterPage() {
   const router = useRouter();
-  const { user } = useAuth();
   const [propertyDescription, setPropertyDescription] = useState("");
   const [locality, setLocality] = useState("");
   const [municipality, setMunicipality] = useState("");
   const [titleRef, setTitleRef] = useState("");
   const [matterRef, setMatterRef] = useState("");
+  const [intakeNote, setIntakeNote] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1800));
-    const matter = createMatter({
-      property_description: propertyDescription,
-      locality_or_area: locality,
-      municipality_or_deeds_office: municipality,
-      title_reference: titleRef || undefined,
-      matter_reference: matterRef || undefined,
-      created_by: user.id,
-    });
-    setLoading(false);
-    router.push(`/matters/${matter.id}`);
-  }
-
-  const quickEntries = [
-    { desc: "Erf 100, Rosebank", loc: "Rosebank", mun: "City of Johannesburg", result: "Clear" },
-    { desc: "Erf 50, Sandton", loc: "Sandton", mun: "City of Johannesburg", result: "Review" },
-    { desc: "Erf 10, Centurion", loc: "Centurion", mun: "City of Tshwane", result: "Stop" },
-  ];
-
-  function fillForm(entry: typeof quickEntries[0]) {
-    setPropertyDescription(entry.desc);
-    setLocality(entry.loc);
-    setMunicipality(entry.mun);
+    try {
+      const matter = await createMatter({
+        property_description: propertyDescription,
+        locality_or_area: locality,
+        municipality_or_deeds_office: municipality,
+        title_reference: titleRef || undefined,
+        customer_reference: matterRef || undefined,
+        intake_note: intakeNote || undefined,
+      });
+      router.push(`/matters/${matter.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create matter");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="mx-auto max-w-5xl p-6 md:p-10 animate-slide-in">
-      {/* Header */}
       <div className="mb-10">
         <Link
           href="/matters"
@@ -63,7 +54,6 @@ export default function NewMatterPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
-        {/* Form */}
         <div className="border border-border rounded-2xl bg-card/20 p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
@@ -131,6 +121,21 @@ export default function NewMatterPage() {
               </div>
             </div>
 
+            <div>
+              <label className="block text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
+                Intake Note
+              </label>
+              <textarea
+                value={intakeNote}
+                onChange={(e) => setIntakeNote(e.target.value)}
+                rows={3}
+                className="w-full bg-card border border-border-light rounded-xl px-4 py-[10px] text-[14px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors resize-none"
+                placeholder="Optional notes..."
+              />
+            </div>
+
+            {error && <p className="text-[13px] text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>}
+
             <button
               type="submit"
               disabled={loading}
@@ -151,36 +156,7 @@ export default function NewMatterPage() {
           </form>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-4 lg:sticky lg:top-8 lg:self-start">
-          <div className="border border-border rounded-2xl bg-card/20 p-5">
-            <h3 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Quick Fill</h3>
-            <p className="text-[12px] text-muted mb-3">Click to pre-fill the form with demo data</p>
-            <div className="space-y-2">
-              {quickEntries.map((entry) => (
-                <button
-                  key={entry.desc}
-                  onClick={() => fillForm(entry)}
-                  className="w-full text-left p-3 rounded-xl border border-border/40 bg-card/30 hover:bg-white/[0.03] transition-colors group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] text-foreground/80 font-medium">{entry.desc}</span>
-                    <span
-                      className="text-[11px] font-medium px-2 py-0.5 rounded-full"
-                      style={{
-                        color: entry.result === "Clear" ? "#4ade80" : entry.result === "Stop" ? "#ef4444" : "#fbbf24",
-                        backgroundColor: entry.result === "Clear" ? "rgba(74,222,128,0.1)" : entry.result === "Stop" ? "rgba(239,68,68,0.1)" : "rgba(251,191,36,0.1)",
-                      }}
-                    >
-                      {entry.result}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-muted mt-0.5">{entry.loc} · {entry.mun}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div className="border border-border rounded-2xl bg-card/20 p-5">
             <h3 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">What happens next</h3>
             <div className="space-y-3">
