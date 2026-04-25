@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { confirmPropertyMatchAction } from "../actions";
 
 export function PropertyMatchActions({
@@ -20,8 +21,15 @@ export function PropertyMatchActions({
     formData.set("actor_id", actorId);
     formData.set("match_id", matchId);
     formData.set("action", action);
-    await confirmPropertyMatchAction(caseId, formData);
-    window.location.reload();
+    try {
+      await confirmPropertyMatchAction(caseId, formData);
+      toast.success("Property match updated");
+      window.location.reload();
+    } catch (err) {
+      toast.error("Failed to update property match", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
   }
 
   return (

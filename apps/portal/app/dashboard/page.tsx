@@ -2,10 +2,24 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import {
+  ChevronRight,
+  Clipboard,
+  Plus,
+  Folder,
+  Check,
+  X,
+  AlertTriangle,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import { listMatters } from "../_lib/mock-data";
 import { StatusDot } from "../internal/cases/_components/status-dot";
 import { RelativeTime } from "../internal/cases/_components/relative-time";
-import { CopyButton } from "../internal/cases/_components/copy-button";
+import { CopyButton } from "../_components/ui/copy-button";
+import { FilterSelect } from "../_components/ui/filter-chip";
 import { Sparkline } from "../_components/sparkline";
 
 function AnimatedCounter({ value, duration = 1000 }: { value: number; duration?: number }) {
@@ -25,6 +39,8 @@ function AnimatedCounter({ value, duration = 1000 }: { value: number; duration?:
 
 export default function DashboardPage() {
   const matters = listMatters();
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
   const clearCount = matters.filter((m) => m.decision === "clear").length;
   const reviewCount = matters.filter((m) => m.decision === "review").length;
   const stopCount = matters.filter((m) => m.decision === "stop").length;
@@ -36,6 +52,18 @@ export default function DashboardPage() {
   const stopTrend = [2, 3, 2, 4, 3, 5, 4, 3, 5, 4, 6, 5];
 
   const recentMatter = matters[0];
+
+  const statusFilters = [
+    { key: "clear", label: "Clear", icon: <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#4ade80" }} /> },
+    { key: "review", label: "Review", icon: <AlertCircle className="h-3.5 w-3.5" style={{ color: "#fbbf24" }} /> },
+    { key: "stop", label: "Stop", icon: <XCircle className="h-3.5 w-3.5" style={{ color: "#ef4444" }} /> },
+    { key: "pending", label: "Pending", icon: <Clock className="h-3.5 w-3.5" style={{ color: "#a1a1aa" }} /> },
+  ];
+
+  const filteredMatters =
+    activeFilters.length > 0
+      ? matters.filter((m) => activeFilters.includes(m.status))
+      : matters;
 
   return (
     <div className="mx-auto max-w-6xl p-6 md:p-10 animate-slide-in">
@@ -100,11 +128,21 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {matters.length === 0 ? (
+            <div className="mb-4">
+              <FilterSelect
+                filters={statusFilters}
+                activeFilters={activeFilters}
+                onSelect={(key) => setActiveFilters((prev) => [...prev, key])}
+                onRemove={(key) => setActiveFilters((prev) => prev.filter((k) => k !== key))}
+                placeholder="Filter by status"
+              />
+            </div>
+
+            {filteredMatters.length === 0 ? (
               <EmptyState />
             ) : (
               <div className="space-y-1">
-                {matters.slice(0, 5).map((m) => (
+                {filteredMatters.slice(0, 5).map((m) => (
                   <Link
                     key={m.id}
                     href={`/matters/${m.id}`}
@@ -117,7 +155,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className="text-[11px] font-mono text-muted-more tabular-nums tracking-tight">{m.reference}</span>
                         <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                          <CopyButton text={m.reference} />
+                          <CopyButton value={m.reference} />
                         </span>
                       </div>
                       <p className="text-[13px] text-foreground/90 font-medium truncate">{m.property_description}</p>
@@ -134,9 +172,7 @@ export default function DashboardPage() {
                       <RelativeTime date={m.updated_at} />
                     </div>
                     <div className="shrink-0 w-5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted">
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted" />
                     </div>
                   </Link>
                 ))}
@@ -181,8 +217,8 @@ export default function DashboardPage() {
           <div className="border border-border rounded-2xl bg-card/20 p-5">
             <h3 className="text-[11px] uppercase tracking-[0.12em] text-muted font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <QuickActionButton href="/matters/new" icon={PlusIcon} label="New Clear-to-Lodge Check" desc="Verify a property" />
-              <QuickActionButton href="/matters" icon={FolderIcon} label="Browse All Matters" desc="Review history" />
+              <QuickActionButton href="/matters/new" icon={Plus} label="New Clear-to-Lodge Check" desc="Verify a property" />
+              <QuickActionButton href="/matters" icon={Folder} label="Browse All Matters" desc="Review history" />
             </div>
           </div>
 
@@ -267,9 +303,7 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="w-14 h-14 rounded-2xl border border-border flex items-center justify-center mb-5 bg-card/30">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
+        <Clipboard className="h-[22px] w-[22px] text-muted" />
       </div>
       <p className="text-[15px] text-foreground/80 mb-1 font-medium">No matters yet</p>
       <p className="text-[13px] text-muted max-w-[240px]">Run your first Clear-to-Lodge check to get started</p>
@@ -283,7 +317,7 @@ function QuickActionButton({ href, icon: Icon, label, desc }: { href: string; ic
       href={href}
       className="flex items-center gap-3 p-3 rounded-xl border border-border/40 bg-card/30 hover:bg-white/[0.03] hover:border-border/60 transition-all group"
     >
-      <div className="w-9 h-9 rounded-lg bg-white/[0.05] flex items-center justify-center group-hover:bg-white/[0.08] transition-colors">
+      <div className="w-9 h-9 rounded-lg bg-white/[0.05] flex items-center justify-center group-hover:bg-white/[0.08] transition-colors text-foreground">
         <Icon />
       </div>
       <div>
@@ -301,49 +335,10 @@ function ActivityDot({ status }: { status: string }) {
 
 function DecisionIcon({ decision }: { decision: string }) {
   const color = decision === "clear" ? "#4ade80" : decision === "stop" ? "#ef4444" : "#fbbf24";
-  if (decision === "clear") {
-    return (
-      <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </div>
-    );
-  }
-  if (decision === "stop") {
-    return (
-      <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </div>
-    );
-  }
+  const Icon = decision === "clear" ? Check : decision === "stop" ? X : AlertTriangle;
   return (
     <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg>
+      <Icon size={18} color={color} strokeWidth={2.5} />
     </div>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function FolderIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
-      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-    </svg>
   );
 }

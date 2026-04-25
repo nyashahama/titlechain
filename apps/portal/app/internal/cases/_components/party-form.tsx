@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { addPartyAction } from "../actions";
 
 export function PartyForm({ caseId, actorId }: { caseId: string; actorId: string }) {
@@ -10,9 +11,12 @@ export function PartyForm({ caseId, actorId }: { caseId: string; actorId: string
     setError(null);
     try {
       await addPartyAction(caseId, formData);
+      toast.success("Party added");
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add party");
+      const message = err instanceof Error ? err.message : "Failed to add party";
+      toast.error("Failed to add party", { description: message });
+      setError(message);
     }
   }
 

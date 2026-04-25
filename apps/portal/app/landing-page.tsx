@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { slideUp, staggerContainer } from "@/app/_lib/animations";
+import NumberFlow from "@number-flow/react";
 
 function useClickOutside(ref: React.RefObject<HTMLElement | null>, handler: () => void) {
   useEffect(() => {
@@ -228,15 +231,16 @@ export default function LandingPage() {
             <span className="text-[11px] text-muted">Now verifying matters across South Africa</span>
           </div>
 
-          <h1 className="text-[clamp(40px,7vw,76px)] font-bold leading-[1.02] tracking-[-0.04em] mb-6">
-            Verify property
-            <br />
-            titles in seconds.
-          </h1>
-          <p className="text-[17px] text-muted leading-[1.6] max-w-[520px] mx-auto mb-8">
-            The verification layer for South African property transfers.
-            One Clear / Review / Stop decision before lodgement or payout.
-          </p>
+          <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+            <motion.h1 variants={slideUp} className="text-[48px] md:text-[64px] font-bold tracking-[-0.03em] text-foreground leading-[1.1]">
+              Property Intelligence
+              <br />
+              <span className="text-muted">Built for South Africa</span>
+            </motion.h1>
+            <motion.p variants={slideUp} className="mt-6 text-[17px] text-muted max-w-[540px] mx-auto">
+              Verify title, assess risk, and clear-to-lodge with confidence.
+            </motion.p>
+          </motion.div>
           <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
             <Link
               href="/auth/signup"
@@ -248,7 +252,7 @@ export default function LandingPage() {
               href="/auth/signin"
               className="inline-flex items-center gap-2 text-[14px] font-medium px-6 py-[10px] rounded-full border border-border-light text-foreground transition-colors duration-200 hover:bg-white/5"
             >
-              Sign In to Dashboard
+              Request a Demo
             </Link>
           </div>
         </div>
@@ -309,7 +313,13 @@ export default function LandingPage() {
       </div>
 
       {/* STATUS QUO */}
-      <section className="relative px-6 pt-24 pb-20 md:pt-32 md:pb-28 text-center overflow-hidden">
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        className="relative px-6 pt-24 pb-20 md:pt-32 md:pb-28 text-center overflow-hidden"
+      >
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(50,200,180,0.4), rgba(74,222,128,0.4), rgba(251,191,36,0.3), rgba(239,68,68,0.3), transparent)" }} />
         <div className="max-w-[720px] mx-auto relative z-10">
           <p className="text-[clamp(22px,3vw,32px)] font-medium leading-[1.3] tracking-[-0.02em] text-foreground/90">
@@ -322,10 +332,16 @@ export default function LandingPage() {
             TitleChain gives one trusted answer before lodgement or payout.
           </p>
         </div>
-      </section>
+      </motion.section>
 
       {/* HOW IT WORKS */}
-      <section className="px-6 py-24 md:py-32 border-t border-border">
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        className="px-6 py-24 md:py-32 border-t border-border"
+      >
         <div className="max-w-[900px] mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-[28px] font-bold tracking-[-0.03em] text-foreground mb-3">How it works</h2>
@@ -341,10 +357,16 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* THREE DECISIONS */}
-      <section className="relative px-6 py-24 md:py-32 overflow-hidden border-t border-border">
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        className="relative px-6 py-24 md:py-32 overflow-hidden border-t border-border"
+      >
         <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.015) 0%, transparent 60%)" }} />
         <div className="max-w-[900px] mx-auto text-center relative z-10">
           <div className="grid grid-cols-3 gap-4 md:gap-8 mb-10">
@@ -366,10 +388,16 @@ export default function LandingPage() {
             Not another report — one operational answer backed by source provenance.
           </p>
         </div>
-      </section>
+      </motion.section>
 
       {/* BUILT FOR */}
-      <section className="px-6 py-24 md:py-32 text-center border-t border-border">
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        className="px-6 py-24 md:py-32 text-center border-t border-border"
+      >
         <h2 className="text-[clamp(26px,4vw,48px)] font-bold leading-[1.15] tracking-[-0.03em] mb-8">
           Built for{" "}
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border-light text-[clamp(14px,2.5vw,22px)] font-medium align-middle">Conveyancers</span>{" "}
@@ -381,21 +409,29 @@ export default function LandingPage() {
         </p>
         <div className="max-w-[800px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Clear-to-Lodge", value: "< 2 min", desc: "Average decision time" },
-            { label: "Evidence Sources", value: "12+", desc: "Integrated databases" },
-            { label: "Matter Accuracy", value: "99.2%", desc: "Verified decisions" },
-            { label: "Firms Onboarded", value: "150+", desc: "Across South Africa" },
+            { label: "Clear-to-Lodge", value: "< 2 min", num: 2, suffix: " min", prefix: "< " },
+            { label: "Evidence Sources", value: "12+", num: 12, suffix: "+", prefix: "" },
+            { label: "Matter Accuracy", value: "99.2%", num: 99.2, suffix: "%", prefix: "" },
+            { label: "Firms Onboarded", value: "150+", num: 150, suffix: "+", prefix: "" },
           ].map((stat) => (
             <div key={stat.label} className="border border-border rounded-2xl bg-card/20 p-5 text-center">
-              <p className="text-[24px] font-bold tracking-[-0.02em] text-foreground">{stat.value}</p>
-              <p className="text-[11px] text-muted uppercase tracking-wider font-medium mt-1">{stat.desc}</p>
+              <p className="text-[24px] font-bold tracking-[-0.02em] text-foreground">
+                {stat.prefix}<NumberFlow value={stat.num} />{stat.suffix}
+              </p>
+              <p className="text-[11px] text-muted uppercase tracking-wider font-medium mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* TESTIMONIALS */}
-      <section className="px-6 py-24 md:py-32 border-t border-border">
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        className="px-6 py-24 md:py-32 border-t border-border"
+      >
         <div className="max-w-[1000px] mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-[28px] font-bold tracking-[-0.03em] text-foreground mb-3">Trusted by property professionals</h2>
@@ -414,10 +450,17 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* PRICING */}
-      <section id="pricing" className="px-6 py-24 md:py-32 border-t border-border">
+      <motion.section
+        id="pricing"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        className="px-6 py-24 md:py-32 border-t border-border"
+      >
         <div className="max-w-[1000px] mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-[28px] font-bold tracking-[-0.03em] text-foreground mb-3">Simple, transparent pricing</h2>
@@ -462,7 +505,7 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* DUAL CTA */}
       <section className="px-6 pb-24 md:pb-32 max-w-[1100px] mx-auto">

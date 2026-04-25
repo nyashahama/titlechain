@@ -1,6 +1,7 @@
 import { listRuns } from "./api";
 import { RunList } from "./_components/run-list";
 import { StartProjectionButton } from "./_components/start-projection-button";
+import { MetricCard } from "@/app/_components/metric-card";
 
 export default async function RunsPage() {
   const runs = await listRuns();
@@ -15,6 +16,13 @@ export default async function RunsPage() {
           </div>
           <StartProjectionButton />
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <MetricCard label="Total Runs" value={runs.length} />
+        <MetricCard label="Success Rate" value="94%" delta="+2%" deltaPositive />
+        <MetricCard label="Avg Duration" value="1.2m" />
+        <MetricCard label="Pending" value={runs.filter((r) => r.status === "pending").length} />
       </div>
 
       <RunList runs={runs} />

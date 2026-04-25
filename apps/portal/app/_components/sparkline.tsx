@@ -1,6 +1,8 @@
 "use client";
 
-export function Sparkline({ data, color = "#4ade80", height = 40 }: { data: number[]; color?: string; height?: number }) {
+import { cn } from "@/app/_lib/cn";
+
+export function Sparkline({ data, color = "#4ade80", height = 40, className }: { data: number[]; color?: string; height?: number; className?: string }) {
   if (data.length < 2) return null;
   const max = Math.max(...data);
   const min = Math.min(...data);
@@ -13,7 +15,7 @@ export function Sparkline({ data, color = "#4ade80", height = 40 }: { data: numb
   }).join(" ");
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className={cn("overflow-visible", className)}>
       <polyline
         points={points}
         fill="none"

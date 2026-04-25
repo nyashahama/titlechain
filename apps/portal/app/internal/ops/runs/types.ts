@@ -9,4 +9,5 @@ export type RunSummary = {
   started_at: string;
   finished_at: string;
   created_at: string;
+  logs?: string[];
 };
