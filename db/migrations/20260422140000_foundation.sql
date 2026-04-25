@@ -62,14 +62,4 @@ CREATE TABLE read.property_summaries (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- +goose Down
-DROP TABLE IF EXISTS read.property_summaries;
-DROP TABLE IF EXISTS ops.job_attempts;
-DROP TABLE IF EXISTS ops.jobs;
-DROP TABLE IF EXISTS ops.runs;
-DROP TABLE IF EXISTS raw.batches;
-DROP SCHEMA IF EXISTS ops;
-DROP SCHEMA IF EXISTS read;
-DROP SCHEMA IF EXISTS core;
-DROP SCHEMA IF EXISTS stage;
-DROP SCHEMA IF EXISTS raw;
+

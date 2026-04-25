@@ -155,15 +155,3 @@ INSERT INTO ops.seed_properties (
     ('Section 8 SS Harbor View', 'Umhlanga', 'Durban', 'ST7788/2023', 'Harbor View Holdings Pty Ltd', 'Ownership variance seeded', '{"scenario":"review","signal":"ownership_conflict"}'::jsonb),
     ('Erf 91 Observatory', 'Observatory', 'Cape Town', 'T9988/2022', 'Ndlovu Property Holdings', 'Active interdict seeded', '{"scenario":"stop","blocker":"active_interdict"}'::jsonb),
     ('Farm Portion 17 Rietfontein', 'Rietfontein', 'Pretoria', NULL, 'Unknown', 'Insufficient title reference seeded', '{"scenario":"unresolved","missing":"title_reference"}'::jsonb);
-
--- +goose Down
-DROP TABLE IF EXISTS ops.case_audit_events;
-DROP TABLE IF EXISTS ops.case_decision_reason_codes;
-DROP TABLE IF EXISTS ops.case_decisions;
-DROP TABLE IF EXISTS ops.case_evidence_items;
-DROP TABLE IF EXISTS ops.case_parties;
-DROP TABLE IF EXISTS ops.case_property_matches;
-DROP TABLE IF EXISTS ops.case_records;
-DROP TABLE IF EXISTS ops.seed_properties;
-DROP TABLE IF EXISTS ops.reason_codes;
-DROP TABLE IF EXISTS ops.analysts;
