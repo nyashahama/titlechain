@@ -123,6 +123,20 @@ func (s Service) ReassignCase(ctx context.Context, caseID string, req ReassignCa
 	return s.repo.ReassignCaseWorkflow(ctx, caseID, req)
 }
 
+func (s Service) ReevaluateCase(ctx context.Context, caseID, actorID string) (CaseDetail, error) {
+	if strings.TrimSpace(actorID) == "" {
+		return CaseDetail{}, errors.New("actor_id is required")
+	}
+	return s.repo.ReevaluateCaseWorkflow(ctx, caseID, actorID)
+}
+
+func (s Service) AcceptProposal(ctx context.Context, caseID string, req AcceptProposalRequest) (CaseDetail, error) {
+	if strings.TrimSpace(req.ActorID) == "" {
+		return CaseDetail{}, errors.New("actor_id is required")
+	}
+	return s.repo.AcceptProposalWorkflow(ctx, caseID, req)
+}
+
 func (s Service) RecordDecision(ctx context.Context, caseID string, req RecordDecisionRequest) (CaseDetail, error) {
 	if strings.TrimSpace(req.ActorID) == "" {
 		return CaseDetail{}, errors.New("actor_id is required")

@@ -10,6 +10,8 @@ import {
   confirmPropertyMatch,
   addParty,
   reopenCase,
+  reevaluateCase,
+  acceptProposal,
 } from "./api";
 
 export async function createCaseAction(formData: FormData) {
@@ -122,6 +124,23 @@ export async function reopenCaseAction(caseId: string, formData: FormData) {
     note: (formData.get("note") as string) || undefined,
   });
   revalidatePath("/internal/cases");
+  revalidatePath(`/internal/cases/${caseId}`);
+  return detail;
+}
+
+export async function reevaluateCaseAction(caseId: string, formData: FormData) {
+  const detail = await reevaluateCase(caseId, {
+    actor_id: formData.get("actor_id") as string,
+  });
+  revalidatePath(`/internal/cases/${caseId}`);
+  return detail;
+}
+
+export async function acceptProposalAction(caseId: string, formData: FormData) {
+  const detail = await acceptProposal(caseId, {
+    actor_id: formData.get("actor_id") as string,
+    note: (formData.get("note") as string) || undefined,
+  });
   revalidatePath(`/internal/cases/${caseId}`);
   return detail;
 }

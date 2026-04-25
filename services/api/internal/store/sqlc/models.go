@@ -71,14 +71,33 @@ type OpsCaseAuditEvent struct {
 }
 
 type OpsCaseDecision struct {
-	ID           pgtype.UUID        `json:"id"`
-	CaseID       pgtype.UUID        `json:"case_id"`
-	Decision     string             `json:"decision"`
-	Note         string             `json:"note"`
-	Status       string             `json:"status"`
-	CreatedBy    string             `json:"created_by"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	SupersededAt pgtype.Timestamptz `json:"superseded_at"`
+	ID             pgtype.UUID        `json:"id"`
+	CaseID         pgtype.UUID        `json:"case_id"`
+	Decision       string             `json:"decision"`
+	Note           string             `json:"note"`
+	Status         string             `json:"status"`
+	CreatedBy      string             `json:"created_by"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	SupersededAt   pgtype.Timestamptz `json:"superseded_at"`
+	DecisionSource string             `json:"decision_source"`
+	ProposalID     pgtype.UUID        `json:"proposal_id"`
+}
+
+type OpsCaseDecisionProposal struct {
+	ID            pgtype.UUID        `json:"id"`
+	CaseID        pgtype.UUID        `json:"case_id"`
+	EngineVersion string             `json:"engine_version"`
+	Decision      string             `json:"decision"`
+	Summary       string             `json:"summary"`
+	Explanation   []byte             `json:"explanation"`
+	Status        string             `json:"status"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	SupersededAt  pgtype.Timestamptz `json:"superseded_at"`
+}
+
+type OpsCaseDecisionProposalReasonCode struct {
+	ProposalID pgtype.UUID `json:"proposal_id"`
+	ReasonCode string      `json:"reason_code"`
 }
 
 type OpsCaseDecisionReasonCode struct {

@@ -130,3 +130,23 @@ export async function reopenCase(
     body: JSON.stringify(input),
   });
 }
+
+export async function reevaluateCase(
+  caseId: string,
+  input: { actor_id: string }
+): Promise<CaseDetail> {
+  return fetchJson<CaseDetail>(`/api/internal/cases/${caseId}/evaluate`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function acceptProposal(
+  caseId: string,
+  input: { actor_id: string; note?: string }
+): Promise<CaseDetail> {
+  return fetchJson<CaseDetail>(`/api/internal/cases/${caseId}/accept-proposal`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}

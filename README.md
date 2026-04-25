@@ -63,4 +63,16 @@ npm run test --workspace @titlechain/portal
 docker compose -f infra/docker/docker-compose.yml config
 ```
 
+## Phase 3 Decision Engine Verification
+
+Run these commands after applying migrations:
+
+```bash
+sqlc generate
+cd services/api && go test ./...
+npm run test --workspace @titlechain/portal
+cargo test --workspace
+docker compose -f infra/docker/docker-compose.yml config
+```
+
 # Trigger CI

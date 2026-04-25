@@ -82,6 +82,19 @@ export type Decision = {
   status: string;
   created_by: string;
   created_at: string;
+  decision_source: "manual" | "accepted_proposal" | "manual_override";
+  proposal_id?: string;
+};
+
+export type DecisionProposal = {
+  id: string;
+  engine_version: string;
+  decision: DecisionOutcome;
+  summary: string;
+  reason_codes: ReasonCode[];
+  explanation: Record<string, unknown>;
+  status: string;
+  created_at: string;
 };
 
 export type AuditEvent = {
@@ -99,6 +112,7 @@ export type CaseDetail = {
   evidence: EvidenceItem[];
   parties: Party[];
   decisions: Decision[];
+  current_proposal?: DecisionProposal;
   audit_events: AuditEvent[];
 };
 
@@ -111,6 +125,7 @@ export type CreateCaseInput = {
   matter_reference?: string;
   intake_note?: string;
   seed_property_id?: string;
+  linked_property_id?: string;
 };
 
 export type AddEvidenceInput = {
