@@ -44,6 +44,41 @@ func (q *Queries) GetPropertySummary(ctx context.Context, propertyID pgtype.UUID
 	return i, err
 }
 
+const listCoreSourceLinksByProperty = `-- name: ListCoreSourceLinksByProperty :many
+SELECT id, property_id, batch_id, source_record_id, fact_table, fact_id, created_at
+FROM core.source_links
+WHERE property_id = $1
+ORDER BY created_at, fact_table, fact_id
+`
+
+func (q *Queries) ListCoreSourceLinksByProperty(ctx context.Context, propertyID pgtype.UUID) ([]CoreSourceLink, error) {
+	rows, err := q.db.Query(ctx, listCoreSourceLinksByProperty, propertyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreSourceLink
+	for rows.Next() {
+		var i CoreSourceLink
+		if err := rows.Scan(
+			&i.ID,
+			&i.PropertyID,
+			&i.BatchID,
+			&i.SourceRecordID,
+			&i.FactTable,
+			&i.FactID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPropertySummaries = `-- name: ListPropertySummaries :many
 SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office,
        title_reference, current_owner_name, status, updated_at

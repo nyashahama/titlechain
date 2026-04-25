@@ -69,3 +69,9 @@ INSERT INTO read.property_summaries (
 SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office, title_reference, current_owner_name, status, updated_at
 FROM read.property_summaries
 WHERE property_id = $1;
+
+-- name: ListCoreSourceLinksByProperty :many
+SELECT id, property_id, batch_id, source_record_id, fact_table, fact_id, created_at
+FROM core.source_links
+WHERE property_id = $1
+ORDER BY created_at, fact_table, fact_id;

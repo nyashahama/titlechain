@@ -19,10 +19,55 @@ type CasesStore struct {
 	pool *pgxpool.Pool
 }
 
+type canonicalSourceLink struct {
+	ID             string
+	BatchID        string
+	SourceRecordID string
+	FactTable      string
+	FactID         string
+}
+
+type canonicalEvidenceDraft struct {
+	SourceReference   string
+	ExternalReference string
+	Facts             map[string]any
+}
+
 var _ cases.Repository = CasesStore{}
 
 func NewCasesStore(pool *pgxpool.Pool) CasesStore {
 	return CasesStore{pool: pool}
+}
+
+func buildCanonicalEvidenceDrafts(
+	propertyID string,
+	propertyDescription string,
+	titleReference string,
+	links []canonicalSourceLink,
+) ([]canonicalEvidenceDraft, error) {
+	if len(links) == 0 {
+		return nil, errors.New("linked property has no source provenance")
+	}
+
+	drafts := make([]canonicalEvidenceDraft, 0, len(links))
+	for _, link := range links {
+		drafts = append(drafts, canonicalEvidenceDraft{
+			SourceReference:   link.ID,
+			ExternalReference: link.FactTable,
+			Facts: map[string]any{
+				"linked_property_id":   propertyID,
+				"property_description": propertyDescription,
+				"title_reference":      titleReference,
+				"source_link_id":       link.ID,
+				"batch_id":             link.BatchID,
+				"source_record_id":     link.SourceRecordID,
+				"fact_table":           link.FactTable,
+				"fact_id":              link.FactID,
+			},
+		})
+	}
+
+	return drafts, nil
 }
 
 func (s CasesStore) ListAnalysts(ctx context.Context) ([]cases.Analyst, error) {
@@ -339,28 +384,50 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 			return cases.CaseDetail{}, err
 		}
 
-		// Insert canonical evidence items with provenance
-		facts, err := json.Marshal(map[string]any{
-			"linked_property_id":     req.LinkedPropertyID,
-			"property_description": propRow.PropertyDescription,
-			"title_reference":     propRow.TitleReference,
-			"source":            "core.properties",
-		})
-		if err != nil {
-			return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
-		}
-		_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
-			CaseID:          c.ID,
-			EvidenceType:    "canonical_property",
-			SourceType:      "normalized_data",
-			SourceReference: req.LinkedPropertyID,
-			ExternalReference: pgtype.Text{String: propRow.TitleReference, Valid: propRow.TitleReference != ""},
-			ExtractedFacts:  facts,
-			EvidenceStatus:  string(cases.EvidenceStatusConfirmed),
-			CreatedBy:       req.ActorID,
-		})
+		sourceLinkRows, err := queries.ListCoreSourceLinksByProperty(ctx, propID)
 		if err != nil {
 			return cases.CaseDetail{}, err
+		}
+
+		sourceLinks := make([]canonicalSourceLink, 0, len(sourceLinkRows))
+		for _, row := range sourceLinkRows {
+			sourceLinks = append(sourceLinks, canonicalSourceLink{
+				ID:             uuidToString(row.ID),
+				BatchID:        uuidToString(row.BatchID),
+				SourceRecordID: uuidToString(row.SourceRecordID),
+				FactTable:      row.FactTable,
+				FactID:         uuidToString(row.FactID),
+			})
+		}
+
+		drafts, err := buildCanonicalEvidenceDrafts(
+			req.LinkedPropertyID,
+			propRow.PropertyDescription,
+			propRow.TitleReference,
+			sourceLinks,
+		)
+		if err != nil {
+			return cases.CaseDetail{}, err
+		}
+
+		for _, draft := range drafts {
+			facts, err := json.Marshal(draft.Facts)
+			if err != nil {
+				return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
+			}
+			_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+				CaseID:            c.ID,
+				EvidenceType:      "canonical_property",
+				SourceType:        "normalized_data",
+				SourceReference:   draft.SourceReference,
+				ExternalReference: pgtype.Text{String: draft.ExternalReference, Valid: draft.ExternalReference != ""},
+				ExtractedFacts:    facts,
+				EvidenceStatus:    string(cases.EvidenceStatusConfirmed),
+				CreatedBy:         req.ActorID,
+			})
+			if err != nil {
+				return cases.CaseDetail{}, err
+			}
 		}
 	}
 
@@ -419,8 +486,8 @@ func (s CasesStore) ConfirmPropertyMatchWorkflow(ctx context.Context, caseID str
 
 	if req.Action == "confirm" {
 		confirmed, err := queries.ConfirmCasePropertyMatch(ctx, sqlc.ConfirmCasePropertyMatchParams{
-			CaseID: id,
-			ID:     matchID,
+			CaseID:      id,
+			ID:          matchID,
 			ConfirmedBy: pgtype.Text{String: req.ActorID, Valid: true},
 		})
 		if err != nil {
@@ -787,7 +854,7 @@ func caseSummaryFromRecord(c any) cases.CaseSummary {
 			AssigneeID:                r.AssigneeID,
 			CreatedBy:                 r.CreatedBy,
 			LinkedSeedPropertyID:      uuidToString(r.LinkedSeedPropertyID),
-			LinkedPropertyID:        uuidToString(r.LinkedPropertyID),
+			LinkedPropertyID:          uuidToString(r.LinkedPropertyID),
 			CreatedAt:                 r.CreatedAt.Time,
 			UpdatedAt:                 r.UpdatedAt.Time,
 		}
@@ -804,7 +871,7 @@ func caseSummaryFromRecord(c any) cases.CaseSummary {
 			AssigneeID:                r.AssigneeID,
 			CreatedBy:                 r.CreatedBy,
 			LinkedSeedPropertyID:      uuidToString(r.LinkedSeedPropertyID),
-			LinkedPropertyID:        uuidToString(r.LinkedPropertyID),
+			LinkedPropertyID:          uuidToString(r.LinkedPropertyID),
 			CreatedAt:                 r.CreatedAt.Time,
 			UpdatedAt:                 r.UpdatedAt.Time,
 		}

@@ -287,6 +287,12 @@ func TestService_CreateCaseFromNormalizedPropertyHydratesCanonicalEvidence(t *te
 	found := false
 	for _, ev := range detail.Evidence {
 		if ev.EvidenceType == "canonical_property" {
+			if ev.SourceReference == "prop-1" {
+				t.Fatal("source_reference should point to canonical provenance, got linked property id")
+			}
+			if got := ev.ExtractedFacts["source_link_id"]; got == nil {
+				t.Fatal("expected source_link_id in canonical evidence facts")
+			}
 			found = true
 			break
 		}

@@ -41,6 +41,7 @@ type Querier interface {
 	ListCaseParties(ctx context.Context, caseID pgtype.UUID) ([]OpsCaseParty, error)
 	ListCasePropertyMatches(ctx context.Context, caseID pgtype.UUID) ([]OpsCasePropertyMatch, error)
 	ListCaseSummaries(ctx context.Context, arg ListCaseSummariesParams) ([]ListCaseSummariesRow, error)
+	ListCoreSourceLinksByProperty(ctx context.Context, propertyID pgtype.UUID) ([]CoreSourceLink, error)
 	ListDecisionReasonCodes(ctx context.Context, decisionID pgtype.UUID) ([]ListDecisionReasonCodesRow, error)
 	ListPropertySummaries(ctx context.Context, arg ListPropertySummariesParams) ([]ListPropertySummariesRow, error)
 	ListReasonCodes(ctx context.Context) ([]OpsReasonCode, error)

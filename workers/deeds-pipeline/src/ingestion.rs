@@ -66,9 +66,29 @@ async fn read_source_records(
 }
 
 fn sha256_hex(value: &Value) -> String {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-    let mut hasher = DefaultHasher::new();
-    value.to_string().hash(&mut hasher);
-    format!("{:016x}", hasher.finish())
+    use sha2::{Digest, Sha256};
+    let bytes = serde_json::to_vec(value).unwrap_or_default();
+    let hash = Sha256::digest(&bytes);
+    format!("{:x}", hash)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::sha256_hex;
+
+    #[test]
+    fn sha256_hex_returns_full_sha256_digest() {
+        let payload = serde_json::json!({
+            "municipality_or_deeds_office": "Johannesburg",
+            "title_reference": "T123/2024"
+        });
+
+        let digest = sha256_hex(&payload);
+
+        assert_eq!(digest.len(), 64);
+        assert_eq!(
+            digest,
+            "38e5627f180d60b07ee985fe359b4fd79eaf5a5d33bd4c26b69e66c5f6546981"
+        );
+    }
 }

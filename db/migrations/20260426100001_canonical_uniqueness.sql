@@ -5,7 +5,7 @@ ALTER TABLE core.encumbrances ADD CONSTRAINT uk_encumbrances_property_type UNIQU
 ALTER TABLE core.source_links ADD CONSTRAINT uk_source_links_record_fact UNIQUE (source_record_id, fact_table, fact_id);
 
 -- +goose Down
-DROP INDEX IF EXISTS uk_source_links_record_fact;
-DROP INDEX IF EXISTS uk_encumbrances_property_type;
-DROP INDEX IF EXISTS uk_property_parties_property_party;
-DROP INDEX IF EXISTS uk_title_registrations_property_title;
+ALTER TABLE core.source_links DROP CONSTRAINT IF EXISTS uk_source_links_record_fact;
+ALTER TABLE core.encumbrances DROP CONSTRAINT IF EXISTS uk_encumbrances_property_type;
+ALTER TABLE core.property_parties DROP CONSTRAINT IF EXISTS uk_property_parties_property_party;
+ALTER TABLE core.title_registrations DROP CONSTRAINT IF EXISTS uk_title_registrations_property_title;
