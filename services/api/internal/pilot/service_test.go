@@ -76,3 +76,39 @@ func TestServiceCreateMatterCreatesScopedMatter(t *testing.T) {
 		t.Fatal("case_id = empty")
 	}
 }
+
+func TestVerifyPasswordRejectsLegacyDevSHA(t *testing.T) {
+	if verifyPassword("demo1234", "phase4-dev-sha256:0ead2060b65992dca4769af601a1b3a35ef38cfad2c2c465bb160ea764157c5d") {
+		t.Fatal("legacy dev sha password hash verified, want rejection")
+	}
+}
+
+func TestServiceCreateSummaryExportRejectsOtherOrganizationMatter(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+
+	firstSession, err := svc.SignIn(context.Background(), SignInRequest{Email: "demo@titlechain.co.za", Password: "demo1234"})
+	if err != nil {
+		t.Fatalf("sign in first org user: %v", err)
+	}
+	matter, err := svc.CreateMatter(context.Background(), firstSession.User, CreateMatterRequest{
+		PropertyDescription:       "Erf 412 Rosebank Township",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+	})
+	if err != nil {
+		t.Fatalf("create matter: %v", err)
+	}
+
+	otherUser := repo.AddUser("other@example.test", "demo1234", Organization{
+		ID:     "00000000-0000-4000-8000-000000000002",
+		Name:   "Other Conveyancers",
+		Slug:   "other-conveyancers",
+		Status: "active",
+	})
+
+	_, err = svc.CreateSummaryExport(context.Background(), otherUser, matter.ID)
+	if err == nil {
+		t.Fatal("cross-organization summary export err = nil, want error")
+	}
+}
