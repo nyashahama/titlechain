@@ -75,4 +75,21 @@ cargo test --workspace
 docker compose -f infra/docker/docker-compose.yml config
 ```
 
+## Phase 4 Pilot Customer Workflow Verification
+
+Run these commands after applying migrations:
+
+```bash
+sqlc generate
+cd services/api && go test ./...
+npm run test --workspace @titlechain/portal
+cargo test --workspace
+docker compose --env-file .env -f infra/docker/docker-compose.yml config
+```
+
+Local pilot credentials:
+
+- Email: `demo@titlechain.co.za`
+- Password: `demo1234`
+
 # Trigger CI
