@@ -67,7 +67,7 @@ VALUES (
     'demo@titlechain.co.za',
     'Nyasha Hama',
     'pilot_admin',
-    'phase4-dev-sha256:0ead2060b65992dca4769af601a1b3a35ef38cfad2c2c465bb160ea764157c5d'
+    '$2a$12$uT2MLQ5sHnIORVJ4nOu9JeULX0waLG9uUBWg6XHf9aex3/j5j9.S6'
 );
 
 -- +goose Down
