@@ -30,8 +30,18 @@ export type CaseSummary = {
   assignee_id: string;
   created_by: string;
   linked_seed_property_id?: string;
+  pilot?: PilotCaseContext;
   created_at: string;
   updated_at: string;
+};
+
+export type PilotCaseContext = {
+  matter_id: string;
+  organization_id: string;
+  organization_name: string;
+  customer_reference?: string;
+  customer_status: string;
+  submitted_at: string;
 };
 
 export type PropertyMatch = {
