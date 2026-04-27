@@ -5,6 +5,6 @@ export const siteConfig = {
   baseLinks: {
     home: "/",
     signin: "/auth/signin",
-    signup: "/auth/signup",
+    contact: "mailto:hello@titlechain.co.za",
   },
 }

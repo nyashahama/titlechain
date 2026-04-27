@@ -33,19 +33,16 @@ export function NavBar() {
               <Link className="px-2 py-1 text-gray-900" href="#solutions">
                 Solutions
               </Link>
-              <Link className="px-2 py-1 text-gray-900" href="#farm-management">
-                Intelligence
+              <Link className="px-2 py-1 text-gray-900" href="#coverage">
+                Coverage
               </Link>
               <Link className="px-2 py-1 text-gray-900" href="#solar-analytics">
                 Analytics
               </Link>
             </div>
           </nav>
-          <Button
-            variant="secondary"
-            className="hidden h-10 font-semibold sm:block"
-          >
-            Start free trial
+          <Button asChild variant="secondary" className="hidden h-10 font-semibold sm:block">
+            <Link href={siteConfig.baseLinks.signin}>Sign in</Link>
           </Button>
           <Button
             onClick={() => setOpen(!open)}
@@ -77,14 +74,14 @@ export function NavBar() {
               <Link href="#solutions">Solutions</Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href="#farm-management">Intelligence</Link>
+              <Link href="#coverage">Coverage</Link>
             </li>
             <li onClick={() => setOpen(false)}>
               <Link href="#solar-analytics">Analytics</Link>
             </li>
           </ul>
-          <Button variant="secondary" className="text-lg">
-            Start free trial
+          <Button asChild variant="secondary" className="text-lg">
+            <Link href={siteConfig.baseLinks.signin}>Sign in</Link>
           </Button>
         </nav>
       </div>

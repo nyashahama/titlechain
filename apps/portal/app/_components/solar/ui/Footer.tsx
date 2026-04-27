@@ -1,3 +1,4 @@
+import { siteConfig } from "@/app/siteConfig"
 import {
   RiGithubFill,
   RiSlackFill,
@@ -13,12 +14,12 @@ const Footer = () => {
     solutions: {
       title: "Solutions",
       items: [
-        { label: "Clear-to-Lodge", href: "#" },
-        { label: "Matters", href: "#" },
+        { label: "Clear-to-Lodge", href: siteConfig.baseLinks.signin },
+        { label: "Matters", href: siteConfig.baseLinks.signin },
         { label: "API", href: "#" },
         { label: "Pricing", href: "#" },
         { label: "Documentation", href: "#" },
-        { label: "Getting Started", href: "#" },
+        { label: "Getting Started", href: siteConfig.baseLinks.signin },
         { label: "Integrations", href: "#" },
       ],
     },
@@ -28,7 +29,7 @@ const Footer = () => {
         { label: "About us", href: "#" },
         { label: "Blog", href: "#" },
         { label: "Careers", href: "#" },
-        { label: "Contact", href: "#" },
+        { label: "Contact", href: siteConfig.baseLinks.contact },
         { label: "Trust & Security", href: "#" },
       ],
     },
@@ -41,11 +42,11 @@ const Footer = () => {
           href: "#",
           external: true,
         },
-        { label: "Support", href: "#" },
+        { label: "Support", href: siteConfig.baseLinks.contact },
         { label: "Status", href: "#" },
         { label: "Privacy Policy", href: "#" },
         { label: "Terms of Service", href: "#" },
-        { label: "Report an Issue", href: "#" },
+        { label: "Report an Issue", href: siteConfig.baseLinks.contact },
       ],
     },
     partners: {
@@ -109,10 +110,6 @@ const Footer = () => {
         </div>
         <svg
           className="mb-10 h-20 w-full border-y border-dashed border-gray-300 stroke-gray-300"
-          // style={{
-          //   maskImage:
-          //     "linear-gradient(transparent, white 10rem, white calc(100% - 10rem), transparent)",
-          // }}
         >
           <defs>
             <pattern
@@ -154,38 +151,18 @@ const Footer = () => {
           <div>
             <div className="mt-4 flex items-center">
               {/* Social Icons */}
-              <Link
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-sm p-2 text-gray-700 transition-colors duration-200 hover:bg-gray-200 hover:text-gray-900"
-              >
-                <RiTwitterXFill className="size-5" />
-              </Link>
-              <Link
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-sm p-2 text-gray-700 transition-colors duration-200 hover:bg-gray-200 hover:text-gray-900"
-              >
-                <RiYoutubeFill className="size-5" />
-              </Link>
-              <Link
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-sm p-2 text-gray-700 transition-colors duration-200 hover:bg-gray-200 hover:text-gray-900"
-              >
-                <RiGithubFill className="size-5" />
-              </Link>
-              <Link
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-sm p-2 text-gray-700 transition-colors duration-200 hover:bg-gray-200 hover:text-gray-900"
-              >
-                <RiSlackFill className="size-5" />
-              </Link>
+              <span className="rounded-sm p-2 text-gray-400 transition-colors duration-200">
+                <RiTwitterXFill className="size-5" aria-hidden />
+              </span>
+              <span className="rounded-sm p-2 text-gray-400 transition-colors duration-200">
+                <RiYoutubeFill className="size-5" aria-hidden />
+              </span>
+              <span className="rounded-sm p-2 text-gray-400 transition-colors duration-200">
+                <RiGithubFill className="size-5" aria-hidden />
+              </span>
+              <span className="rounded-sm p-2 text-gray-400 transition-colors duration-200">
+                <RiSlackFill className="size-5" aria-hidden />
+              </span>
             </div>
             <div className="ml-2 hidden text-sm text-gray-700 lg:inline">
               &copy; {CURRENT_YEAR} TitleChain. All rights reserved.

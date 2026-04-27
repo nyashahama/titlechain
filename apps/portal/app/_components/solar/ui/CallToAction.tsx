@@ -1,3 +1,4 @@
+import { siteConfig } from "@/app/siteConfig"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "../Button"
@@ -18,10 +19,10 @@ export function CallToAction() {
           </p>
           <div className="flex flex-wrap gap-4">
             <Button asChild className="text-md">
-              <Link href="#">Start free trial</Link>
+              <Link href={siteConfig.baseLinks.signin}>Sign in</Link>
             </Button>
             <Button asChild className="text-md" variant="secondary">
-              <Link href="#">Talk to sales</Link>
+              <Link href={siteConfig.baseLinks.contact}>Talk to sales</Link>
             </Button>
           </div>
         </div>
