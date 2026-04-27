@@ -6,8 +6,7 @@ import { AnimationProvider } from "@/app/_providers/animation-provider";
 import { Toaster } from "sonner";
 import { CommandPalette } from "@/app/_components/command-palette";
 import { KeyboardShortcutsHelp } from "@/app/_components/keyboard-shortcuts-help";
-import Footer from "@/app/_components/solar/ui/Footer";
-import { NavBar } from "@/app/_components/solar/ui/Navbar";
+import { LandingChrome } from "@/app/_components/solar/landing-chrome";
 
 const geistSans = Geist({
   variable: "--font-geist",
@@ -37,9 +36,9 @@ export default function RootLayout({
       <body className="overflow-x-hidden scroll-auto bg-gray-50 antialiased">
         <AuthProvider>
           <AnimationProvider>
-            <NavBar />
-            {children}
-            <Footer />
+            <LandingChrome>
+              {children}
+            </LandingChrome>
             <CommandPalette />
             <KeyboardShortcutsHelp />
             <Toaster
