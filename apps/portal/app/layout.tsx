@@ -36,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="overflow-x-hidden scroll-auto bg-gray-50 antialiased">
+      <body className="antialiased">
         <AuthProvider>
           <AnimationProvider>
             <LandingChrome>

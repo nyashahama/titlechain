@@ -40,7 +40,7 @@
   * { @apply border-border; }
   html { @apply scroll-smooth; background-color: #000; }
   body {
-    @apply text-foreground font-sans overflow-x-hidden antialiased;
+    @apply bg-background text-foreground font-sans overflow-x-hidden antialiased;
   }
   input, textarea, select { @apply outline-none; }
   input:focus-visible, textarea:focus-visible, select:focus-visible {

@@ -11,10 +11,10 @@ export function LandingChrome({ children }: { children: React.ReactNode }) {
   if (!isLanding) return <>{children}</>
 
   return (
-    <>
+    <div className="bg-gray-50">
       <NavBar />
       {children}
       <Footer />
-    </>
+    </div>
   )
 }
