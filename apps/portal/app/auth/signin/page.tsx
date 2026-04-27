@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../_providers/auth-provider"
-import { SolarLogo } from "@/app/_components/solar/SolarLogo"
+import { TitlechainLogo } from "@/app/_components/solar/TitlechainLogo"
 
 export default function SignInPage() {
   const router = useRouter()
@@ -33,7 +33,7 @@ export default function SignInPage() {
       <div className="w-full max-w-[420px]">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex justify-center mb-6">
-            <SolarLogo className="h-8 w-auto" />
+            <TitlechainLogo className="h-8 w-auto" />
           </Link>
           <h1 className="text-[28px] font-semibold tracking-tighter text-gray-900">
             Welcome back

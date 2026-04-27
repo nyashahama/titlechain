@@ -2,13 +2,13 @@ import { Button } from "./_components/solar/Button"
 import Link from "next/link"
 import { siteConfig } from "./siteConfig"
 
-import { SolarLogo } from "./_components/solar/SolarLogo"
+import { TitlechainLogo } from "./_components/solar/TitlechainLogo"
 
 export default function NotFound() {
   return (
     <div className="flex h-screen flex-col items-center justify-center">
       <Link href={siteConfig.baseLinks.home}>
-        <SolarLogo className="mt-6 h-10" />
+        <TitlechainLogo className="mt-6 h-10" />
       </Link>
       <p className="mt-6 text-4xl font-semibold text-amber-600 sm:text-5xl">
         Error 404

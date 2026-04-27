@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   title: "TitleChain — Property Transaction Intelligence",
   description:
     "South Africa's property title intelligence platform. Verify titles, assess risk, and make Clear-to-Lodge decisions with confidence.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

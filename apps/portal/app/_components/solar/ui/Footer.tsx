@@ -6,7 +6,7 @@ import {
   RiYoutubeFill,
 } from "@remixicon/react"
 import Link from "next/link"
-import { SolarLogo } from "../SolarLogo"
+import { TitlechainLogo } from "../TitlechainLogo"
 const CURRENT_YEAR = new Date().getFullYear()
 
 const Footer = () => {
@@ -143,7 +143,7 @@ const Footer = () => {
             href="/"
             className="flex items-center font-medium text-gray-700 select-none sm:text-sm"
           >
-            <SolarLogo className="ml-2 w-20" />
+            <TitlechainLogo className="ml-2 h-8 w-auto" />
 
             <span className="sr-only">TitleChain Logo (go home)</span>
           </Link>
