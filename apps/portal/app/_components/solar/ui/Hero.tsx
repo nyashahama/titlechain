@@ -1,4 +1,5 @@
 import { RiArrowRightUpLine } from "@remixicon/react"
+import Image from "next/image"
 import { FadeContainer, FadeDiv, FadeSpan } from "../Fade"
 import GameOfLife from "./HeroBackground"
 import { siteConfig } from "@/app/siteConfig"
@@ -46,6 +47,15 @@ export function Hero() {
         </FadeDiv>
         <div className="absolute inset-0 -z-10 flex items-center justify-center">
           <GameOfLife />
+        </div>
+        <div className="absolute inset-0 -z-20 opacity-30">
+          <Image
+            src="/images/clouds.png"
+            alt=""
+            fill
+            className="object-cover"
+            aria-hidden
+          />
         </div>
       </FadeContainer>
     </section>
