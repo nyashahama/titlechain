@@ -1,0 +1,1 @@
+export { TitlechainLogo } from "./TitlechainLogo"

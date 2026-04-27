@@ -1,5 +1,34 @@
-import LandingPage from "./landing-page";
+import { CallToAction } from "./_components/solar/ui/CallToAction"
+import FeatureDivider from "./_components/solar/ui/FeatureDivider"
+import Features from "./_components/solar/ui/Features"
+import { Hero } from "./_components/solar/ui/Hero"
+import { Map } from "./_components/solar/ui/Map/Map"
+import { SolarAnalytics } from "./_components/solar/ui/SolarAnalytics"
+import Testimonial from "./_components/solar/ui/Testimonial"
 
 export default function Home() {
-  return <LandingPage />;
+  return (
+    <main className="relative mx-auto flex flex-col">
+      <div className="pt-56">
+        <Hero />
+      </div>
+      <div className="mt-52 px-4 xl:px-0">
+        <Features />
+      </div>
+      <div className="mt-32 px-4 xl:px-0">
+        <Testimonial />
+      </div>
+      <FeatureDivider className="my-16 max-w-6xl" />
+      <div className="px-4 xl:px-0">
+        <Map />
+      </div>
+      <FeatureDivider className="my-16 max-w-6xl" />
+      <div className="mt-12 mb-40 px-4 xl:px-0">
+        <SolarAnalytics />
+      </div>
+      <div className="mt-10 mb-40 px-4 xl:px-0">
+        <CallToAction />
+      </div>
+    </main>
+  )
 }
