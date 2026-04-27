@@ -10,7 +10,7 @@ import { SVGMap } from "./SVGMap"
 export const Map = () => {
   return (
     <section
-      id="farm-management"
+      id="coverage"
       aria-labelledby="management-title"
       className="relative flex w-full max-w-6xl scroll-my-24 flex-col items-center justify-center overflow-hidden rounded-2xl bg-gray-950 px-10 shadow-2xl shadow-black/50 sm:px-16 md:px-28 lg:mx-auto"
     >
@@ -24,7 +24,7 @@ export const Map = () => {
         >
           <defs>
             <pattern
-              id="diagonal-border-pattern"
+              id="diagonal-border-pattern-left"
               patternUnits="userSpaceOnUse"
               width="64"
               height="64"
@@ -45,13 +45,13 @@ export const Map = () => {
           <rect
             width="100%"
             height="100%"
-            fill="url(#diagonal-border-pattern)"
+            fill="url(#diagonal-border-pattern-left)"
           />
         </svg>
       </div>
       <div className="absolute right-0 z-10 h-full backdrop-blur-[2px]">
         <svg
-          className="h-full w-8 border-r border-zinc-900 stroke-zinc-800 sm:w-20"
+          className="h-full w-8 border-l border-zinc-900 stroke-zinc-800 sm:w-20"
           style={{
             maskImage:
               "linear-gradient(transparent, white 10rem, white calc(100% - 10rem), transparent)",
@@ -59,7 +59,7 @@ export const Map = () => {
         >
           <defs>
             <pattern
-              id="diagonal-border-pattern"
+              id="diagonal-border-pattern-right"
               patternUnits="userSpaceOnUse"
               width="64"
               height="64"
@@ -80,7 +80,7 @@ export const Map = () => {
           <rect
             width="100%"
             height="100%"
-            fill="url(#diagonal-border-pattern)"
+            fill="url(#diagonal-border-pattern-right)"
           />
         </svg>
       </div>

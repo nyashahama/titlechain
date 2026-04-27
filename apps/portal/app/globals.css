@@ -138,6 +138,11 @@
   100% { transform: translateX(-100%); opacity: 100; }
 }
 
+@keyframes wave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 @keyframes marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
