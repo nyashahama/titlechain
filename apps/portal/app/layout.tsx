@@ -6,6 +6,8 @@ import { AnimationProvider } from "@/app/_providers/animation-provider";
 import { Toaster } from "sonner";
 import { CommandPalette } from "@/app/_components/command-palette";
 import { KeyboardShortcutsHelp } from "@/app/_components/keyboard-shortcuts-help";
+import Footer from "@/app/_components/solar/ui/Footer";
+import { NavBar } from "@/app/_components/solar/ui/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist",
@@ -22,7 +24,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TitleChain — Property Transaction Intelligence",
   description:
-    "South Africa's first normalized, queryable, historically versioned property intelligence layer — built for conveyancers, banks, and insurers who need to know before they commit.",
+    "South Africa's property title intelligence platform. Verify titles, assess risk, and make Clear-to-Lodge decisions with confidence.",
 };
 
 export default function RootLayout({
@@ -32,10 +34,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>
+      <body className="overflow-x-hidden scroll-auto bg-gray-50 antialiased">
         <AuthProvider>
           <AnimationProvider>
+            <NavBar />
             {children}
+            <Footer />
             <CommandPalette />
             <KeyboardShortcutsHelp />
             <Toaster
