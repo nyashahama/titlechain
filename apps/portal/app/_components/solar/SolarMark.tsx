@@ -1,1 +1,0 @@
-export { TitlechainMark } from "./TitlechainMark"
