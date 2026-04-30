@@ -1,5 +1,4 @@
 import { siteConfig } from "@/app/siteConfig"
-import Image from "next/image"
 import Link from "next/link"
 import { Button } from "../Button"
 
@@ -26,22 +25,30 @@ export function CallToAction() {
             </Button>
           </div>
         </div>
-        <div className="relative isolate rounded-xl sm:col-span-4 sm:h-full">
-          <Image
-            aria-hidden
-            alt="Farm with vehicles"
-            src="/images/farm-footer.webp"
-            height={1000}
-            width={1000}
-            className="absolute inset-0 -z-10 rounded-2xl blur-xl"
-          />
-          <Image
-            alt="Farm with vehicles"
-            src="/images/farm-footer.webp"
-            height={1000}
-            width={1000}
-            className="relative z-10 rounded-2xl"
-          />
+        <div className="relative isolate rounded-xl sm:col-span-4 sm:h-full" aria-hidden>
+          <svg className="absolute inset-0 h-full w-full rounded-2xl">
+            <defs>
+              <pattern
+                id="cta-pattern"
+                patternUnits="userSpaceOnUse"
+                width="64"
+                height="64"
+              >
+                {Array.from({ length: 17 }, (_, i) => {
+                  const offset = i * 8
+                  return (
+                    <path
+                      key={i}
+                      d={`M${-106 + offset} 110L${22 + offset} -18`}
+                      className="stroke-gray-200/70"
+                      strokeWidth="1"
+                    />
+                  )
+                })}
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#cta-pattern)" />
+          </svg>
         </div>
       </div>
     </section>
