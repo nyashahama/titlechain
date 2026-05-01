@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "../_providers/auth-provider";
+import { TitlechainMark } from "../_components/solar/TitlechainMark";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: HomeIcon },
@@ -52,10 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="w-[240px] shrink-0 border-r border-border flex flex-col">
         <div className="p-4">
           <Link href="/dashboard" className="inline-flex items-center gap-2.5 px-2 py-1">
-            <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-foreground">
-              <path d="M16 2L30 28H2L16 2Z" stroke="currentColor" strokeWidth="2.5" fill="none" />
-              <circle cx="16" cy="20" r="4" stroke="currentColor" strokeWidth="2" fill="none" />
-            </svg>
+            <TitlechainMark className="w-5 h-5" />
             <span className="font-semibold text-[14px] tracking-tight">TitleChain</span>
           </Link>
         </div>

@@ -1,0 +1,37 @@
+<svg width="32" height="32" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="42" height="42" rx="12" fill="#FFF7ED"/>
+  <rect
+    x="8.5"
+    y="10.5"
+    width="15"
+    height="19"
+    rx="6.5"
+    transform="rotate(-45 16 20)"
+    fill="none"
+    stroke="#F97316"
+    stroke-width="3.2"
+  />
+  <rect
+    x="18.5"
+    y="10.5"
+    width="15"
+    height="19"
+    rx="6.5"
+    transform="rotate(-45 26 20)"
+    fill="none"
+    stroke="#FDBA74"
+    stroke-width="3.2"
+  />
+  <path
+    d="M21 12.5V29.5"
+    stroke="#0F172A"
+    stroke-width="3.6"
+    stroke-linecap="round"
+  />
+  <path
+    d="M16.1 20H25.9"
+    stroke="#0F172A"
+    stroke-width="3.6"
+    stroke-linecap="round"
+  />
+</svg>
