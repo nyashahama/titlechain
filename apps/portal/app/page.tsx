@@ -3,7 +3,7 @@ import FeatureDivider from "./_components/solar/ui/FeatureDivider"
 import Features from "./_components/solar/ui/Features"
 import { Hero } from "./_components/solar/ui/Hero"
 import { Map } from "./_components/solar/ui/Map/Map"
-import { SolarAnalytics } from "./_components/solar/ui/SolarAnalytics"
+import { Analytics } from "./_components/solar/ui/SolarAnalytics"
 import Testimonial from "./_components/solar/ui/Testimonial"
 
 export default function Home() {
@@ -24,7 +24,7 @@ export default function Home() {
       </div>
       <FeatureDivider className="my-16 max-w-6xl" />
       <div className="mt-12 mb-40 px-4 xl:px-0">
-        <SolarAnalytics />
+        <Analytics />
       </div>
       <div className="mt-10 mb-40 px-4 xl:px-0">
         <CallToAction />

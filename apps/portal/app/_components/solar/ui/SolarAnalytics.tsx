@@ -8,7 +8,7 @@ import { Divider } from "../Divider"
 import AnalyticsIllustration from "./AnalyticsIllustration"
 import { StickerCard } from "./StickerCard"
 
-export function SolarAnalytics() {
+export function Analytics() {
   return (
     <section
       aria-labelledby="solar-analytics"
