@@ -13,39 +13,39 @@ const summary = [
   {
     name: "Clear-to-Lodge",
     value: "1,428",
-    planted: "1,330",
-    water: "97.9%",
-    yield: "+7.4%",
-    efficiency: "+2.1%",
-    nutrients: "+5.3%",
+    processed: "1,330",
+    accuracy: "97.9%",
+    volume_change: "+7.4%",
+    avg_response_ms: "210ms",
+    confidence: "94%",
     bgColor: "bg-emerald-500",
     changeType: "positive",
   },
   {
     name: "Review Required",
     value: "346",
-    planted: "380",
-    water: "91.1%",
-    yield: "-8.9%",
-    efficiency: "-4.5%",
-    nutrients: "-3.2%",
+    processed: "380",
+    accuracy: "91.1%",
+    volume_change: "-8.9%",
+    avg_response_ms: "890ms",
+    confidence: "82%",
     bgColor: "bg-amber-500",
     changeType: "negative",
   },
   {
     name: "Stop / Blocked",
     value: "89",
-    planted: "102",
-    water: "87.3%",
-    yield: "-12.7%",
-    efficiency: "-11.1%",
-    nutrients: "-8.9%",
+    processed: "102",
+    accuracy: "87.3%",
+    volume_change: "-12.7%",
+    avg_response_ms: "1.2s",
+    confidence: "97%",
     bgColor: "bg-red-500",
     changeType: "negative",
   },
 ]
 
-export default function FieldPerformance() {
+export default function DecisionOutcomes() {
   return (
     <div className="h-150 shrink-0 overflow-hidden mask-[radial-gradient(white_30%,transparent_90%)] perspective-[4000px] perspective-origin-center">
       <div className="-translate-y-10 -translate-z-10 rotate-x-10 rotate-y-20 -rotate-z-10 transform-3d">
@@ -64,9 +64,9 @@ export default function FieldPerformance() {
             <TableHead>
               <TableRow>
                 <TableHeaderCell>Outcome</TableHeaderCell>
-                <TableHeaderCell className="text-right">Count</TableHeaderCell>
+                <TableHeaderCell className="text-right">Checks</TableHeaderCell>
                 <TableHeaderCell className="text-right">
-                  Expected
+                  Processed
                 </TableHeaderCell>
                 <TableHeaderCell className="text-right">
                   Accuracy
@@ -75,7 +75,7 @@ export default function FieldPerformance() {
                   Volume Δ
                 </TableHeaderCell>
                 <TableHeaderCell className="text-right">
-                  Speed
+                  Response Time
                 </TableHeaderCell>
                 <TableHeaderCell className="text-right">
                   Confidence
@@ -95,8 +95,8 @@ export default function FieldPerformance() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">{item.value}</TableCell>
-                  <TableCell className="text-right">{item.planted}</TableCell>
-                  <TableCell className="text-right">{item.water}</TableCell>
+                  <TableCell className="text-right">{item.processed}</TableCell>
+                  <TableCell className="text-right">{item.accuracy}</TableCell>
                   <TableCell className="text-right">
                     <span
                       className={
@@ -105,7 +105,7 @@ export default function FieldPerformance() {
                           : "text-red-700"
                       }
                     >
-                      {item.yield}
+                      {item.volume_change}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
@@ -116,7 +116,7 @@ export default function FieldPerformance() {
                           : "text-red-700"
                       }
                     >
-                      {item.efficiency}
+                      {item.avg_response_ms}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
@@ -127,7 +127,7 @@ export default function FieldPerformance() {
                           : "text-red-700"
                       }
                     >
-                      {item.nutrients}
+                      {item.confidence}
                     </span>
                   </TableCell>
                 </TableRow>
