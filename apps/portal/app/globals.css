@@ -187,6 +187,13 @@
   }
 }
 
+body.landing {
+  @apply bg-gray-50;
+}
+html:has(body.landing) {
+  background-color: rgb(249 250 251);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-shimmer, .animate-page-enter, .animate-slide-in, .animate-slide-down, .animate-scale-in {
     animation: none !important;
