@@ -1,7 +1,14 @@
 import { useId } from "react"
 import type { SVGProps } from "react"
 
-export const TitlechainMark = (props: SVGProps<SVGSVGElement>) => {
+type TitlechainMarkProps = SVGProps<SVGSVGElement> & {
+  crossColor?: string
+}
+
+export const TitlechainMark = ({
+  crossColor = "currentColor",
+  ...props
+}: TitlechainMarkProps) => {
   const gradientId = useId()
 
   return (
@@ -51,13 +58,13 @@ export const TitlechainMark = (props: SVGProps<SVGSVGElement>) => {
       />
       <path
         d="M21 12.5V29.5"
-        stroke="#0f172a"
+        stroke={crossColor}
         strokeWidth="3.6"
         strokeLinecap="round"
       />
       <path
         d="M16.1 20H25.9"
-        stroke="#0f172a"
+        stroke={crossColor}
         strokeWidth="3.6"
         strokeLinecap="round"
       />

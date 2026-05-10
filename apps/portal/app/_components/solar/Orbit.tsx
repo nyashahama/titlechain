@@ -77,7 +77,7 @@ export const Orbit = ({
     >
       {/* Orbital path */}
       <div
-        className="absolute animate-pulse rounded-full border border-gray-300 bg-gray-500/5"
+        className="absolute animate-pulse rounded-full border border-border bg-white/[0.03]"
         style={{
           width: `${orbitDiameter}px`,
           height: `${orbitDiameter}px`,

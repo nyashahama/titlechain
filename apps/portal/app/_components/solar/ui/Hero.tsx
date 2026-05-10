@@ -9,25 +9,25 @@ export function Hero() {
       <FadeContainer className="relative flex flex-col items-center justify-center">
         <FadeDiv className="mx-auto">
           <div className="mx-auto w-full">
-            <div className="inline-flex max-w-full items-center gap-3 rounded-full bg-white/5 px-2.5 py-0.5 pr-3 pl-0.5 font-medium text-gray-900 ring-1 shadow-lg shadow-orange-400/20 ring-black/10 filter backdrop-blur-[1px] sm:text-sm">
-              <span className="shrink-0 truncate rounded-full border bg-gray-50 px-2.5 py-1 text-sm text-gray-600 sm:text-xs">
+            <div className="inline-flex w-[calc(100vw-2rem)] max-w-full min-w-0 items-center gap-3 rounded-full bg-white/[0.05] px-2.5 py-0.5 pr-3 pl-0.5 font-medium text-foreground ring-1 shadow-lg shadow-orange-500/10 ring-border backdrop-blur-[1px] sm:w-auto sm:text-sm">
+              <span className="shrink-0 truncate rounded-full border border-border bg-white/[0.06] px-2.5 py-1 text-sm text-muted sm:text-xs">
                 News
               </span>
-              <span className="flex items-center gap-1 truncate">
-                <span className="w-full truncate">
+              <span className="flex min-w-0 items-center gap-1 truncate">
+                <span className="min-w-0 truncate">
                   TitleChain launches Clear-to-Lodge integration
                 </span>
-                <RiArrowRightUpLine className="size-4 shrink-0 text-gray-700" />
+                <RiArrowRightUpLine className="size-4 shrink-0 text-muted" />
               </span>
             </div>
           </div>
         </FadeDiv>
-        <h1 className="mt-8 text-center text-5xl font-semibold tracking-tighter text-gray-900 sm:text-8xl sm:leading-22">
+        <h1 className="mt-8 text-center text-5xl font-semibold tracking-tighter text-foreground sm:text-8xl sm:leading-22">
           <FadeSpan>Property</FadeSpan> <FadeSpan>title</FadeSpan>
           <br />
           <FadeSpan>intelligence,</FadeSpan> <FadeSpan>instantly</FadeSpan>
         </h1>
-        <p className="mt-5 max-w-xl text-center text-base text-balance text-gray-700 sm:mt-8 sm:text-xl">
+        <p className="mt-5 max-w-xl text-center text-base text-balance text-muted sm:mt-8 sm:text-xl">
           <FadeSpan>Verify titles, assess risk, and make</FadeSpan>{" "}
           <FadeSpan>Clear-to-Lodge decisions with confidence</FadeSpan>{" "}
           <FadeSpan>across every property in South Africa.</FadeSpan>
@@ -47,8 +47,8 @@ export function Hero() {
           <svg width="100%" height="100%" className="absolute inset-0">
             <defs>
               <radialGradient id="hero-clouds" cx="50%" cy="40%" r="60%">
-                <stop offset="0%" stopColor="white" stopOpacity="0.3" />
-                <stop offset="50%" stopColor="white" stopOpacity="0.08" />
+                <stop offset="0%" stopColor="#F97316" stopOpacity="0.12" />
+                <stop offset="50%" stopColor="white" stopOpacity="0.05" />
                 <stop offset="100%" stopColor="white" stopOpacity="0" />
               </radialGradient>
             </defs>

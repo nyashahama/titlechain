@@ -81,7 +81,7 @@ const Footer = () => {
                 y1="0"
                 x2="0"
                 y2="100%"
-                className="stroke-gray-300"
+                className="stroke-white/15"
                 strokeWidth="2"
                 strokeDasharray="3 3"
               />
@@ -101,7 +101,7 @@ const Footer = () => {
                 y1="0"
                 x2="0"
                 y2="100%"
-                className="stroke-gray-300"
+                className="stroke-white/15"
                 strokeWidth="2"
                 strokeDasharray="3 3"
               />
@@ -109,7 +109,7 @@ const Footer = () => {
           </div>
         </div>
         <svg
-          className="mb-10 h-20 w-full border-y border-dashed border-gray-300 stroke-gray-300"
+          className="mb-10 h-20 w-full border-y border-dashed border-border stroke-white/15"
         >
           <defs>
             <pattern
@@ -141,9 +141,9 @@ const Footer = () => {
         <div className="mr-auto flex w-full justify-between lg:w-fit lg:flex-col">
           <Link
             href="/"
-            className="flex items-center font-medium text-gray-700 select-none sm:text-sm"
+            className="flex items-center font-medium text-muted select-none sm:text-sm"
           >
-            <TitlechainLogo className="ml-2 h-8 w-auto" />
+            <TitlechainLogo className="ml-2 h-8 w-auto text-foreground" />
 
             <span className="sr-only">TitleChain Logo (go home)</span>
           </Link>
@@ -151,20 +151,20 @@ const Footer = () => {
           <div>
             <div className="mt-4 flex items-center">
               {/* Social Icons */}
-              <span className="rounded-sm p-2 text-gray-400 transition-colors duration-200">
+              <span className="rounded-sm p-2 text-muted transition-colors duration-200">
                 <RiTwitterXFill className="size-5" aria-hidden />
               </span>
-              <span className="rounded-sm p-2 text-gray-400 transition-colors duration-200">
+              <span className="rounded-sm p-2 text-muted transition-colors duration-200">
                 <RiYoutubeFill className="size-5" aria-hidden />
               </span>
-              <span className="rounded-sm p-2 text-gray-400 transition-colors duration-200">
+              <span className="rounded-sm p-2 text-muted transition-colors duration-200">
                 <RiGithubFill className="size-5" aria-hidden />
               </span>
-              <span className="rounded-sm p-2 text-gray-400 transition-colors duration-200">
+              <span className="rounded-sm p-2 text-muted transition-colors duration-200">
                 <RiSlackFill className="size-5" aria-hidden />
               </span>
             </div>
-            <div className="ml-2 hidden text-sm text-gray-700 lg:inline">
+            <div className="ml-2 hidden text-sm text-muted lg:inline">
               &copy; {CURRENT_YEAR} TitleChain. All rights reserved.
             </div>
           </div>
@@ -173,7 +173,7 @@ const Footer = () => {
         {/* Footer Sections */}
         {Object.entries(sections).map(([key, section]) => (
           <div key={key} className="mt-10 min-w-44 pl-2 lg:mt-0 lg:pl-0">
-            <h3 className="mb-4 font-medium text-gray-900 sm:text-sm">
+            <h3 className="mb-4 font-medium text-foreground sm:text-sm">
               {section.title}
             </h3>
             <ul className="space-y-4">
@@ -181,7 +181,7 @@ const Footer = () => {
                 <li key={item.label} className="text-sm">
                   <Link
                     href={item.href}
-                    className="text-gray-600 transition-colors duration-200 hover:text-gray-900"
+                    className="text-muted transition-colors duration-200 hover:text-foreground"
                   >
                     {item.label}
                   </Link>

@@ -43,7 +43,7 @@ const GameOfLife = () => {
     }
 
     const draw = () => {
-      ctx.fillStyle = "#F9FAFB"
+      ctx.fillStyle = "#000000"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       // Update opacities
@@ -57,7 +57,7 @@ const GameOfLife = () => {
           }
 
           if (cell.opacity > 0) {
-            ctx.fillStyle = `rgba(0, 0, 0, ${cell.opacity})`
+            ctx.fillStyle = `rgba(255, 255, 255, ${cell.opacity * 0.18})`
             ctx.beginPath()
             ctx.arc(
               j * cellSize + cellSize / 2,

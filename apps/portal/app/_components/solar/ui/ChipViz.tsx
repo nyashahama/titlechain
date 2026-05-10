@@ -37,7 +37,7 @@ const ChipViz = () => {
           variants={createVariants({ scale: 1.08, delay: 0.1 })}
           initial="initial"
           animate="animate"
-          className="relative z-0 min-h-[80px] min-w-[80px] rounded-full border bg-gradient-to-b from-white to-orange-50 shadow-xl shadow-orange-500/20"
+          className="relative z-0 min-h-[80px] min-w-[80px] rounded-full border bg-gradient-to-b from-[#ffffff]/10 to-orange-500/10 shadow-xl shadow-orange-500/20"
         >
           <motion.div
             variants={createVariants({ scale: 1.06, delay: 0.2 })}
@@ -57,9 +57,9 @@ const ChipViz = () => {
                 variants={createVariants({ scale: 1.02, delay: 0.4 })}
                 initial="initial"
                 animate="animate"
-                className="absolute inset-[6px] rounded-full bg-white/10 p-1 backdrop-blur-[1px]"
+                className="absolute inset-[6px] rounded-full bg-white/[0.08] p-1 backdrop-blur-[1px]"
               >
-                <div className="relative flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-300 shadow-lg shadow-black/40">
+                <div className="relative flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#ffffff]/18 to-[#ffffff]/6 shadow-lg shadow-black/40">
                   <TitlechainMark className="w-6" />
                 </div>
               </motion.div>

@@ -49,13 +49,13 @@ export default function DecisionOutcomes() {
   return (
     <div className="h-150 shrink-0 overflow-hidden mask-[radial-gradient(white_30%,transparent_90%)] perspective-[4000px] perspective-origin-center">
       <div className="-translate-y-10 -translate-z-10 rotate-x-10 rotate-y-20 -rotate-z-10 transform-3d">
-        <h3 className="text-sm text-gray-500">Decision Outcomes</h3>
-        <p className="mt-1 text-3xl font-semibold text-gray-900">
+        <h3 className="text-sm text-muted">Decision Outcomes</h3>
+        <p className="mt-1 text-3xl font-semibold text-foreground">
           1,863 checks
         </p>
         <p className="mt-1 text-sm font-medium">
-          <span className="text-emerald-700">+98 checks (5.6%)</span>{" "}
-          <span className="font-normal text-gray-500">Past 30 days</span>
+          <span className="text-emerald-400">+98 checks (5.6%)</span>{" "}
+          <span className="font-normal text-muted">Past 30 days</span>
         </p>
         <LineChartIllustration className="mt-8 w-full min-w-200 shrink-0" />
 
@@ -85,7 +85,7 @@ export default function DecisionOutcomes() {
             <TableBody>
               {summary.map((item) => (
                 <TableRow key={item.name}>
-                  <TableCell className="font-medium text-gray-900">
+                  <TableCell className="font-medium text-foreground">
                     <div className="flex space-x-3">
                       <span
                         className={item.bgColor + " w-1 shrink-0 rounded"}
@@ -101,8 +101,8 @@ export default function DecisionOutcomes() {
                     <span
                       className={
                         item.changeType === "positive"
-                          ? "text-emerald-700"
-                          : "text-red-700"
+                          ? "text-emerald-400"
+                          : "text-red-400"
                       }
                     >
                       {item.volume_change}
@@ -112,8 +112,8 @@ export default function DecisionOutcomes() {
                     <span
                       className={
                         item.changeType === "positive"
-                          ? "text-emerald-700"
-                          : "text-red-700"
+                          ? "text-emerald-400"
+                          : "text-red-400"
                       }
                     >
                       {item.avg_response_ms}
@@ -123,8 +123,8 @@ export default function DecisionOutcomes() {
                     <span
                       className={
                         item.changeType === "positive"
-                          ? "text-emerald-700"
-                          : "text-red-700"
+                          ? "text-emerald-400"
+                          : "text-red-400"
                       }
                     >
                       {item.confidence}

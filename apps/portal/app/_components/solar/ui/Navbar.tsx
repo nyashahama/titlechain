@@ -18,25 +18,34 @@ export function NavBar() {
       className={cx(
         "fixed inset-x-4 top-4 z-50 mx-auto flex max-w-6xl justify-center rounded-lg border border-transparent px-3 py-3 transition duration-300",
         scrolled || open
-          ? "border-gray-200/50 bg-white/80 shadow-2xl shadow-black/5 backdrop-blur-sm"
-          : "bg-white/0",
+          ? "border-border bg-background/80 shadow-2xl shadow-black/40 backdrop-blur-sm"
+          : "bg-transparent",
       )}
     >
       <div className="w-full md:my-auto">
         <div className="relative flex items-center justify-between">
           <Link href={siteConfig.baseLinks.home} aria-label="Home">
             <span className="sr-only">TitleChain Logo</span>
-            <TitlechainLogo className="h-10 w-auto" />
+            <TitlechainLogo className="h-10 w-auto text-foreground" />
           </Link>
           <nav className="hidden sm:block md:absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:transform">
             <div className="flex items-center gap-10 font-medium">
-              <Link className="px-2 py-1 text-gray-900" href="#solutions">
+              <Link
+                className="px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#solutions"
+              >
                 Solutions
               </Link>
-              <Link className="px-2 py-1 text-gray-900" href="#coverage">
+              <Link
+                className="px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#coverage"
+              >
                 Coverage
               </Link>
-              <Link className="px-2 py-1 text-gray-900" href="#solar-analytics">
+              <Link
+                className="px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#solar-analytics"
+              >
                 Analytics
               </Link>
             </div>
@@ -52,12 +61,12 @@ export function NavBar() {
           >
             {!open ? (
               <RiMenuFill
-                className="size-6 shrink-0 text-gray-900"
+                className="size-6 shrink-0 text-foreground"
                 aria-hidden
               />
             ) : (
               <RiCloseFill
-                className="size-6 shrink-0 text-gray-900"
+                className="size-6 shrink-0 text-foreground"
                 aria-hidden
               />
             )}
@@ -71,13 +80,28 @@ export function NavBar() {
         >
           <ul className="space-y-4 font-medium">
             <li onClick={() => setOpen(false)}>
-              <Link href="#solutions">Solutions</Link>
+              <Link
+                className="block px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#solutions"
+              >
+                Solutions
+              </Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href="#coverage">Coverage</Link>
+              <Link
+                className="block px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#coverage"
+              >
+                Coverage
+              </Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href="#solar-analytics">Analytics</Link>
+              <Link
+                className="block px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#solar-analytics"
+              >
+                Analytics
+              </Link>
             </li>
           </ul>
           <Button asChild variant="secondary" className="text-lg">
