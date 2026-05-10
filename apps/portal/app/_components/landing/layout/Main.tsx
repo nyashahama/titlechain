@@ -9,7 +9,7 @@ export function Main({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-black text-white">
       <MainNav />
       <main>{children}</main>
-      <div className="container mx-auto max-w-7xl px-4">
+      <div className="container">
         <MainFooter />
       </div>
     </div>
