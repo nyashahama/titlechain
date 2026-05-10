@@ -29,24 +29,24 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-[420px]">
+    <div className="min-h-screen flex items-center justify-center bg-background p-6 text-foreground">
+      <div className="w-full max-w-[420px] animate-page-enter">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex justify-center mb-6">
-            <TitlechainLogo className="h-8 w-auto" />
+            <TitlechainLogo className="h-8 w-auto text-foreground" />
           </Link>
-          <h1 className="text-[28px] font-semibold tracking-tighter text-gray-900">
+          <h1 className="text-[28px] font-semibold tracking-tighter text-foreground">
             Welcome back
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-muted">
             Sign in to your TitleChain account
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg shadow-black/5 ring-1 ring-gray-200 p-8">
+        <div className="rounded-2xl border border-border bg-card/30 p-8 shadow-2xl shadow-black/30">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 Email
               </label>
               <input
@@ -54,12 +54,12 @@ export default function SignInPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                className="w-full rounded-lg border border-input bg-white/[0.03] px-4 py-2.5 text-sm text-foreground placeholder:text-muted-more transition-colors focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                 placeholder="you@firm.co.za"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 Password
               </label>
               <input
@@ -67,13 +67,13 @@ export default function SignInPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                className="w-full rounded-lg border border-input bg-white/[0.03] px-4 py-2.5 text-sm text-foreground placeholder:text-muted-more transition-colors focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              <p className="text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
                 {error}
               </p>
             )}
@@ -81,7 +81,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg border-b-[1.5px] border-orange-700 bg-linear-to-b from-orange-400 to-orange-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_0_0_2px_rgba(0,0,0,0.04)] transition-all duration-200 ease-in-out hover:shadow-orange-300 disabled:opacity-50"
+              className="w-full rounded-lg border-b-[1.5px] border-orange-700 bg-linear-to-b from-orange-400 to-orange-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition-all duration-200 ease-in-out hover:shadow-orange-500/30 disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -112,30 +112,27 @@ export default function SignInPage() {
             </button>
           </form>
 
-          <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50/50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-3">
+          <div className="mt-6 rounded-xl border border-orange-500/20 bg-orange-500/10 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-orange-300 mb-3">
               Demo Account
             </p>
             <div className="flex items-center justify-between text-sm mb-1.5">
-              <span className="text-gray-500">Email</span>
-              <span className="font-mono text-gray-800 text-xs">
+              <span className="text-muted">Email</span>
+              <span className="font-mono text-foreground/80 text-xs">
                 demo@titlechain.co.za
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Password</span>
-              <span className="font-mono text-gray-800 text-xs">
+              <span className="text-muted">Password</span>
+              <span className="font-mono text-foreground/80 text-xs">
                 demo1234
               </span>
             </div>
           </div>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
-          <Link
-            href="/"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
-          >
+        <p className="mt-6 text-center text-sm text-muted">
+          <Link href="/" className="text-muted transition-colors hover:text-foreground">
             &larr; Back to home
           </Link>
         </p>
