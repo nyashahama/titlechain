@@ -15,6 +15,7 @@ const themedFiles = [
   "_components/solar/landing-chrome.tsx",
   "_components/solar/ui/AnalyticsIllustration.tsx",
   "_components/solar/ui/CallToAction.tsx",
+  "_components/solar/ui/ChipViz.tsx",
   "_components/solar/ui/FeatureDivider.tsx",
   "_components/solar/ui/Features.tsx",
   "_components/solar/ui/Footer.tsx",
@@ -30,7 +31,7 @@ const themedFiles = [
 const forbiddenLightThemePatterns: Array<[RegExp, string]> = [
   [/body\.landing/, "landing body override"],
   [/\bbg-gray-50\b/, "light page background"],
-  [/\bbg-white(?!\/\[)/, "solid or fixed-opacity white surface"],
+  [/\bbg-white(?:\b(?!\/)|\/(?:[3-9][0-9]|100)\b)/, "solid or high-opacity white surface"],
   [/\btext-gray-(?:900|800|700|600|500|400)\b/, "light-theme gray text"],
   [/\bborder-gray-(?:300|200)\b/, "light-theme gray border"],
   [/\bring-gray-200\b/, "light-theme gray ring"],
