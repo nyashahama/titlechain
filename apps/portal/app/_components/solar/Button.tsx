@@ -19,66 +19,40 @@ const buttonVariants = tv({
   variants: {
     variant: {
       primary: [
-        // border
         "border-transparent",
-        // text color
         "text-white",
-        // background color
         "bg-orange-500",
-        // hover color
         "hover:bg-orange-600",
-        // disabled
-        "disabled:bg-orange-300 disabled:text-white",
+        "disabled:bg-orange-500/40 disabled:text-white/60",
       ],
       secondary: [
-        // border
-        "border-gray-300",
-        // text color
-        "text-gray-900",
-        // background color
-        "bg-white",
-        //hover color
-        "hover:bg-gray-50",
-        // disabled
-        "disabled:text-gray-400",
+        "border-border",
+        "text-foreground",
+        "bg-white/[0.04]",
+        "hover:bg-white/[0.07]",
+        "disabled:text-muted",
       ],
       light: [
-        // base
         "shadow-none",
-        // border
-        "border-transparent",
-        // text color
-        "text-gray-900",
-        // background color
-        "bg-gray-200",
-        // hover color
-        "hover:bg-gray-300/70",
-        // disabled
-        "disabled:bg-gray-100 disabled:text-gray-400",
+        "border-border",
+        "text-foreground",
+        "bg-white/[0.05]",
+        "hover:bg-white/[0.08]",
+        "disabled:bg-white/[0.03] disabled:text-muted",
       ],
       ghost: [
-        // base
         "shadow-none",
-        // border
         "border-transparent",
-        // text color
-        "text-gray-900",
-        // hover color
-        "bg-transparent hover:bg-gray-100",
-        // disabled
-        "disabled:text-gray-400",
+        "text-foreground",
+        "bg-transparent hover:bg-white/[0.05]",
+        "disabled:text-muted",
       ],
       destructive: [
-        // text color
         "text-white",
-        // border
         "border-transparent",
-        // background color
         "bg-red-600",
-        // hover color
         "hover:bg-red-700",
-        // disabled
-        "disabled:bg-red-300 disabled:text-white",
+        "disabled:bg-red-600/40 disabled:text-white/60",
       ],
     },
   },

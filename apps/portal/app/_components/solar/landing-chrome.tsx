@@ -21,7 +21,7 @@ export function LandingChrome({ children }: { children: React.ReactNode }) {
   if (!isLanding) return <>{children}</>
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground">
       <NavBar />
       {children}
       <Footer />
