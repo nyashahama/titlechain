@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../_providers/auth-provider"
-import { TitlechainLogo } from "@/app/_components/solar/TitlechainLogo"
+import { TitlechainLogo } from "@/app/_components/landing/shared/TitlechainLogo"
 
 export default function SignInPage() {
   const router = useRouter()

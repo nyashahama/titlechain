@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { TitlechainLogo } from "@/app/_components/solar/TitlechainLogo";
+import { TitlechainLogo } from "@/app/_components/landing/shared/TitlechainLogo";
 import { Button } from "@/app/_components/landing/shared/Button";
 import { MobileNav } from "./MobileNav";
 import { siteConfig } from "@/app/siteConfig";

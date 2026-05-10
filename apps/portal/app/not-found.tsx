@@ -1,8 +1,8 @@
-import { Button } from "./_components/solar/Button"
+import { Button } from "./_components/landing/shared/Button"
 import Link from "next/link"
 import { siteConfig } from "./siteConfig"
 
-import { TitlechainLogo } from "./_components/solar/TitlechainLogo"
+import { TitlechainLogo } from "./_components/landing/shared/TitlechainLogo"
 
 export default function NotFound() {
   return (

@@ -1,4 +1,4 @@
-import { TitlechainMark } from "@/app/_components/solar/TitlechainMark";
+import { TitlechainMark } from "@/app/_components/landing/shared/TitlechainMark";
 
 interface PullquoteProps {
   name: string;
