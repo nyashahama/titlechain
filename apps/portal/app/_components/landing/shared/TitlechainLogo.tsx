@@ -1,6 +1,6 @@
 import type { SVGProps } from "react"
 
-import { cx } from "../../_lib/utils"
+import { cx } from "@/app/_lib/utils"
 
 export const TitlechainLogo = ({
   className,
