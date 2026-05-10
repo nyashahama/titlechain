@@ -80,13 +80,28 @@ export function NavBar() {
         >
           <ul className="space-y-4 font-medium">
             <li onClick={() => setOpen(false)}>
-              <Link href="#solutions">Solutions</Link>
+              <Link
+                className="block px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#solutions"
+              >
+                Solutions
+              </Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href="#coverage">Coverage</Link>
+              <Link
+                className="block px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#coverage"
+              >
+                Coverage
+              </Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href="#solar-analytics">Analytics</Link>
+              <Link
+                className="block px-2 py-1 text-muted transition-colors hover:text-foreground"
+                href="#solar-analytics"
+              >
+                Analytics
+              </Link>
             </li>
           </ul>
           <Button asChild variant="secondary" className="text-lg">
