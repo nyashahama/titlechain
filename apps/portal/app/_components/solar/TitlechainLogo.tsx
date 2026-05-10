@@ -1,12 +1,18 @@
 import type { SVGProps } from "react"
 
-export const TitlechainLogo = (props: SVGProps<SVGSVGElement>) => (
+import { cx } from "../../_lib/utils"
+
+export const TitlechainLogo = ({
+  className,
+  ...props
+}: SVGProps<SVGSVGElement>) => (
   <svg
     viewBox="0 0 184 42"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
     focusable="false"
+    className={cx("text-[#0f172a]", className)}
     {...props}
   >
     <rect x="0" y="0" width="42" height="42" fill="transparent" />
