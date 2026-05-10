@@ -1,6 +1,6 @@
 "use client";
 
-import { SVGMap } from "@/app/_components/solar/ui/Map/SVGMap";
+import { SVGMap } from "./Map/SVGMap";
 import { motion } from "framer-motion";
 
 const locations = [
