@@ -81,7 +81,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg border-b-[1.5px] border-orange-700 bg-linear-to-b from-orange-400 to-orange-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition-all duration-200 ease-in-out hover:shadow-orange-500/30 disabled:opacity-50"
+              className="w-full rounded-lg border-b-[1.5px] border-orange-700 bg-linear-to-b from-orange-400 to-orange-500 px-4 py-2.5 text-sm font-medium text-background shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition-all duration-200 ease-in-out hover:shadow-orange-500/30 disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
