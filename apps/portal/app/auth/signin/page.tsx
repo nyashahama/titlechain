@@ -29,8 +29,8 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6 text-foreground">
-      <div className="w-full max-w-[420px] animate-page-enter">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-6 text-foreground sm:p-6">
+      <div className="w-full max-w-[420px] min-w-0 animate-page-enter">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex justify-center mb-6">
             <TitlechainLogo className="h-8 w-auto text-foreground" />
@@ -43,7 +43,7 @@ export default function SignInPage() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card/30 p-8 shadow-2xl shadow-black/30">
+        <div className="rounded-2xl border border-border bg-card/30 p-6 shadow-2xl shadow-black/30 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -116,13 +116,13 @@ export default function SignInPage() {
             <p className="text-xs font-semibold uppercase tracking-wider text-orange-300 mb-3">
               Demo Account
             </p>
-            <div className="flex items-center justify-between text-sm mb-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm mb-1.5">
               <span className="text-muted">Email</span>
-              <span className="font-mono text-foreground/80 text-xs">
+              <span className="min-w-0 break-all text-right font-mono text-foreground/80 text-xs">
                 demo@titlechain.co.za
               </span>
             </div>
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
               <span className="text-muted">Password</span>
               <span className="font-mono text-foreground/80 text-xs">
                 demo1234

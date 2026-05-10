@@ -9,12 +9,12 @@ export function Hero() {
       <FadeContainer className="relative flex flex-col items-center justify-center">
         <FadeDiv className="mx-auto">
           <div className="mx-auto w-full">
-            <div className="inline-flex max-w-full items-center gap-3 rounded-full bg-white/[0.05] px-2.5 py-0.5 pr-3 pl-0.5 font-medium text-foreground ring-1 shadow-lg shadow-orange-500/10 ring-border backdrop-blur-[1px] sm:text-sm">
+            <div className="inline-flex w-[calc(100vw-2rem)] max-w-full min-w-0 items-center gap-3 rounded-full bg-white/[0.05] px-2.5 py-0.5 pr-3 pl-0.5 font-medium text-foreground ring-1 shadow-lg shadow-orange-500/10 ring-border backdrop-blur-[1px] sm:w-auto sm:text-sm">
               <span className="shrink-0 truncate rounded-full border border-border bg-white/[0.06] px-2.5 py-1 text-sm text-muted sm:text-xs">
                 News
               </span>
-              <span className="flex items-center gap-1 truncate">
-                <span className="w-full truncate">
+              <span className="flex min-w-0 items-center gap-1 truncate">
+                <span className="min-w-0 truncate">
                   TitleChain launches Clear-to-Lodge integration
                 </span>
                 <RiArrowRightUpLine className="size-4 shrink-0 text-muted" />
