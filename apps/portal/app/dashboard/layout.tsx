@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "../_providers/auth-provider";
-import { TitlechainMark } from "../_components/solar/TitlechainMark";
+import { TitlechainMark } from "../_components/landing/shared/TitlechainMark";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: HomeIcon },

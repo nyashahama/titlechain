@@ -6,7 +6,6 @@ import { AnimationProvider } from "@/app/_providers/animation-provider";
 import { Toaster } from "sonner";
 import { CommandPalette } from "@/app/_components/command-palette";
 import { KeyboardShortcutsHelp } from "@/app/_components/keyboard-shortcuts-help";
-import { LandingChrome } from "@/app/_components/solar/landing-chrome";
 
 const geistSans = Geist({
   variable: "--font-geist",
@@ -39,9 +38,7 @@ export default function RootLayout({
       <body className="antialiased">
         <AuthProvider>
           <AnimationProvider>
-            <LandingChrome>
-              {children}
-            </LandingChrome>
+            {children}
             <CommandPalette />
             <KeyboardShortcutsHelp />
             <Toaster

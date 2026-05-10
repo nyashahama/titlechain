@@ -1,8 +1,8 @@
-import { Button } from "./_components/solar/Button"
+import { Button } from "./_components/landing/shared/Button"
 import Link from "next/link"
 import { siteConfig } from "./siteConfig"
 
-import { TitlechainLogo } from "./_components/solar/TitlechainLogo"
+import { TitlechainLogo } from "./_components/landing/shared/TitlechainLogo"
 
 export default function NotFound() {
   return (
@@ -19,7 +19,7 @@ export default function NotFound() {
       <p className="mt-2 text-sm text-gray-600">
         Sorry, we couldn’t find the page you’re looking for.
       </p>
-      <Button asChild className="group mt-8" variant="light">
+      <Button asChild className="group mt-8" variant="secondary">
         <Link href={siteConfig.baseLinks.home}>Go to the home page</Link>
       </Button>
     </div>
