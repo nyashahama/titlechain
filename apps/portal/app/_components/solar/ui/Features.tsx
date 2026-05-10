@@ -36,7 +36,7 @@ export default function Features() {
               y1="0"
               x2="0"
               y2="100%"
-              className="stroke-gray-300"
+              className="stroke-white/15"
               strokeWidth="2"
               strokeDasharray="3 3"
             />
@@ -57,7 +57,7 @@ export default function Features() {
               y1="0"
               x2="0"
               y2="100%"
-              className="stroke-gray-300"
+              className="stroke-white/15"
               strokeWidth="2"
               strokeDasharray="3 3"
             />
@@ -77,7 +77,7 @@ export default function Features() {
               y1="0"
               x2="0"
               y2="100%"
-              className="stroke-gray-300"
+              className="stroke-white/15"
               strokeWidth="2"
               strokeDasharray="3 3"
             />
@@ -97,7 +97,7 @@ export default function Features() {
               y1="0"
               x2="0"
               y2="100%"
-              className="stroke-gray-300"
+              className="stroke-white/15"
               strokeWidth="2"
               strokeDasharray="3 3"
             />
@@ -117,7 +117,7 @@ export default function Features() {
               y1="0"
               x2="0"
               y2="100%"
-              className="stroke-gray-300"
+              className="stroke-white/15"
               strokeWidth="2"
               strokeDasharray="3 3"
             />
@@ -131,10 +131,10 @@ export default function Features() {
             Clear-to-Lodge Intelligence
             <div className="absolute top-1 -left-[8px] h-5 w-[3px] rounded-r-sm bg-orange-500" />
           </h2>
-          <p className="mt-2 text-3xl font-semibold tracking-tighter text-balance text-gray-900 md:text-4xl">
+          <p className="mt-2 text-3xl font-semibold tracking-tighter text-balance text-foreground md:text-4xl">
             Aggregate data from every source that matters for property title decisions
           </p>
-          <p className="mt-4 text-balance text-gray-700">
+          <p className="mt-4 text-balance text-muted">
             Cross-reference deeds, bonds, municipal valuations, FIC fraud
             signals, and more — all in one place. Get a Clear-to-Lodge
             decision in seconds, not days.
@@ -157,7 +157,7 @@ export default function Features() {
                     <path
                       key={i}
                       d={`M${-106 + offset} 110L${22 + offset} -18`}
-                      className="stroke-gray-200/70"
+                      className="stroke-white/10"
                       strokeWidth="1"
                     />
                   )
@@ -181,14 +181,14 @@ export default function Features() {
                     key="obj1"
                     className="relative flex items-center justify-center"
                   >
-                    <RiFileSearchLine className="z-10 size-5 text-gray-900" />
-                    <div className="absolute size-10 rounded-full bg-white/50 ring-1 shadow-lg ring-black/5"></div>
+                    <RiFileSearchLine className="z-10 size-5 text-foreground" />
+                    <div className="absolute size-10 rounded-full bg-white/[0.06] ring-1 shadow-lg ring-border"></div>
                     <div className="absolute -top-5 left-4">
                       <div className="flex gap-1">
-                        <div className="flex items-center justify-center rounded-l-full bg-emerald-500 p-1 text-xs ring-1 ring-gray-200">
+                        <div className="flex items-center justify-center rounded-l-full bg-emerald-500 p-1 text-xs ring-1 ring-border">
                           <RiShieldCheckLine className="size-3 shrink-0 text-white" />
                         </div>
-                        <div className="rounded-r-full bg-white/50 py-0.5 pr-1.5 pl-1 text-xs whitespace-nowrap ring-1 ring-gray-200">
+                        <div className="rounded-r-full bg-white/[0.06] py-0.5 pr-1.5 pl-1 text-xs whitespace-nowrap ring-1 ring-border">
                           Title Search
                         </div>
                       </div>
@@ -205,14 +205,14 @@ export default function Features() {
                     key="obj2"
                     className="relative flex items-center justify-center"
                   >
-                    <RiShieldCheckLine className="z-10 size-5 text-gray-900" />
-                    <div className="absolute size-10 rounded-full bg-white/50 ring-1 shadow-lg ring-black/5"></div>
+                    <RiShieldCheckLine className="z-10 size-5 text-foreground" />
+                    <div className="absolute size-10 rounded-full bg-white/[0.06] ring-1 shadow-lg ring-border"></div>
                     <div className="absolute -top-5 left-4">
                       <div className="flex gap-1">
-                        <div className="flex items-center justify-center rounded-l-full bg-emerald-500 p-1 text-xs ring-1 ring-gray-200">
+                        <div className="flex items-center justify-center rounded-l-full bg-emerald-500 p-1 text-xs ring-1 ring-border">
                           <RiShieldCheckLine className="size-3 shrink-0 text-white" />
                         </div>
-                        <div className="rounded-r-full bg-white/50 py-0.5 pr-1.5 pl-1 text-xs whitespace-nowrap ring-1 ring-gray-200">
+                        <div className="rounded-r-full bg-white/[0.06] py-0.5 pr-1.5 pl-1 text-xs whitespace-nowrap ring-1 ring-border">
                           Verifying
                         </div>
                       </div>
@@ -229,8 +229,8 @@ export default function Features() {
                     key="obj3"
                     className="relative flex items-center justify-center"
                   >
-                    <RiGovernmentLine className="z-10 size-5 text-gray-900" />
-                    <div className="absolute size-10 rounded-full bg-white/50 ring-1 shadow-lg ring-black/5"></div>
+                    <RiGovernmentLine className="z-10 size-5 text-foreground" />
+                    <div className="absolute size-10 rounded-full bg-white/[0.06] ring-1 shadow-lg ring-border"></div>
                     <div
                       style={{
                         animationDelay: "2s",
@@ -242,14 +242,14 @@ export default function Features() {
                     key="obj4"
                     className="relative flex items-center justify-center"
                   >
-                    <RiBuildingLine className="z-10 size-5 text-gray-900" />
-                    <div className="absolute size-10 rounded-full bg-white/50 ring-1 shadow-lg ring-black/5"></div>
+                    <RiBuildingLine className="z-10 size-5 text-foreground" />
+                    <div className="absolute size-10 rounded-full bg-white/[0.06] ring-1 shadow-lg ring-border"></div>
                     <div className="absolute -top-5 left-4">
                       <div className="flex gap-1">
-                        <div className="flex items-center justify-center rounded-l-full bg-orange-500 p-1 text-xs ring-1 ring-gray-200">
+                        <div className="flex items-center justify-center rounded-l-full bg-orange-500 p-1 text-xs ring-1 ring-border">
                           <RiBuildingLine className="size-3 shrink-0 text-white" />
                         </div>
-                        <div className="rounded-r-full bg-white/50 py-0.5 pr-1.5 pl-1 text-xs whitespace-nowrap ring-1 ring-gray-200">
+                        <div className="rounded-r-full bg-white/[0.06] py-0.5 pr-1.5 pl-1 text-xs whitespace-nowrap ring-1 ring-border">
                           Municipal
                         </div>
                       </div>
@@ -265,8 +265,8 @@ export default function Features() {
                     key="obj5"
                     className="relative flex items-center justify-center"
                   >
-                    <RiBankLine className="z-10 size-5 text-gray-900" />
-                    <div className="absolute size-10 rounded-full bg-white/50 ring-1 shadow-lg ring-black/5"></div>
+                    <RiBankLine className="z-10 size-5 text-foreground" />
+                    <div className="absolute size-10 rounded-full bg-white/[0.06] ring-1 shadow-lg ring-border"></div>
                     <div
                       style={{
                         animationDelay: "3s",
@@ -277,8 +277,8 @@ export default function Features() {
                 ]}
               >
                 <div className="relative flex h-48 w-48 items-center justify-center">
-                  <div className="rounded-full p-1 ring-1 ring-black/10">
-                    <div className="relative z-10 flex size-20 items-center justify-center rounded-full bg-white ring-1 shadow-[inset_0px_-15px_20px_rgba(0,0,0,0.1),0_7px_10px_0_rgba(0,0,0,0.15)] ring-black/20">
+                  <div className="rounded-full p-1 ring-1 ring-border">
+                    <div className="relative z-10 flex size-20 items-center justify-center rounded-full bg-card ring-1 shadow-[inset_0px_-15px_20px_rgba(0,0,0,0.1),0_7px_10px_0_rgba(0,0,0,0.15)] ring-border">
                       <TitlechainMark className="size-10" />
                     </div>
                     <div className="absolute inset-12 animate-[spin_8s_linear_infinite] rounded-full bg-linear-to-t from-transparent via-orange-400 to-transparent blur-lg" />
@@ -294,10 +294,10 @@ export default function Features() {
             Risk-Based Decision Engine
             <div className="absolute top-1 -left-[8px] h-5 w-[3px] rounded-r-sm bg-orange-500" />
           </h2>
-          <p className="mt-2 text-3xl font-semibold tracking-tighter text-balance text-gray-900 md:text-4xl">
+          <p className="mt-2 text-3xl font-semibold tracking-tighter text-balance text-foreground md:text-4xl">
             Clear, Review, or Stop — powered by real-time data
           </p>
-          <p className="mt-4 text-balance text-gray-700">
+          <p className="mt-4 text-balance text-muted">
             Every property check returns an actionable decision backed by
             confidence scores. Clear-to-Lodge reports give you the evidence
             to proceed with certainty.
@@ -318,7 +318,7 @@ export default function Features() {
                     <path
                       key={i}
                       d={`M${-106 + offset} 110L${22 + offset} -18`}
-                      className="stroke-gray-200/70"
+                      className="stroke-white/10"
                       strokeWidth="1"
                     />
                   )
@@ -339,22 +339,22 @@ export default function Features() {
               className="mask absolute size-[432px]"
             >
               <path
-                className="stroke-gray-300"
+                className="stroke-white/15"
                 d="M48 0v432M96 0v432M144 0v432M192 0v432M240 0v432M288 0v432M336 0v432M384 0v432M0 48h432M0 96h432M0 144h432M0 192h432M0 240h432M0 288h432M0 336h432M0 384h432"
               />
             </svg>
 
             <div className="pointer-events-none relative h-full select-none">
               <div className="absolute top-[192px] left-[191.8px]">
-                <div className="flex h-12 w-12 items-center justify-center bg-white ring-1 shadow-sm ring-black/15">
+                <div className="flex h-12 w-12 items-center justify-center bg-card ring-1 shadow-sm ring-border">
                   <TitlechainMark className="h-8 w-8" />
                 </div>
               </div>
               <div className="absolute top-[144px] left-[48px]">
                 <div className="relative">
-                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-200 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-white ring-1 shadow-sm ring-black/15">
-                    <span className="text-sm font-medium text-gray-500">
+                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-500/15 blur-[3px]"></div>
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-card ring-1 shadow-sm ring-border">
+                    <span className="text-sm font-medium text-muted">
                       14°C
                     </span>
                   </div>
@@ -363,9 +363,9 @@ export default function Features() {
 
               <div className="absolute top-[48px] left-[144px]">
                 <div className="relative">
-                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-200 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-white ring-1 shadow-sm ring-black/15">
-                    <span className="text-sm font-medium text-gray-500">
+                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-500/15 blur-[3px]"></div>
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-card ring-1 shadow-sm ring-border">
+                    <span className="text-sm font-medium text-muted">
                       18°C
                     </span>
                   </div>
@@ -374,9 +374,9 @@ export default function Features() {
 
               <div className="absolute top-[96px] left-[240px]">
                 <div className="relative">
-                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-200 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-white ring-1 shadow-sm ring-black/15">
-                    <span className="text-sm font-medium text-gray-500">
+                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-500/15 blur-[3px]"></div>
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-card ring-1 shadow-sm ring-border">
+                    <span className="text-sm font-medium text-muted">
                       17°C
                     </span>
                   </div>
@@ -385,9 +385,9 @@ export default function Features() {
 
               <div className="absolute top-[240px] left-[385px]">
                 <div className="relative">
-                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-200 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-white ring-1 shadow-sm ring-black/15">
-                    <span className="text-sm font-medium text-gray-500">
+                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-500/15 blur-[3px]"></div>
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-card ring-1 shadow-sm ring-border">
+                    <span className="text-sm font-medium text-muted">
                       14°C
                     </span>
                   </div>
@@ -396,9 +396,9 @@ export default function Features() {
 
               <div className="absolute top-[337px] left-[336px]">
                 <div className="relative">
-                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-200 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-white ring-1 shadow-sm ring-black/15">
-                    <span className="text-sm font-medium text-gray-500">
+                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-500/15 blur-[3px]"></div>
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-card ring-1 shadow-sm ring-border">
+                    <span className="text-sm font-medium text-muted">
                       12°C
                     </span>
                   </div>
@@ -407,9 +407,9 @@ export default function Features() {
 
               <div className="absolute top-[288px] left-[144px]">
                 <div className="relative">
-                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-200 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-white ring-1 shadow-sm ring-black/15">
-                    <span className="text-sm font-medium text-gray-500">
+                  <div className="absolute inset-0 size-12 animate-pulse bg-orange-500/15 blur-[3px]"></div>
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-card ring-1 shadow-sm ring-border">
+                    <span className="text-sm font-medium text-muted">
                       17°C
                     </span>
                   </div>
@@ -423,10 +423,10 @@ export default function Features() {
             Built for Scale
             <div className="absolute top-1 -left-[7px] h-5 w-[3px] rounded-r-sm bg-orange-500" />
           </h2>
-          <p className="mt-2 text-3xl font-semibold tracking-tighter text-balance text-gray-900 md:text-4xl">
+          <p className="mt-2 text-3xl font-semibold tracking-tighter text-balance text-foreground md:text-4xl">
             From solo conveyancers to national banks
           </p>
-          <p className="mt-4 text-balance text-gray-700">
+          <p className="mt-4 text-balance text-muted">
             Whether you process 50 or 50,000 matters a month, TitleChain scales
             with you. API-first architecture, team accounts, and enterprise
             SLAs for the largest institutions.
@@ -449,7 +449,7 @@ export default function Features() {
                     <path
                       key={i}
                       d={`M${-106 + offset} 110L${22 + offset} -18`}
-                      className="stroke-gray-200/70"
+                      className="stroke-white/10"
                       strokeWidth="1"
                     />
                   )
@@ -465,40 +465,40 @@ export default function Features() {
           <div className="pointer-events-none relative flex size-full h-104 items-center justify-center p-10 select-none">
             <div className="relative">
               <div className="absolute top-24 left-24 z-20">
-                <div className="relative mx-auto w-fit rounded-full bg-gray-50 p-1 ring-1 shadow-md shadow-black/10 ring-black/10">
-                  <div className="w-fit rounded-full bg-linear-to-b from-white to-gray-100 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.09),0_3px_5px_0_rgba(0,0,0,0.19)] ring-white/50 ring-inset">
+                <div className="relative mx-auto w-fit rounded-full bg-card p-1 ring-1 shadow-md shadow-black/30 ring-border">
+                  <div className="w-fit rounded-full bg-linear-to-b from-[#ffffff]/10 to-[#ffffff]/4 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.09),0_3px_5px_0_rgba(0,0,0,0.19)] ring-white/50 ring-inset">
                     <RiNotification2Line
-                      className="size-5 text-gray-900"
+                      className="size-5 text-foreground"
                       aria-hidden="true"
                     />
                   </div>
                 </div>
               </div>
               <div className="absolute top-24 right-24 z-20">
-                <div className="relative mx-auto w-fit rounded-full bg-gray-50 p-1 ring-1 shadow-md shadow-black/10 ring-black/10">
-                  <div className="w-fit rounded-full bg-linear-to-b from-white to-gray-100 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
+                <div className="relative mx-auto w-fit rounded-full bg-card p-1 ring-1 shadow-md shadow-black/30 ring-border">
+                  <div className="w-fit rounded-full bg-linear-to-b from-[#ffffff]/10 to-[#ffffff]/4 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
                     <RiContrast2Line
-                      className="size-5 text-gray-900"
+                      className="size-5 text-foreground"
                       aria-hidden="true"
                     />
                   </div>
                 </div>
               </div>
               <div className="absolute right-24 bottom-24 z-20">
-                <div className="relative mx-auto w-fit rounded-full bg-gray-50 p-1 ring-1 shadow-md shadow-black/10 ring-black/10">
-                  <div className="w-fit rounded-full bg-linear-to-b from-white to-gray-100 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
+                <div className="relative mx-auto w-fit rounded-full bg-card p-1 ring-1 shadow-md shadow-black/30 ring-border">
+                  <div className="w-fit rounded-full bg-linear-to-b from-[#ffffff]/10 to-[#ffffff]/4 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
                     <RiCodepenLine
-                      className="size-5 text-gray-900"
+                      className="size-5 text-foreground"
                       aria-hidden="true"
                     />
                   </div>
                 </div>
               </div>
               <div className="absolute bottom-24 left-24 z-20">
-                <div className="relative mx-auto w-fit rounded-full bg-gray-50 p-1 ring-1 shadow-md shadow-black/10 ring-black/10">
-                  <div className="w-fit rounded-full bg-linear-to-b from-white to-gray-100 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
+                <div className="relative mx-auto w-fit rounded-full bg-card p-1 ring-1 shadow-md shadow-black/30 ring-border">
+                  <div className="w-fit rounded-full bg-linear-to-b from-[#ffffff]/10 to-[#ffffff]/4 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
                     <RiFullscreenFill
-                      className="size-5 text-gray-900"
+                      className="size-5 text-foreground"
                       aria-hidden="true"
                     />
                   </div>
@@ -513,7 +513,7 @@ export default function Features() {
                   style={{ transform: `rotate(${rotation}deg)` }}
                 >
                   <div className="relative">
-                    <div className="h-0.5 w-60 bg-linear-to-r from-gray-300 to-transparent" />
+                    <div className="h-0.5 w-60 bg-linear-to-r from-[#ffffff]/15 to-transparent" />
                     <div
                       className="absolute top-0 left-0 h-0.5 w-28 bg-linear-to-r from-transparent via-orange-300 to-transparent"
                       style={{

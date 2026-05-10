@@ -9,11 +9,11 @@ export function CallToAction() {
         <div className="sm:col-span-2">
           <h2
             id="cta-title"
-            className="scroll-my-60 text-3xl font-semibold tracking-tighter text-balance text-gray-900 md:text-4xl"
+            className="scroll-my-60 text-3xl font-semibold tracking-tighter text-balance text-foreground md:text-4xl"
           >
             Ready to accelerate your conveyancing?
           </h2>
-          <p className="mt-3 mb-8 text-lg text-gray-600">
+          <p className="mt-3 mb-8 text-lg text-muted">
             Join 200+ conveyancing firms already using TitleChain for Clear-to-Lodge decisions.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -40,7 +40,7 @@ export function CallToAction() {
                     <path
                       key={i}
                       d={`M${-106 + offset} 110L${22 + offset} -18`}
-                      className="stroke-gray-200/70"
+                      className="stroke-white/10"
                       strokeWidth="1"
                     />
                   )
