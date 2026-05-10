@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "fs";
-import { join } from "path";
+import { join, resolve } from "path";
 
 function collectTsxFiles(dir: string): string[] {
   const results: string[] = [];
   for (const entry of readdirSync(dir)) {
     const fullPath = join(dir, entry);
+    if (entry === "node_modules" || entry === ".next") continue;
     if (statSync(fullPath).isDirectory()) {
       results.push(...collectTsxFiles(fullPath));
     } else if (entry.endsWith(".tsx")) {
@@ -16,7 +17,8 @@ function collectTsxFiles(dir: string): string[] {
 }
 
 describe("landing: dark theme only", () => {
-  const files = collectTsxFiles("apps/portal/app/_components/landing");
+  const landingDir = resolve(__dirname);
+  const files = collectTsxFiles(landingDir);
 
   const forbiddenClasses = [
     "bg-white",
