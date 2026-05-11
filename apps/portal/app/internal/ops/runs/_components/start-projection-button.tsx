@@ -25,7 +25,7 @@ export function StartProjectionButton() {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80 disabled:opacity-50"
+      className="inline-flex h-9 items-center rounded-md bg-tc-accent px-3 text-[13px] font-medium text-white transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {loading ? "Syncing..." : "Sync Properties"}
     </button>

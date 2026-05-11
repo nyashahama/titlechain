@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { getCase, listAnalysts, listReasonCodes } from "../api";
 import { CaseDetail } from "../_components/case-detail";
 import { RecordDecisionForm, CloseUnresolvedForm } from "../_components/decision-form";
@@ -7,6 +8,10 @@ import { PartyForm } from "../_components/party-form";
 import { ReopenForm } from "../_components/reopen-form";
 import { CaseDetailAnalystSwitcher } from "../_components/case-detail-analyst-switcher";
 import { DecisionProposalCard } from "../_components/decision-proposal-card";
+import { ProductPage } from "@/app/_components/product-shell/ProductPage";
+import { PageHeader } from "@/app/_components/product-shell/PageHeader";
+import { ProductPanel } from "@/app/_components/product/ProductPanel";
+import { cn } from "@/app/_lib/cn";
 
 export default async function CaseDetailPage({
   params,
@@ -29,81 +34,83 @@ export default async function CaseDetailPage({
     detail.case.status === "open" ||
     detail.case.status === "in_review" ||
     detail.case.status === "reopened";
+  const tabs = ["overview", "evidence", "parties", "timeline", "activity"];
 
   return (
-    <div className="mx-auto max-w-6xl p-6 md:p-10 animate-slide-in">
-      {/* Top Bar */}
-      <div className="mb-8 flex items-center justify-between">
-        <Link
-          href="/internal/cases"
-          className="inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-foreground transition-colors duration-200 group"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform duration-200 group-hover:-translate-x-0.5">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back to cases
-        </Link>
-        <CaseDetailAnalystSwitcher analysts={analysts} selected={actorId} caseId={caseId} />
-      </div>
+    <ProductPage>
+      <PageHeader
+        eyebrow="Operations / Cases"
+        title={detail.case.case_reference}
+        description="Review the property record, evidence, parties, decisions, and audit activity."
+        action={
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/internal/cases"
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-tc-border bg-tc-surface px-3 text-[13px] font-medium text-tc-text transition-colors hover:bg-white/[0.05]"
+            >
+              <ArrowLeft className="size-4" />
+              Back to cases
+            </Link>
+            <CaseDetailAnalystSwitcher analysts={analysts} selected={actorId} caseId={caseId} />
+          </div>
+        }
+      />
 
-      {/* Tabs */}
-      <div className="flex items-center gap-1 mb-8 border-b border-border">
-        {["overview", "evidence", "parties", "timeline", "activity"].map((t) => (
+      <nav className="flex flex-wrap gap-2 border-b border-tc-border pb-4" aria-label="Case sections">
+        {tabs.map((t) => (
           <Link
             key={t}
             href={`/internal/cases/${caseId}?tab=${t}`}
-            className={`px-4 py-2.5 text-[13px] font-medium capitalize transition-colors duration-200 border-b-2 ${
+            className={cn(
+              "rounded-md border px-3 py-2 text-[13px] font-medium capitalize transition-colors",
               tab === t
-                ? "text-foreground border-foreground"
-                : "text-muted border-transparent hover:text-foreground hover:border-border"
-            }`}
+                ? "border-tc-accent bg-tc-accent text-white"
+                : "border-tc-border bg-tc-surface-subtle text-tc-text-muted hover:border-tc-border-strong hover:text-tc-text"
+            )}
           >
             {t}
           </Link>
         ))}
-      </div>
+      </nav>
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
-        {/* Main Content */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         <div>
           <CaseDetail detail={detail} analysts={analysts} actorId={actorId} analystMap={analystMap} activeTab={tab} />
         </div>
 
-        {/* Sticky Sidebar Actions */}
-        <div className="space-y-4 lg:sticky lg:top-8 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-6">
           {isOpen && (
             <>
               {detail.current_proposal && (
                 <DecisionProposalCard caseId={caseId} proposal={detail.current_proposal} actorId={actorId} />
               )}
-              <div className="border border-border rounded-2xl bg-card/20 p-5">
+              <ProductPanel>
                 <RecordDecisionForm
                   caseId={caseId}
                   reasonCodes={reasonCodes}
                   actorId={actorId}
                   mode={detail.current_proposal ? "override" : "record"}
                 />
-              </div>
-              <div className="border border-border rounded-2xl bg-card/20 p-5">
+              </ProductPanel>
+              <ProductPanel>
                 <EvidenceForm caseId={caseId} actorId={actorId} />
-              </div>
-              <div className="border border-border rounded-2xl bg-card/20 p-5">
+              </ProductPanel>
+              <ProductPanel>
                 <PartyForm caseId={caseId} actorId={actorId} />
-              </div>
-              <div className="border border-border rounded-2xl bg-card/20 p-5">
+              </ProductPanel>
+              <ProductPanel>
                 <CloseUnresolvedForm caseId={caseId} reasonCodes={reasonCodes} actorId={actorId} />
-              </div>
+              </ProductPanel>
             </>
           )}
 
           {!isOpen && (
-            <div className="border border-border rounded-2xl bg-card/20 p-5">
+            <ProductPanel>
               <ReopenForm caseId={caseId} actorId={actorId} />
-            </div>
+            </ProductPanel>
           )}
-        </div>
+        </aside>
       </div>
-    </div>
+    </ProductPage>
   );
 }

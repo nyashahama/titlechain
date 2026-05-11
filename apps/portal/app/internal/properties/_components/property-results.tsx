@@ -2,25 +2,29 @@
 
 import { PropertySummary } from "../types";
 import Link from "next/link";
+import { ExternalLink, Home } from "lucide-react";
+import { ProductPanel } from "@/app/_components/product/ProductPanel";
+import { ProductStatusBadge } from "@/app/_components/product/ProductStatusBadge";
+import { RelativeTime } from "@/app/_components/product/RelativeTime";
+import { StateView } from "@/app/_components/product/StateView";
 
 export function PropertyResults({ properties }: { properties: PropertySummary[] | null }) {
   if (!properties || properties.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-28 text-center">
-        <div className="w-14 h-14 rounded-2xl border border-border flex items-center justify-center mb-5 bg-card/30">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
-            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
-          </svg>
-        </div>
-        <p className="text-[15px] text-foreground/80 mb-1.5 font-medium">No properties found</p>
-        <p className="text-[13px] text-muted max-w-[240px]">Try adjusting your search criteria or sync properties from the runs page.</p>
-      </div>
+      <StateView
+        kind="empty"
+        title="No properties found"
+        description="Adjust the search criteria or sync properties from the runs page."
+        className="rounded-lg border border-tc-border bg-tc-surface"
+      />
     );
   }
 
   return (
-    <div className="space-y-2">
-      {properties.map((p, i) => {
+    <ProductPanel className="overflow-hidden p-0">
+      <div className="divide-y divide-tc-border">
+      {properties.map((p) => {
+        const hasBlocker = p.status.toLowerCase().includes("blocker") && !p.status.toLowerCase().includes("no material");
         const params = new URLSearchParams({
           linked_property_id: p.property_id,
           property_description: p.property_description,
@@ -31,32 +35,36 @@ export function PropertyResults({ properties }: { properties: PropertySummary[] 
         return (
           <div
             key={p.property_id}
-            className="bg-card border border-border rounded-2xl p-5 transition-all duration-200 hover:border-border-light/60"
-            style={{ animationDelay: `${i * 40}ms` }}
+            className="grid gap-4 px-4 py-4 transition-colors hover:bg-white/[0.03] md:grid-cols-[minmax(0,1fr)_180px_150px_96px] md:items-center"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] text-foreground font-medium">{p.property_description}</p>
-                <p className="text-[11px] text-muted mt-1">{p.locality_or_area} · {p.municipality_or_deeds_office}</p>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="text-[11px] text-muted-more">{p.title_reference}</span>
-                  <span className="text-[11px] text-muted-more">·</span>
-                  <span className="text-[11px] text-muted-more">{p.current_owner_name}</span>
-                </div>
+            <div className="min-w-0">
+              <div className="mb-1 flex items-center gap-2">
+                <Home className="size-4 shrink-0 text-tc-text-faint" />
+                <p className="truncate text-[13px] font-medium text-tc-text">{p.property_description}</p>
               </div>
-              <div className="shrink-0 flex flex-col items-end gap-2">
-                <span className="text-[11px] uppercase tracking-[0.05em] text-muted">{p.status}</span>
-                <Link
-                  href={`/internal/cases/new?${params.toString()}`}
-                  className="text-[11px] font-medium text-foreground/80 hover:text-foreground transition-colors duration-200 underline underline-offset-2 decoration-border-light hover:decoration-foreground"
-                >
-                  Open Case
-                </Link>
-              </div>
+              <p className="truncate text-[12px] text-tc-text-muted">
+                {p.locality_or_area} · {p.municipality_or_deeds_office}
+              </p>
+              <p className="mt-1 truncate text-[11px] text-tc-text-faint">{p.current_owner_name}</p>
             </div>
+            <div className="min-w-0">
+              <p className="font-mono text-[12px] text-tc-text">{p.title_reference || "No title ref"}</p>
+              <RelativeTime date={p.updated_at} />
+            </div>
+            <div>
+              <ProductStatusBadge label={hasBlocker ? "Blocker" : "No blocker"} tone={hasBlocker ? "danger" : "success"} />
+            </div>
+            <Link
+              href={`/internal/cases/new?${params.toString()}`}
+              className="inline-flex h-8 items-center justify-center gap-2 rounded-md border border-tc-border bg-tc-surface-subtle px-3 text-[12px] font-medium text-tc-text transition-colors hover:bg-white/[0.05]"
+            >
+              Open Case
+              <ExternalLink className="size-3.5" />
+            </Link>
           </div>
         );
       })}
-    </div>
+      </div>
+    </ProductPanel>
   );
 }

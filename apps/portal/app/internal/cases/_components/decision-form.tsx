@@ -40,7 +40,7 @@ export function ReassignCaseForm({
         <select
           name="assignee_id"
           required
-          className="bg-card border border-border-light rounded-lg px-3 py-[6px] text-[13px] text-foreground focus:outline-none focus:border-border-light/50 transition-colors"
+        className="rounded-md border border-tc-border bg-tc-surface-subtle px-3 py-[6px] text-[13px] text-tc-text transition-colors focus:border-tc-accent focus:outline-none"
         >
           {analysts.map((a) => (
             <option key={a.id} value={a.id} className="bg-card">
@@ -51,11 +51,11 @@ export function ReassignCaseForm({
       </div>
       <button
         type="submit"
-        className="bg-foreground text-background text-[13px] font-medium px-4 py-[7px] rounded-full transition-opacity duration-200 hover:opacity-80"
+        className="rounded-md bg-tc-accent px-4 py-[7px] text-[13px] font-medium text-white transition-opacity duration-200 hover:opacity-85"
       >
         Reassign
       </button>
-      {error && <p className="text-[12px] text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-[12px] text-tc-danger">{error}</p>}
     </form>
   );
 }
@@ -109,7 +109,7 @@ export function RecordDecisionForm({
           name="decision"
           value={decision}
           onChange={(e) => setDecision(e.target.value)}
-          className="w-full bg-card border border-border-light rounded-lg px-3 py-[7px] text-[13px] text-foreground focus:outline-none focus:border-border-light/50 transition-colors"
+          className="w-full rounded-md border border-tc-border bg-tc-surface-subtle px-3 py-[7px] text-[13px] text-tc-text transition-colors focus:border-tc-accent focus:outline-none"
         >
           <option value="clear" className="bg-card">Clear</option>
           <option value="review" className="bg-card">Review</option>
@@ -140,15 +140,15 @@ export function RecordDecisionForm({
           name="note"
           required
           rows={3}
-          className="w-full bg-card border border-border-light rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors resize-none"
+          className="w-full resize-none rounded-md border border-tc-border bg-tc-surface-subtle px-3 py-2 text-[13px] text-tc-text transition-colors placeholder:text-tc-text-faint focus:border-tc-accent focus:outline-none"
         />
       </div>
 
-      {error && <p className="text-[12px] text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-[12px] text-tc-danger">{error}</p>}
 
       <button
         type="submit"
-        className="w-full bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
+        className="w-full rounded-md bg-tc-accent px-4 py-[8px] text-[13px] font-medium text-white transition-opacity duration-200 hover:opacity-85"
       >
         {mode === "override" ? "Record Override" : "Record Decision"}
       </button>
@@ -212,15 +212,15 @@ export function CloseUnresolvedForm({
           name="note"
           required
           rows={3}
-          className="w-full bg-card border border-border-light rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted-more focus:outline-none focus:border-border-light/50 transition-colors resize-none"
+          className="w-full resize-none rounded-md border border-tc-border bg-tc-surface-subtle px-3 py-2 text-[13px] text-tc-text transition-colors placeholder:text-tc-text-faint focus:border-tc-accent focus:outline-none"
         />
       </div>
 
-      {error && <p className="text-[12px] text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-[12px] text-tc-danger">{error}</p>}
 
       <button
         type="submit"
-        className="w-full border border-border-light text-[13px] font-medium px-4 py-[8px] rounded-full text-foreground transition-colors duration-200 hover:bg-white/5"
+        className="w-full rounded-md border border-tc-border px-4 py-[8px] text-[13px] font-medium text-tc-text transition-colors duration-200 hover:bg-white/5"
       >
         Close Unresolved
       </button>

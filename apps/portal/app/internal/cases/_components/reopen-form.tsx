@@ -34,11 +34,11 @@ export function ReopenForm({ caseId, actorId }: { caseId: string; actorId: strin
         />
       </div>
 
-      {error && <p className="text-[12px] text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-[12px] text-tc-danger">{error}</p>}
 
       <button
         type="submit"
-        className="w-full border border-border-light text-[13px] font-medium px-4 py-[8px] rounded-full text-foreground transition-colors duration-200 hover:bg-white/5"
+        className="w-full rounded-md border border-tc-border px-4 py-[8px] text-[13px] font-medium text-tc-text transition-colors duration-200 hover:bg-white/5"
       >
         Reopen
       </button>

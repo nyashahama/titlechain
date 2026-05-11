@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { getDecisionMeta, getMatterStatusMeta, getRunStatusMeta } from "./status";
+import {
+  getCaseStatusMeta,
+  getDecisionMeta,
+  getEvidenceStatusMeta,
+  getMatterStatusMeta,
+  getRunStatusMeta,
+} from "./status";
 
 describe("product status metadata", () => {
   it("maps matter states to semantic labels", () => {
@@ -31,6 +37,17 @@ describe("product status metadata", () => {
   it("maps run status", () => {
     expect(getRunStatusMeta("failed")).toMatchObject({
       label: "Failed",
+      tone: "danger",
+    });
+  });
+
+  it("maps internal case and evidence statuses", () => {
+    expect(getCaseStatusMeta("closed_unresolved")).toMatchObject({
+      label: "Unresolved",
+      tone: "danger",
+    });
+    expect(getEvidenceStatusMeta("conflicting")).toMatchObject({
+      label: "Conflicting",
       tone: "danger",
     });
   });

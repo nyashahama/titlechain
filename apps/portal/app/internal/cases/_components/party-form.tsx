@@ -80,11 +80,11 @@ export function PartyForm({ caseId, actorId }: { caseId: string; actorId: string
         />
       </div>
 
-      {error && <p className="text-[12px] text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-[12px] text-tc-danger">{error}</p>}
 
       <button
         type="submit"
-        className="w-full bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
+        className="w-full rounded-md bg-tc-accent px-4 py-[8px] text-[13px] font-medium text-white transition-opacity duration-200 hover:opacity-85"
       >
         Add Party
       </button>

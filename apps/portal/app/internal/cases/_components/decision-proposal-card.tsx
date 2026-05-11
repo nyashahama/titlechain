@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 
 import { acceptProposalAction, reevaluateCaseAction } from "../actions";
 import { DecisionProposal } from "../types";
+import { ProductPanel } from "@/app/_components/product/ProductPanel";
+import { ProductStatusBadge } from "@/app/_components/product/ProductStatusBadge";
+import { getDecisionMeta } from "@/app/_lib/product/status";
 
 export function DecisionProposalCard({
   caseId,
@@ -23,6 +26,7 @@ export function DecisionProposalCard({
     }
     return explanation.reasons.filter(Boolean);
   }, [proposal.explanation]);
+  const decision = getDecisionMeta(proposal.decision);
 
   async function handleAccept(formData: FormData) {
     setError(null);
@@ -45,20 +49,13 @@ export function DecisionProposalCard({
   }
 
   return (
-    <div className="border border-border rounded-2xl bg-card/20 p-5 space-y-4">
+    <ProductPanel className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">Decision Recommendation</h3>
           <p className="text-[13px] text-muted mt-1">{proposal.engine_version}</p>
         </div>
-        <span
-          className="text-[11px] font-semibold uppercase tracking-wide"
-          style={{
-            color: proposal.decision === "clear" ? "#4ade80" : proposal.decision === "stop" ? "#ef4444" : "#fbbf24",
-          }}
-        >
-          {proposal.decision}
-        </span>
+        <ProductStatusBadge label={decision.label} tone={decision.tone} />
       </div>
 
       <p className="text-[13px] text-foreground/80 leading-relaxed">{proposal.summary}</p>
@@ -68,7 +65,7 @@ export function DecisionProposalCard({
           {proposal.reason_codes.map((rc) => (
             <span
               key={rc.code}
-              className="px-2 py-0.5 rounded-md text-[10px] border border-border-light text-muted-more font-mono"
+              className="rounded-md border border-tc-border bg-tc-surface-subtle px-2 py-0.5 font-mono text-[10px] text-tc-text-faint"
             >
               {rc.code}
             </span>
@@ -86,14 +83,14 @@ export function DecisionProposalCard({
         </div>
       )}
 
-      {error && <p className="text-[12px] text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-[12px] text-tc-danger">{error}</p>}
 
       <div className="flex gap-2">
         <form action={handleAccept} className="flex-1">
           <input type="hidden" name="actor_id" value={actorId} />
           <button
             type="submit"
-            className="w-full bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
+            className="w-full rounded-md bg-tc-accent px-4 py-[8px] text-[13px] font-medium text-white transition-opacity duration-200 hover:opacity-85"
           >
             Accept Recommendation
           </button>
@@ -102,12 +99,12 @@ export function DecisionProposalCard({
           <input type="hidden" name="actor_id" value={actorId} />
           <button
             type="submit"
-            className="border border-border-light text-[13px] font-medium px-4 py-[8px] rounded-full text-foreground transition-colors duration-200 hover:bg-white/5"
+            className="rounded-md border border-tc-border px-4 py-[8px] text-[13px] font-medium text-tc-text transition-colors duration-200 hover:bg-white/5"
           >
             Re-run Evaluation
           </button>
         </form>
       </div>
-    </div>
+    </ProductPanel>
   );
 }
