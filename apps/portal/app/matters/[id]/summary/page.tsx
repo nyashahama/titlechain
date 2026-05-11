@@ -58,6 +58,8 @@ export default function SummaryPage() {
   }
 
   const matter = export_.matter.summary;
+  const evidence = export_.matter.evidence ?? [];
+  const reasons = export_.matter.reasons ?? [];
   const decision = getDecisionMeta(matter.decision);
   const status = getMatterStatusMeta(matter.customer_status);
 
@@ -131,13 +133,13 @@ export default function SummaryPage() {
             </div>
           )}
 
-          {export_.matter.evidence.length > 0 && (
+          {evidence.length > 0 && (
             <div>
               <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.08em] text-tc-text-faint">
-                Evidence ({export_.matter.evidence.length} items)
+                Evidence ({evidence.length} items)
               </p>
               <div className="space-y-3">
-                {export_.matter.evidence.map((e, i) => (
+                {evidence.map((e, i) => (
                   <div key={i} className="rounded-lg border border-tc-border bg-white/[0.03] p-3">
                     <div className="mb-1 flex items-center gap-2">
                       <span className="text-[12px] font-semibold text-tc-text">{e.type}</span>
@@ -150,11 +152,11 @@ export default function SummaryPage() {
             </div>
           )}
 
-          {export_.matter.reasons.length > 0 && (
+          {reasons.length > 0 && (
             <div>
               <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.08em] text-tc-text-faint">Reasons</p>
               <div className="space-y-1.5">
-                {export_.matter.reasons.map((r) => (
+                {reasons.map((r) => (
                   <div key={r.code} className="flex items-center gap-2">
                     <span className="font-mono text-[11px] text-tc-text-faint">{r.code}</span>
                     <span className="text-[12px] text-tc-text-muted">{r.label}</span>

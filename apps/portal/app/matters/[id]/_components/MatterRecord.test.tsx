@@ -76,4 +76,19 @@ describe("MatterRecord", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent("Unable to reopen matter");
   });
+
+  it("renders empty sections when the API returns null collections", () => {
+    render(
+      <MatterRecord
+        detail={{ ...detail, evidence: null, reasons: null, timeline: null } as unknown as MatterDetail}
+        onReopen={async () => undefined}
+        reopening={false}
+        reopenError=""
+      />
+    );
+
+    expect(screen.getByText("No decision reasons have been published yet.")).toBeInTheDocument();
+    expect(screen.getByText("No visible evidence has been attached to this matter yet.")).toBeInTheDocument();
+    expect(screen.getByText("No activity has been recorded for this matter yet.")).toBeInTheDocument();
+  });
 });

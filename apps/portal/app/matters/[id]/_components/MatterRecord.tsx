@@ -47,6 +47,9 @@ function EvidenceStatus({ status }: { status: string }) {
 export function MatterRecord({ detail, onReopen, reopening, reopenError }: MatterRecordProps) {
   const [reopenNote, setReopenNote] = useState("");
   const matter = detail.summary;
+  const evidence = detail.evidence ?? [];
+  const reasons = detail.reasons ?? [];
+  const timeline = detail.timeline ?? [];
   const decision = getDecisionMeta(matter.decision);
   const status = getMatterStatusMeta(matter.customer_status);
 
@@ -118,9 +121,9 @@ export function MatterRecord({ detail, onReopen, reopening, reopenError }: Matte
               </div>
             </div>
             <div className="border-t border-tc-border pt-4">
-              {detail.reasons.length > 0 ? (
+              {reasons.length > 0 ? (
                 <div className="flex flex-col gap-2">
-                  {detail.reasons.map((reason) => (
+                  {reasons.map((reason) => (
                     <div key={reason.code} className="rounded-md border border-tc-border bg-white/[0.02] px-3 py-2">
                       <p className="font-mono text-[11px] text-tc-text-faint">{reason.code}</p>
                       <p className="mt-1 text-[13px] text-tc-text-muted">{reason.label}</p>
@@ -167,9 +170,9 @@ export function MatterRecord({ detail, onReopen, reopening, reopenError }: Matte
                 Evidence
               </h2>
             </div>
-            {detail.evidence.length > 0 ? (
+            {evidence.length > 0 ? (
               <div className="divide-y divide-tc-border">
-                {detail.evidence.map((item, index) => (
+                {evidence.map((item, index) => (
                   <article key={`${item.type}-${item.source_reference}-${index}`} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
@@ -198,9 +201,9 @@ export function MatterRecord({ detail, onReopen, reopening, reopenError }: Matte
                 Activity
               </h2>
             </div>
-            {detail.timeline.length > 0 ? (
+            {timeline.length > 0 ? (
               <div className="space-y-4">
-                {detail.timeline.map((event, index) => (
+                {timeline.map((event, index) => (
                   <div key={`${event.type}-${event.created_at}-${index}`} className="flex gap-3">
                     <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md border border-tc-border bg-tc-surface-subtle">
                       <CalendarClock className="size-4 text-tc-text-faint" />
@@ -250,7 +253,7 @@ export function MatterRecord({ detail, onReopen, reopening, reopenError }: Matte
               </div>
               <div className="flex items-center justify-between gap-3 text-[12px]">
                 <dt className="text-tc-text-muted">Evidence</dt>
-                <dd className="text-tc-text">{detail.evidence.length} items</dd>
+                <dd className="text-tc-text">{evidence.length} items</dd>
               </div>
             </dl>
             <Link
