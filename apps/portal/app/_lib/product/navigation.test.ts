@@ -28,10 +28,14 @@ describe("product navigation", () => {
     expect(visible.flatMap((group) => group.items.map((item) => item.href))).toContain(
       "/internal/cases"
     );
+    expect(visible.flatMap((group) => group.items.map((item) => item.href))).toContain(
+      "/internal/analytics"
+    );
   });
 
   it("resolves nested routes to their parent nav item", () => {
     expect(resolveActiveProductRoute("/matters/matter-123")).toBe("/matters");
     expect(resolveActiveProductRoute("/internal/cases/case-123")).toBe("/internal/cases");
+    expect(resolveActiveProductRoute("/internal/analytics/evidence")).toBe("/internal/analytics");
   });
 });
