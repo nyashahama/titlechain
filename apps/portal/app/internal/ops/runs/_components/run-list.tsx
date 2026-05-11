@@ -1,74 +1,73 @@
 "use client";
 
+import { Zap } from "lucide-react";
 import { RunSummary } from "../types";
-import { RelativeTime } from "../../../cases/_components/relative-time";
 import { PipelineSwimlane } from "@/app/_components/pipeline-swimlane";
 import { LogViewer } from "@/app/_components/log-viewer";
+import { ProductPanel } from "@/app/_components/product/ProductPanel";
+import { ProductStatusBadge } from "@/app/_components/product/ProductStatusBadge";
+import { RelativeTime } from "@/app/_components/product/RelativeTime";
+import { StateView } from "@/app/_components/product/StateView";
+import { getRunStatusMeta } from "@/app/_lib/product/status";
 
 export function RunList({ runs }: { runs: RunSummary[] | null }) {
   if (!runs || runs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-28 text-center">
-        <div className="w-14 h-14 rounded-2xl border border-border flex items-center justify-center mb-5 bg-card/30">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
-            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <p className="text-[15px] text-foreground/80 mb-1.5 font-medium">No runs found</p>
-        <p className="text-[13px] text-muted max-w-[240px]">Trigger a property sync to start your first projection run.</p>
-      </div>
+      <StateView
+        kind="empty"
+        title="No runs found"
+        description="Trigger a property sync to start the first projection run."
+        className="rounded-lg border border-tc-border bg-tc-surface"
+      />
     );
   }
 
   return (
     <div className="space-y-2">
-      {runs.map((r, i) => (
-        <div
-          key={r.id}
-          className="bg-card border border-border rounded-2xl p-5 transition-all duration-200 hover:border-border-light/60"
-          style={{ animationDelay: `${i * 40}ms` }}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[13px] text-foreground font-medium">{r.run_type}</span>
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium tracking-wide ${
-                  r.status === "completed"
-                    ? "text-[#4ade80] bg-[rgba(74,222,128,0.15)] border border-[rgba(74,222,128,0.15)]"
-                    : r.status === "failed"
-                    ? "text-[#ef4444] bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.15)]"
-                    : "text-[#fbbf24] bg-[rgba(251,191,36,0.15)] border border-[rgba(251,191,36,0.15)]"
-                }`}>
-                  {r.status}
-                </span>
+      {runs.map((r) => {
+        const status = getRunStatusMeta(r.status);
+
+        return (
+          <ProductPanel key={r.id} className="transition-colors hover:border-tc-border-strong">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <Zap className="size-4 text-tc-text-faint" />
+                  <span className="text-[13px] font-medium text-tc-text">{r.run_type}</span>
+                  <ProductStatusBadge label={status.label} tone={status.tone} />
+                </div>
+                <div className="flex flex-wrap items-center gap-3 text-[11px] text-tc-text-faint">
+                  <span>{r.completed_jobs}/{r.total_jobs} jobs</span>
+                  {r.failed_jobs > 0 ? (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span className="text-tc-danger">{r.failed_jobs} failed</span>
+                    </>
+                  ) : null}
+                  {r.latest_error ? (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span className="max-w-[240px] truncate">{r.latest_error}</span>
+                    </>
+                  ) : null}
+                </div>
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-muted-more">
-                <span>{r.completed_jobs}/{r.total_jobs} jobs</span>
-                {r.failed_jobs > 0 && (
-                  <>
-                    <span>·</span>
-                    <span className="text-[#ef4444]">{r.failed_jobs} failed</span>
-                  </>
-                )}
-                {r.latest_error && (
-                  <>
-                    <span>·</span>
-                    <span className="truncate max-w-[200px]">{r.latest_error}</span>
-                  </>
-                )}
+              <div className="shrink-0 text-right">
+                {r.started_at ? <div><RelativeTime date={r.started_at} /></div> : null}
+                {r.finished_at ? (
+                  <div className="mt-1 text-[11px] text-tc-text-faint">
+                    done <RelativeTime date={r.finished_at} />
+                  </div>
+                ) : null}
               </div>
             </div>
-            <div className="shrink-0 text-right">
-              {r.started_at && <div className="text-[11px] text-muted-more"><RelativeTime date={r.started_at} /></div>}
-              {r.finished_at && <div className="text-[11px] text-muted-more mt-0.5">done <RelativeTime date={r.finished_at} /></div>}
+            <div className="mt-3">
+              <PipelineSwimlane status={r.status} />
             </div>
-          </div>
-          <div className="mt-3">
-            <PipelineSwimlane status={r.status} />
-          </div>
-          <LogViewer logs={r.logs ?? []} />
-        </div>
-      ))}
+            <LogViewer logs={r.logs ?? []} />
+          </ProductPanel>
+        );
+      })}
     </div>
   );
 }

@@ -13,10 +13,12 @@ import {
   ReassignCaseInput,
   ReopenCaseInput,
 } from "./types";
+import { requirePilotAdmin } from "@/app/_lib/product/server-auth";
 
 const apiBaseUrl = process.env.TITLECHAIN_API_BASE_URL ?? "http://localhost:8080";
 
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
+  await requirePilotAdmin();
   const res = await fetch(`${apiBaseUrl}${path}`, {
     cache: "no-store",
     ...options,

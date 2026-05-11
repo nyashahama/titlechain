@@ -24,6 +24,7 @@ describe("CaseRow", () => {
     render(<CaseRow caseItem={caseItem} index={0} analystMap={new Map([["ana-001", "Nyasha"]])} />);
     expect(screen.getByText("TC-001")).toBeInTheDocument();
     expect(screen.getByText("Erf 412 Rosebank")).toBeInTheDocument();
+    expect(screen.getByText("Open")).toHaveClass("rounded-md");
   });
 
   it("renders pilot customer context when present", () => {
@@ -50,6 +51,7 @@ describe("CaseRow", () => {
 
     render(<CaseRow caseItem={caseItem} index={0} analystMap={new Map([["ana-001", "Nyasha"]])} />);
     expect(screen.getByText("Pilot customer")).toBeInTheDocument();
+    expect(screen.getByText("Pilot customer")).toHaveClass("rounded-md");
     expect(screen.getByText("Acme Conveyancers")).toBeInTheDocument();
     expect(screen.getByText("ACME-42")).toBeInTheDocument();
   });

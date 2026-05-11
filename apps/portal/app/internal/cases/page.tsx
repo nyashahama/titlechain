@@ -1,9 +1,13 @@
 import Link from "next/link";
+import { ListChecks, Plus } from "lucide-react";
 import { listCases, listAnalysts } from "./api";
 import { CaseQueue } from "./_components/case-queue";
 import { ClientAnalystSwitcher } from "./_components/client-analyst-switcher";
 import { CasesKeyboardShortcuts } from "./_components/cases-keyboard-shortcuts";
-import { EmptyState } from "@/app/_components/ui/empty-state";
+import { ProductPage } from "@/app/_components/product-shell/ProductPage";
+import { PageHeader } from "@/app/_components/product-shell/PageHeader";
+import { StateView } from "@/app/_components/product/StateView";
+import { cn } from "@/app/_lib/cn";
 
 export default async function CasesPage({
   searchParams,
@@ -31,66 +35,67 @@ export default async function CasesPage({
   const currentStatus = params.status ?? "";
 
   return (
-    <div className="mx-auto max-w-5xl p-6 md:p-10 animate-slide-in">
+    <ProductPage>
       <CasesKeyboardShortcuts />
-      {/* Header */}
-      <div className="mb-10">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-[28px] font-bold tracking-[-0.03em] text-foreground">Cases</h1>
-            <p className="text-[13px] text-muted mt-1">Review and manage title verification cases</p>
-          </div>
-          <div className="flex items-center gap-3">
+      <PageHeader
+        eyebrow="Operations"
+        title="Cases"
+        description="Review title verification work, analyst ownership, pilot context, and decision status."
+        action={
+          <div className="flex flex-wrap items-center gap-3">
             <ClientAnalystSwitcher analysts={analysts} defaultSelected={selectedAnalyst} />
             <Link
               href="/internal/cases/new"
-              className="bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80"
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-tc-accent px-3 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
             >
+              <Plus className="size-4" />
               New Case
             </Link>
           </div>
-        </div>
+        }
+      />
 
-        {/* Status Filters */}
-        <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Case status">
           {statusLinks.map((sl) => {
             const isActive = currentStatus === sl.value;
             return (
               <Link
                 key={sl.label}
                 href={sl.value ? `/internal/cases?status=${sl.value}` : "/internal/cases"}
-                className={`px-3 py-[5px] rounded-full text-[12px] font-medium transition-all duration-200 ${
+                className={cn(
+                  "rounded-md border px-3 py-[6px] text-[12px] font-medium transition-colors",
                   isActive
-                    ? "bg-foreground text-background"
-                    : "text-muted hover:text-foreground hover:bg-white/[0.04]"
-                }`}
+                    ? "border-tc-accent bg-tc-accent text-white"
+                    : "border-tc-border bg-tc-surface-subtle text-tc-text-muted hover:border-tc-border-strong hover:text-tc-text"
+                )}
               >
                 {sl.label}
               </Link>
             );
           })}
         </div>
-      </div>
 
-      {/* Queue */}
-      {cases.length === 0 ? (
-        <EmptyState
-          icon={
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
-              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-          }
-          title="No cases found"
-          description="Create a new case to get started with your review queue."
-          action={
-            <Link href="/internal/cases/new" className="bg-foreground text-background text-[13px] font-medium px-4 py-[8px] rounded-full transition-opacity duration-200 hover:opacity-80">
-              New Case
-            </Link>
-          }
-        />
-      ) : (
-        <CaseQueue cases={cases} analystMap={analystMap} />
-      )}
-    </div>
+        {cases.length === 0 ? (
+          <StateView
+            kind="empty"
+            title="No cases found"
+            description="Create a new case to start a review queue."
+            className="rounded-lg border border-tc-border bg-tc-surface"
+            action={
+              <Link
+                href="/internal/cases/new"
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-tc-border bg-tc-surface-subtle px-3 text-[13px] font-medium text-tc-text hover:bg-white/[0.05]"
+              >
+                <ListChecks className="size-4" />
+                New Case
+              </Link>
+            }
+          />
+        ) : (
+          <CaseQueue cases={cases} analystMap={analystMap} />
+        )}
+      </div>
+    </ProductPage>
   );
 }
