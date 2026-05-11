@@ -44,4 +44,36 @@ describe("MatterQueue", () => {
     expect(screen.queryByText("Erf 412 Rosebank")).not.toBeInTheDocument();
     expect(screen.getByText("Section 8 Sandton")).toBeInTheDocument();
   });
+
+  it("filters matters by status", () => {
+    render(<MatterQueue matters={matters} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Resolved" }));
+
+    expect(screen.queryByText("Erf 412 Rosebank")).not.toBeInTheDocument();
+    expect(screen.getByText("Section 8 Sandton")).toBeInTheDocument();
+  });
+
+  it("filters matters by decision", () => {
+    render(<MatterQueue matters={matters} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Stop" }));
+
+    expect(screen.queryByText("Erf 412 Rosebank")).not.toBeInTheDocument();
+    expect(screen.getByText("Section 8 Sandton")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Pending" }));
+
+    expect(screen.getByText("Erf 412 Rosebank")).toBeInTheDocument();
+    expect(screen.queryByText("Section 8 Sandton")).not.toBeInTheDocument();
+  });
+
+  it("exposes accessible filter groups and pressed buttons", () => {
+    render(<MatterQueue matters={matters} />);
+
+    expect(screen.getByRole("group", { name: "Matter status" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Matter decision" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "All statuses" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "All decisions" })).toHaveAttribute("aria-pressed", "true");
+  });
 });

@@ -22,16 +22,20 @@ const decisionOptions: { label: string; value: MatterDecisionFilter }[] = [
 
 function FilterButton({
   active,
+  ariaLabel,
   children,
   onClick,
 }: {
   active: boolean;
+  ariaLabel?: string;
   children: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
+      aria-label={ariaLabel}
+      aria-pressed={active}
       onClick={onClick}
       className={cn(
         "h-8 rounded-md border px-3 text-[12px] font-medium transition-colors",
@@ -58,22 +62,24 @@ export function MatterFilters({
       query={filters.query}
       onQueryChange={(query) => onFiltersChange({ ...filters, query })}
     >
-      <div className="flex flex-wrap items-center gap-2" aria-label="Matter status">
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Matter status">
         {statusOptions.map((option) => (
           <FilterButton
             key={option.value}
             active={filters.status === option.value}
+            ariaLabel={option.value === "all" ? "All statuses" : undefined}
             onClick={() => onFiltersChange({ ...filters, status: option.value })}
           >
             {option.label}
           </FilterButton>
         ))}
       </div>
-      <div className="flex flex-wrap items-center gap-2" aria-label="Matter decision">
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Matter decision">
         {decisionOptions.map((option) => (
           <FilterButton
             key={option.value}
             active={filters.decision === option.value}
+            ariaLabel={option.value === "all" ? "All decisions" : undefined}
             onClick={() => onFiltersChange({ ...filters, decision: option.value })}
           >
             {option.label}
