@@ -32,6 +32,20 @@
   --color-accent-hover: #dc2626;
   --color-card-hover: hsl(0 0% 6%);
   --color-muted-more: rgba(255, 255, 255, 0.25);
+  --color-tc-bg: #000000;
+  --color-tc-surface: #090909;
+  --color-tc-surface-subtle: #0f0f0f;
+  --color-tc-border: rgba(255, 255, 255, 0.08);
+  --color-tc-border-strong: rgba(255, 255, 255, 0.14);
+  --color-tc-text: rgba(255, 255, 255, 0.94);
+  --color-tc-text-muted: rgba(255, 255, 255, 0.62);
+  --color-tc-text-faint: rgba(255, 255, 255, 0.34);
+  --color-tc-accent: #f97316;
+  --color-tc-accent-soft: rgba(249, 115, 22, 0.14);
+  --color-tc-success: #22c55e;
+  --color-tc-warning: #f59e0b;
+  --color-tc-danger: #ef4444;
+  --color-tc-info: #38bdf8;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
