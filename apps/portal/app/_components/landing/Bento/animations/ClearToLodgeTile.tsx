@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Noise } from "@/app/_components/landing/Fancy";
+import { DomainIcon } from "@/app/_components/landing/shared/DomainIcons";
 import Link from "next/link";
 
 export function ClearToLodgeTile() {
@@ -24,7 +25,7 @@ export function ClearToLodgeTile() {
 
   return (
     <Link
-      href="/solutions/clear-to-lodge"
+      href="#solutions"
       className="group relative col-span-12 flex min-h-[260px] flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)] p-6 transition-shadow hover:shadow-[0px_0px_0px_4px_hsl(0_0%_6%)] md:col-span-7"
     >
       <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
@@ -32,10 +33,7 @@ export function ClearToLodgeTile() {
       </div>
       <div className="relative z-10">
         <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-orange-500/10">
-          <svg width="20" height="20" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="14" y="10" width="20" height="22" rx="5" stroke="#F97316" strokeWidth="3"/>
-            <path d="M17 24L22 29L31 19" stroke="#F97316" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <DomainIcon name="clear-to-lodge" className="text-orange-400" />
         </div>
         <h3 className="text-lg font-semibold text-white">Clear-to-Lodge</h3>
         <p className="mt-1 text-sm text-white/45">
