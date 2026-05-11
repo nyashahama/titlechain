@@ -28,6 +28,12 @@ describe("NewMatterForm", () => {
     expect(screen.getByRole("button", { name: "Run Clear-to-Lodge Check" })).toBeInTheDocument();
   });
 
+  it("announces API errors", () => {
+    render(<NewMatterForm onSubmit={async () => undefined} loading={false} error="Failed to create matter" />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Failed to create matter");
+  });
+
   it("shows inline validation for required fields", () => {
     const onSubmit = vi.fn(async () => undefined);
     render(<NewMatterForm onSubmit={onSubmit} loading={false} error="" />);

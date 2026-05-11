@@ -17,7 +17,7 @@ import { CopyAction } from "@/app/_components/product/CopyAction";
 import { ProductPanel } from "@/app/_components/product/ProductPanel";
 import { ProductStatusBadge } from "@/app/_components/product/ProductStatusBadge";
 import { RelativeTime } from "@/app/_components/product/RelativeTime";
-import { getDecisionMeta, getMatterStatusMeta } from "@/app/_lib/product/status";
+import { getDecisionMeta, getMatterStatusMeta, type ProductTone } from "@/app/_lib/product/status";
 import type { MatterDetail } from "../../types";
 
 type MatterRecordProps = {
@@ -32,7 +32,15 @@ function formatValue(value: string) {
 }
 
 function EvidenceStatus({ status }: { status: string }) {
-  const tone = status === "verified" ? "success" : status === "failed" ? "danger" : "muted";
+  const toneByStatus: Record<string, ProductTone> = {
+    captured: "info",
+    confirmed: "success",
+    conflicting: "danger",
+    superseded: "muted",
+    verified: "success",
+    failed: "danger",
+  };
+  const tone = toneByStatus[status] ?? "muted";
   return <ProductStatusBadge label={status.replace(/_/g, " ")} tone={tone} />;
 }
 
@@ -277,7 +285,11 @@ export function MatterRecord({ detail, onReopen, reopening, reopenError }: Matte
                     placeholder="Reason for reopening"
                   />
                 </div>
-                {reopenError ? <p className="text-[12px] text-tc-danger">{reopenError}</p> : null}
+                {reopenError ? (
+                  <p role="alert" className="text-[12px] text-tc-danger">
+                    {reopenError}
+                  </p>
+                ) : null}
                 <button
                   type="submit"
                   disabled={reopening}

@@ -207,7 +207,10 @@ export function NewMatterForm({ onSubmit, loading, error }: NewMatterFormProps) 
           </div>
 
           {error ? (
-            <p className="rounded-md border border-tc-danger/30 bg-tc-danger/10 px-3 py-2 text-[13px] text-tc-danger">
+            <p
+              role="alert"
+              className="rounded-md border border-tc-danger/30 bg-tc-danger/10 px-3 py-2 text-[13px] text-tc-danger"
+            >
               {error}
             </p>
           ) : null}

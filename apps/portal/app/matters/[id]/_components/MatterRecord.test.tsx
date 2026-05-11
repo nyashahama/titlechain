@@ -39,4 +39,41 @@ describe("MatterRecord", () => {
     expect(screen.getByText("Owner and title reference matched.")).toBeInTheDocument();
     expect(screen.getByText("Matter resolved")).toBeInTheDocument();
   });
+
+  it("maps API evidence statuses to semantic product tones", () => {
+    render(
+      <MatterRecord
+        detail={{
+          ...detail,
+          evidence: [
+            { ...detail.evidence[0], source_reference: "DR-1", status: "captured" },
+            { ...detail.evidence[0], source_reference: "DR-2", status: "confirmed" },
+            { ...detail.evidence[0], source_reference: "DR-3", status: "conflicting" },
+            { ...detail.evidence[0], source_reference: "DR-4", status: "superseded" },
+          ],
+        }}
+        onReopen={async () => undefined}
+        reopening={false}
+        reopenError=""
+      />
+    );
+
+    expect(screen.getByText("captured")).toHaveClass("text-tc-info");
+    expect(screen.getByText("confirmed")).toHaveClass("text-tc-success");
+    expect(screen.getByText("conflicting")).toHaveClass("text-tc-danger");
+    expect(screen.getByText("superseded")).toHaveClass("text-tc-text-muted");
+  });
+
+  it("announces reopen errors", () => {
+    render(
+      <MatterRecord
+        detail={detail}
+        onReopen={async () => undefined}
+        reopening={false}
+        reopenError="Unable to reopen matter"
+      />
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Unable to reopen matter");
+  });
 });
