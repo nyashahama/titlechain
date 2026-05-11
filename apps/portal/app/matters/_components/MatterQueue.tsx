@@ -57,7 +57,7 @@ export function MatterQueue({ matters }: { matters: MatterSummary[] }) {
                         {matter.case_reference}
                       </span>
                       <span
-                        className="pointer-events-auto shrink-0 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100"
+                        className="pointer-events-auto shrink-0 opacity-100 focus-within:opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100"
                         onClick={(event) => {
                           event.stopPropagation();
                         }}

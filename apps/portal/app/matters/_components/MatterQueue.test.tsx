@@ -76,4 +76,10 @@ describe("MatterQueue", () => {
     expect(screen.getByRole("button", { name: "All statuses" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "All decisions" })).toHaveAttribute("aria-pressed", "true");
   });
+
+  it("reveals the copy action when it receives keyboard focus", () => {
+    render(<MatterQueue matters={matters} />);
+
+    expect(screen.getByRole("button", { name: "Copy TC-001" }).parentElement).toHaveClass("focus-within:opacity-100");
+  });
 });
