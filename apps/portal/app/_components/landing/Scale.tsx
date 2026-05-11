@@ -11,6 +11,15 @@ const stats = [
   { label: "Risk assessments", value: 5200000, suffix: "+" },
 ];
 
+const compactNumberFormat = new Intl.NumberFormat("en", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+function formatMetricFallback(value: number, suffix: string) {
+  return `${compactNumberFormat.format(value)}${suffix}`;
+}
+
 export function Scale() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
@@ -37,7 +46,7 @@ export function Scale() {
                   format={{ notation: "compact" }}
                 />
               ) : (
-                "0"
+                formatMetricFallback(stat.value, stat.suffix)
               )}
             </div>
             <div className="mt-2 text-xs font-medium text-white/40">
@@ -49,12 +58,12 @@ export function Scale() {
 
       <div className="mx-auto mt-16 max-w-xl text-center">
         <blockquote className="text-lg font-medium text-white/70 italic">
-          &ldquo;The switch to using TitleChain brought infinite value that I&rsquo;m still
-          discovering today.&rdquo;
+          &ldquo;The value is the evidence trail: every recommendation has the source
+          context, risk state, and next action attached.&rdquo;
         </blockquote>
         <div className="mt-4">
-          <p className="text-sm font-medium text-white">Sarah van der Merwe</p>
-          <p className="text-xs text-white/40">Senior Conveyancer, VDM Attorneys</p>
+          <p className="text-sm font-medium text-white">Pilot conveyancing lead</p>
+          <p className="text-xs text-white/40">Regulated property transfer team</p>
         </div>
       </div>
     </div>

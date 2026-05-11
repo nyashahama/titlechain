@@ -2,13 +2,16 @@ import { Button } from "@/app/_components/landing/shared/Button";
 import { cn } from "@/app/_lib/cn";
 import { Check } from "lucide-react";
 
+const accessRequestHref =
+  "mailto:hello@titlechain.co.za?subject=TitleChain%20access%20request";
+
 const plans = [
   {
     name: "Starter",
     price: "Free",
     description: "For sole practitioners and small conveyancing firms.",
-    cta: "Get started",
-    href: "/auth/signup",
+    cta: "Request access",
+    href: accessRequestHref,
     features: [
       "Up to 50 title verifications/month",
       "Basic risk scoring",
@@ -22,8 +25,8 @@ const plans = [
     subtitle: "/month",
     tag: "Popular",
     description: "For growing firms that need advanced intelligence.",
-    cta: "Start free trial",
-    href: "/auth/signup",
+    cta: "Start pilot",
+    href: "mailto:hello@titlechain.co.za?subject=TitleChain%20professional%20pilot",
     features: [
       "Up to 500 verifications/month",
       "Advanced risk engine",

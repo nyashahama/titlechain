@@ -5,35 +5,35 @@ const footerLinks = [
   {
     title: "Solutions",
     links: [
-      { label: "Clear-to-Lodge", href: "/solutions/clear-to-lodge" },
-      { label: "Risk Engine", href: "/solutions/risk-engine" },
-      { label: "Deeds Search", href: "/solutions/deeds-search" },
-      { label: "Coverage", href: "/solutions/coverage" },
+      { label: "Clear-to-Lodge", href: "#solutions" },
+      { label: "Risk Engine", href: "#security" },
+      { label: "Deeds Search", href: "#solutions" },
+      { label: "Coverage", href: "#coverage" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About", href: "/about" },
-      { label: "Blog", href: "/blog" },
-      { label: "Careers", href: "/careers" },
+      { label: "Pilot Evidence", href: "mailto:hello@titlechain.co.za?subject=TitleChain%20pilot%20evidence" },
+      { label: "Security Review", href: "mailto:hello@titlechain.co.za?subject=TitleChain%20security%20review" },
+      { label: "Partner Access", href: "mailto:hello@titlechain.co.za?subject=TitleChain%20partner%20access" },
       { label: "Contact", href: "mailto:hello@titlechain.co.za" },
     ],
   },
   {
     title: "Resources",
     links: [
-      { label: "Documentation", href: "/docs" },
-      { label: "API Reference", href: "/docs/api" },
-      { label: "Status", href: "/status" },
+      { label: "Security Controls", href: "#security" },
+      { label: "Coverage Model", href: "#coverage" },
+      { label: "Access Request", href: "mailto:hello@titlechain.co.za?subject=TitleChain%20access%20request" },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-      { label: "POPIA", href: "/popia" },
+      { label: "Privacy Pack", href: "mailto:hello@titlechain.co.za?subject=TitleChain%20privacy%20pack" },
+      { label: "Terms Pack", href: "mailto:hello@titlechain.co.za?subject=TitleChain%20terms%20pack" },
+      { label: "POPIA Review", href: "mailto:hello@titlechain.co.za?subject=TitleChain%20POPIA%20review" },
     ],
   },
 ];
