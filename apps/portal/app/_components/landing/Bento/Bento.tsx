@@ -9,7 +9,7 @@ import {
 
 export function Bento() {
   return (
-    <div className="container py-20">
+    <div className="container scroll-mt-24 py-20" id="solutions">
       <div className="mx-auto mb-16 flex max-w-5xl flex-col gap-8">
         <h2 className="mx-auto text-center text-3xl font-bold tracking-tight text-white md:text-4xl">
           All the intelligence you need <br />
@@ -24,15 +24,15 @@ export function Bento() {
             </span>
             <div className="flex h-full w-full justify-between gap-2">
               {[
-                { name: "Clear-to-Lodge" },
-                { name: "Risk Engine" },
-                { name: "Deeds" },
-                { name: "Bonds" },
-                { name: "Fraud" },
+                { name: "Clear-to-Lodge", href: "#solutions" },
+                { name: "Risk Engine", href: "#security" },
+                { name: "Deeds", href: "#solutions" },
+                { name: "Bonds", href: "#solutions" },
+                { name: "Fraud", href: "#security" },
               ].map((p) => (
                 <a
                   key={p.name}
-                  href="#"
+                  href={p.href}
                   className="flex h-full w-fit items-center justify-center gap-2 rounded-full bg-white/[0.04] px-3 text-xs font-medium text-white/70 backdrop-blur-lg transition-colors hover:bg-white/[0.08]"
                 >
                   {p.name}

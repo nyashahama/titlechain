@@ -5,22 +5,22 @@ import { CaseStudyCard } from "./CaseStudyCard";
 
 const studies = [
   {
-    name: "VDM Attorneys",
-    title: "Senior conveyancing firm, Johannesburg",
+    name: "Conveyancing firm pilot",
+    title: "High-volume transfer team",
     description:
-      "TitleChain reduced our title verification time from 3 days to under 30 minutes. The Clear-to-Lodge score gives our team instant confidence on every matter.",
+      "Clear-to-Lodge condenses registry, bond, municipal, and FIC signals into a review pack a senior conveyancer can approve without rebuilding the evidence trail.",
   },
   {
-    name: "Standard Bank Home Loans",
-    title: "Major South African bank",
+    name: "Bank lending workflow",
+    title: "Bond origination and risk review",
     description:
-      "Integrating TitleChain's risk engine into our bond origination process reduced fraudulent applications by 67% while speeding up legitimate approvals.",
+      "Risk states separate clear matters from review and stop exceptions before lodgement, giving credit teams a consistent title-readiness checkpoint.",
   },
   {
-    name: "Cliffe Dekker Hofmeyr",
-    title: "Full-service law firm",
+    name: "Enterprise legal operations",
+    title: "Matter control and audit readiness",
     description:
-      "The coverage across all deeds offices is remarkable. We process over 200 matters a month, and TitleChain catches issues we would have missed in manual reviews.",
+      "Role-based matter access, exportable evidence snapshots, and POPIA-aware handling keep title decisions defensible across distributed legal teams.",
   },
 ];
 
@@ -30,7 +30,7 @@ export function CaseStudies() {
   return (
     <div className="container py-20">
       <h2 className="mx-auto mb-12 text-center text-3xl font-bold tracking-tight text-white md:text-4xl">
-        Trusted by industry leaders
+        Designed for regulated property teams
       </h2>
       <div className="mx-auto max-w-3xl space-y-4">
         {studies.map((study, i) => (

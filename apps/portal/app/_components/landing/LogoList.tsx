@@ -6,22 +6,22 @@ interface LogoListProps {
 }
 
 const logos = [
-  { name: "VDM Attorneys" },
-  { name: "Werksmans" },
-  { name: "ENSafrica" },
-  { name: "Bowmans" },
-  { name: "Cliffe Dekker" },
-  { name: "Webber Wentzel" },
-  { name: "Nedbank" },
-  { name: "Standard Bank" },
-  { name: "Absa" },
-  { name: "FNB" },
-  { name: "Investec" },
-  { name: "Rand Merchant Bank" },
+  { name: "Conveyancing Firms" },
+  { name: "Bond Originators" },
+  { name: "Property Banks" },
+  { name: "Legal Operations" },
+  { name: "Deeds Analysts" },
+  { name: "Compliance Teams" },
+  { name: "Estate Transfers" },
+  { name: "Mortgage Risk" },
+  { name: "Municipal Clearances" },
+  { name: "FIC Review" },
+  { name: "Audit Teams" },
+  { name: "Matter Operations" },
 ];
 
 export function LogoList({
-  title = "Trusted by leading conveyancing firms and banks",
+  title = "Built for regulated conveyancing teams, lenders, and title operations",
   className,
 }: LogoListProps) {
   return (
@@ -44,10 +44,10 @@ export function LogoList({
         </div>
         <div className="text-center">
           <a
-            href="/case-studies"
+            href="mailto:hello@titlechain.co.za?subject=TitleChain%20pilot%20evidence"
             className="text-sm font-medium text-orange-500 hover:underline"
           >
-            Read our case studies &rarr;
+            Discuss pilot evidence &rarr;
           </a>
         </div>
       </div>

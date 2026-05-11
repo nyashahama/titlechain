@@ -31,12 +31,12 @@ export function LandingPage() {
         <>
           <Bento />
           <Pullquote
-            name="Sarah van der Merwe"
-            title="Senior Conveyancer, VDM Attorneys"
+            name="Early access conveyancing lead"
+            title="South African transfer workflow pilot"
           >
-            TitleChain cut our verification time from days to minutes. The
-            Clear-to-Lodge score gives our team instant confidence on every
-            single matter.
+            The Clear-to-Lodge pack gives our team a single place to review
+            source evidence, exceptions, and lodgement readiness before the
+            matter moves forward.
           </Pullquote>
           <AiSection />
           <CaseStudies />

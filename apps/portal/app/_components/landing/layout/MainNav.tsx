@@ -11,9 +11,9 @@ import { Menu } from "lucide-react";
 
 const navLinks = [
   { label: "Solutions", href: "#solutions" },
+  { label: "Security", href: "#security" },
   { label: "Coverage", href: "#coverage" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Docs", href: "/docs" },
 ];
 
 export function MainNav() {

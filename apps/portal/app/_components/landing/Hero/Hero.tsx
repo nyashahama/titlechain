@@ -24,8 +24,8 @@ export function Hero() {
         {/* Text column */}
         <div className="animate-blur-in flex flex-col gap-4 [animation-delay:150ms] [animation-duration:1000ms] md:ml-12 lg:ml-0">
           <HeroBanner
-            title="TitleChain launches Clear-to-Lodge integration"
-            href="/blog"
+            title="Clear-to-Lodge evidence pack now in pilot"
+            href="#solutions"
           />
 
           <GradientText className="animate-fade-in my-2 md:my-3">

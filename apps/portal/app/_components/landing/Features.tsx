@@ -156,7 +156,7 @@ const features = [
 
 export function Features() {
   return (
-    <div className="bg-black py-20 text-white md:pt-40">
+    <div className="scroll-mt-24 bg-black py-20 text-white md:pt-40" id="security">
       <div className="container mx-auto">
         <section className="flex flex-col gap-4 lg:flex-row lg:items-baseline lg:gap-x-20">
           <h2 className="max-w-[700px] text-3xl font-semibold leading-tight tracking-tight text-white text-pretty sm:text-4xl md:text-5xl">
