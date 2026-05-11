@@ -3,10 +3,10 @@ import type { ProductTone } from "@/app/_lib/product/status";
 
 const toneClass: Record<ProductTone, string> = {
   muted: "border-tc-border bg-white/[0.03] text-tc-text-muted",
-  info: "border-sky-400/20 bg-sky-400/10 text-sky-200",
-  success: "border-emerald-400/20 bg-emerald-400/10 text-emerald-200",
-  warning: "border-amber-400/20 bg-amber-400/10 text-amber-200",
-  danger: "border-red-400/20 bg-red-400/10 text-red-200",
+  info: "border-tc-info/30 bg-tc-info/10 text-tc-info",
+  success: "border-tc-success/30 bg-tc-success/10 text-tc-success",
+  warning: "border-tc-warning/30 bg-tc-warning/10 text-tc-warning",
+  danger: "border-tc-danger/30 bg-tc-danger/10 text-tc-danger",
 };
 
 export function ProductStatusBadge({
