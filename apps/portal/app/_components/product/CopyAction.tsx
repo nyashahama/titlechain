@@ -7,7 +7,7 @@ type CopyState = "idle" | "copied" | "error";
 
 export function CopyAction({ text, label = "Copy" }: { text: string; label?: string }) {
   const [copyState, setCopyState] = useState<CopyState>("idle");
-  const resetTimeout = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const resetTimeout = useRef<number | null>(null);
 
   function scheduleReset() {
     if (resetTimeout.current) {
