@@ -1,4 +1,4 @@
-import { Activity, ClipboardCheck, RotateCcw } from "lucide-react";
+import { Activity, AlertTriangle, ClipboardCheck, CircleDashed, RotateCcw, ShieldCheck } from "lucide-react";
 import type { MatterSummary } from "@/app/matters/types";
 import { ProductPanel } from "@/app/_components/product/ProductPanel";
 import { buildMatterMetrics } from "@/app/_lib/product/matter-metrics";
@@ -14,6 +14,36 @@ const metricItems = [
 export function QueueHealth({ matters }: { matters: MatterSummary[] }) {
   const metrics = buildMatterMetrics(matters);
   const activeQueue = metrics.submitted + metrics.inReview + metrics.reopened;
+  const decisionItems = [
+    {
+      label: "Clear decisions",
+      value: metrics.clear,
+      detail: "Ready to lodge",
+      icon: ShieldCheck,
+      className: "text-tc-success",
+    },
+    {
+      label: "Review decisions",
+      value: metrics.review,
+      detail: "Needs assessment",
+      icon: AlertTriangle,
+      className: "text-tc-warning",
+    },
+    {
+      label: "Stop decisions",
+      value: metrics.stop,
+      detail: "Blocked from lodgement",
+      icon: AlertTriangle,
+      className: "text-tc-danger",
+    },
+    {
+      label: "Pending decisions",
+      value: metrics.pendingDecision,
+      detail: "Awaiting decision",
+      icon: CircleDashed,
+      className: "text-tc-text-muted",
+    },
+  ];
 
   return (
     <ProductPanel aria-labelledby="queue-health-title" className="space-y-5">
@@ -50,6 +80,22 @@ export function QueueHealth({ matters }: { matters: MatterSummary[] }) {
             <p className="mt-1 text-[11px] text-tc-text-faint">{item.detail}</p>
           </div>
         ))}
+      </div>
+
+      <div className="grid gap-3 border-t border-tc-border pt-5 sm:grid-cols-2 lg:grid-cols-4">
+        {decisionItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.label} className="rounded-lg border border-tc-border bg-white/[0.02] p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[12px] font-medium text-tc-text-muted">{item.label}</p>
+                <Icon className={`size-3.5 ${item.className}`} aria-hidden="true" />
+              </div>
+              <p className="mt-3 text-2xl font-semibold tabular-nums text-tc-text">{item.value}</p>
+              <p className="mt-1 text-[11px] text-tc-text-faint">{item.detail}</p>
+            </div>
+          );
+        })}
       </div>
     </ProductPanel>
   );

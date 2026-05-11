@@ -195,9 +195,12 @@ export function SettingsSections() {
 
       <aside className="space-y-4 lg:sticky lg:top-6">
         <ProductPanel aria-labelledby="plan-settings-title" className="space-y-4">
-          <h2 id="plan-settings-title" className="text-sm font-medium text-tc-text">
-            Plan
-          </h2>
+          <div>
+            <h2 id="plan-settings-title" className="text-sm font-medium text-tc-text">
+              Plan
+            </h2>
+            <p className="mt-1 text-[12px] text-tc-text-faint">Seeded demo values</p>
+          </div>
           <div className="space-y-3 text-[12px]">
             <div className="flex items-center justify-between gap-3">
               <span className="text-tc-text-muted">Current plan</span>
@@ -215,9 +218,12 @@ export function SettingsSections() {
         </ProductPanel>
 
         <ProductPanel aria-labelledby="usage-settings-title" className="space-y-4">
-          <h2 id="usage-settings-title" className="text-sm font-medium text-tc-text">
-            Usage
-          </h2>
+          <div>
+            <h2 id="usage-settings-title" className="text-sm font-medium text-tc-text">
+              Usage
+            </h2>
+            <p className="mt-1 text-[12px] text-tc-text-faint">Seeded demo values</p>
+          </div>
           <div>
             <div className="mb-2 flex items-center justify-between text-[12px]">
               <span className="text-tc-text-muted">Checks used</span>

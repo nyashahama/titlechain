@@ -41,4 +41,14 @@ describe("CommandCenter", () => {
     expect(screen.getByText("Decision exceptions")).toBeInTheDocument();
     expect(screen.getByText("Section 8 Sandton")).toBeInTheDocument();
   });
+
+  it("shows decision counts and recent matter activity", () => {
+    render(<CommandCenter matters={matters} />);
+
+    expect(screen.getByText("Stop decisions")).toBeInTheDocument();
+    expect(screen.getByText("Pending decisions")).toBeInTheDocument();
+    expect(screen.getByText("Recent activity")).toBeInTheDocument();
+    expect(screen.getByText("Section 8 Sandton updated")).toBeInTheDocument();
+    expect(screen.getByText("Erf 412 Rosebank updated")).toBeInTheDocument();
+  });
 });

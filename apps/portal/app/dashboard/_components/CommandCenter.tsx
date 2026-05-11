@@ -6,6 +6,7 @@ import type { MatterSummary } from "@/app/matters/types";
 import { DecisionExceptions } from "./DecisionExceptions";
 import { MatterReadiness } from "./MatterReadiness";
 import { QueueHealth } from "./QueueHealth";
+import { RecentActivity } from "./RecentActivity";
 
 export function CommandCenter({ matters }: { matters: MatterSummary[] }) {
   return (
@@ -29,6 +30,7 @@ export function CommandCenter({ matters }: { matters: MatterSummary[] }) {
         <DecisionExceptions matters={matters} />
         <MatterReadiness matters={matters} />
       </div>
+      <RecentActivity matters={matters} />
     </ProductPage>
   );
 }
