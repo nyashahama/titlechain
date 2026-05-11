@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/nyasha-hama/titlechain/services/api/internal/analytics"
 	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
 	"github.com/nyasha-hama/titlechain/services/api/internal/pilot"
@@ -17,6 +18,7 @@ type RouterDeps struct {
 	Properties property.Service
 	Jobs       jobs.Service
 	Pilot      pilot.Service
+	Analytics  analytics.Service
 }
 
 func NewRouter(deps RouterDeps) stdhttp.Handler {
@@ -65,6 +67,9 @@ func NewRouter(deps RouterDeps) stdhttp.Handler {
 
 		pilotMetrics := newPilotMetricsHandler(deps.Pilot)
 		r.Get("/pilot/metrics", pilotMetrics.get)
+
+		analyticsHandler := newAnalyticsHandler(deps.Analytics)
+		r.Get("/analytics/overview", analyticsHandler.getOverview)
 	})
 
 	pilotAuth := newPilotAuthHandler(deps.Pilot)
