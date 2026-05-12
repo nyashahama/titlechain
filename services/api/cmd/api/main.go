@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/nyasha-hama/titlechain/services/api/internal/analytics"
 	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 	apihttp "github.com/nyasha-hama/titlechain/services/api/internal/http"
 	"github.com/nyasha-hama/titlechain/services/api/internal/jobs"
@@ -40,9 +41,18 @@ func main() {
 	pilotStore := store.NewPilotStore(pool)
 	pilotService := pilot.NewService(pilotStore)
 
+	analyticsStore := store.NewAnalyticsStore(pool)
+	analyticsService := analytics.NewService(analyticsStore)
+
 	server := &http.Server{
-		Addr:    cfg.HTTPAddr,
-		Handler: apihttp.NewRouter(apihttp.RouterDeps{Cases: casesService, Properties: propertiesService, Jobs: jobsService, Pilot: pilotService}),
+		Addr: cfg.HTTPAddr,
+		Handler: apihttp.NewRouter(apihttp.RouterDeps{
+			Cases:      casesService,
+			Properties: propertiesService,
+			Jobs:       jobsService,
+			Pilot:      pilotService,
+			Analytics:  analyticsService,
+		}),
 	}
 
 	log.Printf("api listening on %s", cfg.HTTPAddr)

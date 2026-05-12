@@ -1,5 +1,6 @@
 import {
   Activity,
+  BarChart3,
   Building2,
   FilePlus2,
   FolderKanban,
@@ -38,6 +39,7 @@ export const productNavigation: ProductNavGroup[] = [
     items: [
       { label: "Cases", href: "/internal/cases", icon: ListChecks, roles: ["pilot_admin"] },
       { label: "Properties", href: "/internal/properties", icon: Building2, roles: ["pilot_admin"] },
+      { label: "Analytics", href: "/internal/analytics", icon: BarChart3, roles: ["pilot_admin"] },
       { label: "Runs", href: "/internal/ops/runs", icon: Activity, roles: ["pilot_admin"] },
     ],
   },
