@@ -101,7 +101,7 @@ func TestSelectSourceBackedPropertyCandidateSelectsDescriptionMatchWithMatchingC
 	}
 }
 
-func TestSelectSourceBackedPropertyCandidateSelectsExactTitleDespiteConflictingContext(t *testing.T) {
+func TestSelectSourceBackedPropertyCandidateRejectsExactTitleWithConflictingContext(t *testing.T) {
 	propertyID := mustTestUUID(t, "11111111-1111-1111-1111-111111111111")
 	req := pilot.CreateMatterRequest{
 		TitleReference:            "T123/2026",
@@ -121,10 +121,35 @@ func TestSelectSourceBackedPropertyCandidateSelectsExactTitleDespiteConflictingC
 		},
 	}
 
+	if got, ok := selectSourceBackedPropertyCandidate(req, candidates); ok {
+		t.Fatalf("selected conflicting exact-title candidate %s, want no selection", uuidToString(got))
+	}
+}
+
+func TestSelectSourceBackedPropertyCandidateSelectsExactTitleWithMatchingContext(t *testing.T) {
+	propertyID := mustTestUUID(t, "11111111-1111-1111-1111-111111111111")
+	req := pilot.CreateMatterRequest{
+		TitleReference:            "T123/2026",
+		PropertyDescription:       "Erf 123",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Municipality A",
+	}
+	candidates := []sqlc.FindPropertySummaryCandidatesRow{
+		{
+			PropertyID:                propertyID,
+			PropertyDescription:       "Erf 123",
+			LocalityOrArea:            "Rosebank",
+			MunicipalityOrDeedsOffice: "Municipality A",
+			TitleReference:            "T123/2026",
+			ConfidenceScore:           100,
+			SourceProvenanceCount:     1,
+		},
+	}
+
 	got, ok := selectSourceBackedPropertyCandidate(req, candidates)
 
 	if !ok {
-		t.Fatal("exact title candidate rejected, want selected")
+		t.Fatal("matching exact-title candidate rejected, want selected")
 	}
 	if uuidToString(got) != uuidToString(propertyID) {
 		t.Fatalf("selected property = %s, want %s", uuidToString(got), uuidToString(propertyID))

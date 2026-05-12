@@ -82,9 +82,6 @@ func propertyCandidateQualifiesForAutoLink(req pilot.CreateMatterRequest, candid
 	if !candidate.PropertyID.Valid || candidate.ConfidenceScore < 85 || candidate.SourceProvenanceCount < 1 {
 		return false
 	}
-	if candidate.ConfidenceScore == 100 {
-		return true
-	}
 	return submittedContextCompatible(req.LocalityOrArea, candidate.LocalityOrArea) &&
 		submittedContextCompatible(req.MunicipalityOrDeedsOffice, candidate.MunicipalityOrDeedsOffice)
 }
