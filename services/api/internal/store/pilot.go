@@ -60,16 +60,20 @@ func (s PilotStore) RevokeSession(ctx context.Context, tokenHash string) error {
 }
 
 func selectSourceBackedPropertyCandidate(candidates []sqlc.FindPropertySummaryCandidatesRow) (pgtype.UUID, bool) {
-	if len(candidates) != 1 {
-		return pgtype.UUID{}, false
+	var selected pgtype.UUID
+	qualifyingCount := 0
+	for _, candidate := range candidates {
+		if !candidate.PropertyID.Valid || candidate.ConfidenceScore < 85 || candidate.SourceProvenanceCount < 1 {
+			continue
+		}
+		qualifyingCount++
+		selected = candidate.PropertyID
 	}
 
-	candidate := candidates[0]
-	if !candidate.PropertyID.Valid || candidate.ConfidenceScore < 85 || candidate.SourceProvenanceCount < 1 {
+	if qualifyingCount != 1 {
 		return pgtype.UUID{}, false
 	}
-
-	return candidate.PropertyID, true
+	return selected, true
 }
 
 func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot.CreateMatterRequest) (pilot.MatterSummary, error) {

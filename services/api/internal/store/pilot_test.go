@@ -28,6 +28,36 @@ func TestSelectSourceBackedPropertyCandidateSelectsSingleHighConfidenceCandidate
 	}
 }
 
+func TestSelectSourceBackedPropertyCandidateSelectsOnlyQualifyingCandidate(t *testing.T) {
+	propertyID := mustTestUUID(t, "11111111-1111-1111-1111-111111111111")
+	candidates := []sqlc.FindPropertySummaryCandidatesRow{
+		{
+			PropertyID:            propertyID,
+			ConfidenceScore:       85,
+			SourceProvenanceCount: 1,
+		},
+		{
+			PropertyID:            mustTestUUID(t, "22222222-2222-2222-2222-222222222222"),
+			ConfidenceScore:       70,
+			SourceProvenanceCount: 2,
+		},
+		{
+			PropertyID:            mustTestUUID(t, "33333333-3333-3333-3333-333333333333"),
+			ConfidenceScore:       100,
+			SourceProvenanceCount: 0,
+		},
+	}
+
+	got, ok := selectSourceBackedPropertyCandidate(candidates)
+
+	if !ok {
+		t.Fatal("qualifying candidate rejected, want selected")
+	}
+	if uuidToString(got) != uuidToString(propertyID) {
+		t.Fatalf("selected property = %s, want %s", uuidToString(got), uuidToString(propertyID))
+	}
+}
+
 func TestSelectSourceBackedPropertyCandidateRejectsMultipleMatches(t *testing.T) {
 	candidates := []sqlc.FindPropertySummaryCandidatesRow{
 		{
