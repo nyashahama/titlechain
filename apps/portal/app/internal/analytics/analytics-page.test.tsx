@@ -62,6 +62,7 @@ const overview: AnalyticsOverview = {
     total_items: 31,
     cases_without_evidence: 3,
     cases_without_confirmed_evidence: 8,
+    exception_approved_count: 2,
     status_mix: [
       { status: "confirmed", count: 19 },
       { status: "captured", count: 9 },
@@ -90,7 +91,7 @@ const overview: AnalyticsOverview = {
       customer_status: "review",
       organization_name: "Maseko Conveyancing",
       age_seconds: 259200,
-      risk_reasons: ["conflicting_evidence", "stale_review"],
+      risk_reasons: ["conflicting_evidence", "evidence_exception_approved"],
     },
   ],
 };
@@ -106,6 +107,8 @@ describe("AnalyticsDashboard", () => {
     expect(screen.getByRole("heading", { name: /Source health/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Risk queue/i })).toBeInTheDocument();
     expect(screen.getByText("TC-000001")).toBeInTheDocument();
+    expect(screen.getByText("Exception approved")).toBeInTheDocument();
+    expect(screen.getByText(/Evidence exception approved/)).toBeInTheDocument();
 
     expect(screen.getByRole("link", { name: "7 days" })).toHaveAttribute(
       "href",

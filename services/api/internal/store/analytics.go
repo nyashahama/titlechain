@@ -147,6 +147,7 @@ func analyticsEvidenceFromRows(
 		TotalItems:                    int(summary.TotalItems),
 		CasesWithoutEvidence:          int(summary.CasesWithoutEvidence),
 		CasesWithoutConfirmedEvidence: int(summary.CasesWithoutConfirmedEvidence),
+		ExceptionApprovedCount:        int(summary.ExceptionApprovedCount),
 		StatusMix:                     statusMix,
 		SourceTypeMix:                 sourceMix,
 	}

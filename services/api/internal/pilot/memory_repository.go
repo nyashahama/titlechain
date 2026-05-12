@@ -166,6 +166,7 @@ func (r *memoryRepository) CreateMatter(ctx context.Context, user User, req Crea
 		LocalityOrArea:            req.LocalityOrArea,
 		MunicipalityOrDeedsOffice: req.MunicipalityOrDeedsOffice,
 		TitleReference:            req.TitleReference,
+		EvidenceReadiness:         memoryEvidenceReadinessSummary(nil),
 		SubmittedAt:               now,
 		UpdatedAt:                 now,
 	}

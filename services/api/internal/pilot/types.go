@@ -39,19 +39,20 @@ type CreateMatterRequest struct {
 }
 
 type MatterSummary struct {
-	ID                        string     `json:"id"`
-	CaseID                    string     `json:"case_id"`
-	CaseReference             string     `json:"case_reference"`
-	CustomerReference         string     `json:"customer_reference,omitempty"`
-	CustomerStatus            string     `json:"customer_status"`
-	PropertyDescription       string     `json:"property_description"`
-	LocalityOrArea            string     `json:"locality_or_area"`
-	MunicipalityOrDeedsOffice string     `json:"municipality_or_deeds_office"`
-	TitleReference            string     `json:"title_reference,omitempty"`
-	Decision                  string     `json:"decision,omitempty"`
-	SubmittedAt               time.Time  `json:"submitted_at"`
-	UpdatedAt                 time.Time  `json:"updated_at"`
-	ResolvedAt                *time.Time `json:"resolved_at,omitempty"`
+	ID                        string                   `json:"id"`
+	CaseID                    string                   `json:"case_id"`
+	CaseReference             string                   `json:"case_reference"`
+	CustomerReference         string                   `json:"customer_reference,omitempty"`
+	CustomerStatus            string                   `json:"customer_status"`
+	PropertyDescription       string                   `json:"property_description"`
+	LocalityOrArea            string                   `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string                   `json:"municipality_or_deeds_office"`
+	TitleReference            string                   `json:"title_reference,omitempty"`
+	Decision                  string                   `json:"decision,omitempty"`
+	EvidenceReadiness         EvidenceReadinessSummary `json:"evidence_readiness"`
+	SubmittedAt               time.Time                `json:"submitted_at"`
+	UpdatedAt                 time.Time                `json:"updated_at"`
+	ResolvedAt                *time.Time               `json:"resolved_at,omitempty"`
 }
 
 type MatterDetail struct {

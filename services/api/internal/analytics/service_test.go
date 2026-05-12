@@ -174,6 +174,10 @@ func mutableOverview() Overview {
 			{Code: "title_clean", Label: "Title clean", Category: "review", Count: 1},
 		},
 		Evidence: EvidenceAnalytics{
+			TotalItems:                    6,
+			CasesWithoutEvidence:          1,
+			CasesWithoutConfirmedEvidence: 2,
+			ExceptionApprovedCount:        1,
 			StatusMix: []EvidenceStatusMetric{
 				{Status: "confirmed", Count: 3},
 			},
@@ -226,6 +230,9 @@ func assertMutableOverviewUnchanged(t *testing.T, overview Overview) {
 	}
 	if overview.Evidence.SourceTypeMix[0].SourceType != "deeds_office" {
 		t.Fatalf("source type = %q, want deeds_office", overview.Evidence.SourceTypeMix[0].SourceType)
+	}
+	if overview.Evidence.ExceptionApprovedCount != 1 {
+		t.Fatalf("exception approved count = %d, want 1", overview.Evidence.ExceptionApprovedCount)
 	}
 
 	wantLastSuccess := time.Date(2026, 5, 12, 8, 30, 0, 0, time.UTC)

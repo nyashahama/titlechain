@@ -18,6 +18,10 @@ export function EvidenceCoverage({ evidence }: { evidence: AnalyticsEvidence }) 
       label: "Without confirmed evidence",
       value: formatNumber(evidence.cases_without_confirmed_evidence),
     },
+    {
+      label: "Exception approved",
+      value: formatNumber(evidence.exception_approved_count),
+    },
   ];
 
   return (
@@ -31,7 +35,7 @@ export function EvidenceCoverage({ evidence }: { evidence: AnalyticsEvidence }) 
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {coverageStats.map((stat) => (
           <div key={stat.label} className="rounded-md border border-tc-border bg-tc-surface-subtle p-3">
             <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-tc-text-faint">

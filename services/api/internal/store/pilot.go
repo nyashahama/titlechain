@@ -176,7 +176,8 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 		return pilot.MatterSummary{}, err
 	}
 
-	if _, err := caseStore.reevaluateCaseInTx(ctx, queries, c.ID); err != nil {
+	caseDetail, err := caseStore.reevaluateCaseInTx(ctx, queries, c.ID)
+	if err != nil {
 		return pilot.MatterSummary{}, err
 	}
 
@@ -194,6 +195,7 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 		LocalityOrArea:            req.LocalityOrArea,
 		MunicipalityOrDeedsOffice: req.MunicipalityOrDeedsOffice,
 		TitleReference:            req.TitleReference,
+		EvidenceReadiness:         pilotEvidenceReadinessSummary(cases.EvaluateEvidenceReadiness(caseDetail)),
 		SubmittedAt:               ml.SubmittedAt.Time,
 		UpdatedAt:                 ml.UpdatedAt.Time,
 	}, nil
@@ -227,6 +229,7 @@ func (s PilotStore) ListMatters(ctx context.Context, user pilot.User, status str
 			MunicipalityOrDeedsOffice: row.MunicipalityOrDeedsOffice,
 			TitleReference:            textToString(row.TitleReference),
 			Decision:                  textToString(row.CurrentDecision),
+			EvidenceReadiness:         pilotEvidenceReadinessFromMatterRow(row),
 			SubmittedAt:               row.SubmittedAt.Time,
 			UpdatedAt:                 row.UpdatedAt.Time,
 		}
@@ -310,6 +313,7 @@ func (s PilotStore) GetMatterDetail(ctx context.Context, user pilot.User, matter
 		MunicipalityOrDeedsOffice: caseDetail.Case.MunicipalityOrDeedsOffice,
 		TitleReference:            caseDetail.Case.TitleReference,
 		Decision:                  decision,
+		EvidenceReadiness:         pilotEvidenceReadinessSummary(caseDetail.EvidenceReadiness),
 		SubmittedAt:               ml.SubmittedAt.Time,
 		UpdatedAt:                 ml.UpdatedAt.Time,
 	}
@@ -349,6 +353,43 @@ func pilotEvidenceReadinessSummary(readiness cases.EvidenceReadinessSummary) pil
 		EvidenceCount:          readiness.EvidenceCount,
 		Missing:                append([]string{}, readiness.Missing...),
 	}
+}
+
+func pilotEvidenceReadinessFromMatterRow(row sqlc.ListPilotMatterSummariesRow) pilot.EvidenceReadinessSummary {
+	evidence := make([]cases.EvidenceItem, 0, int(row.EvidenceCount))
+	for i := int32(0); i < row.ConfirmedEvidenceCount; i++ {
+		evidence = append(evidence, cases.EvidenceItem{EvidenceStatus: cases.EvidenceStatusConfirmed})
+	}
+	for i := int32(0); i < row.ConflictingEvidenceCount; i++ {
+		evidence = append(evidence, cases.EvidenceItem{EvidenceStatus: cases.EvidenceStatusConflicting})
+	}
+	for remaining := int(row.EvidenceCount) - len(evidence); remaining > 0; remaining-- {
+		evidence = append(evidence, cases.EvidenceItem{EvidenceStatus: cases.EvidenceStatusCaptured})
+	}
+
+	var matches []cases.PropertyMatch
+	if row.HasConfirmedPropertyMatch {
+		matches = []cases.PropertyMatch{{Status: "confirmed"}}
+	}
+
+	var decisions []cases.Decision
+	if row.CurrentDecision.Valid || row.CurrentDecisionEvidenceException {
+		decisions = []cases.Decision{{
+			Status:            "current",
+			EvidenceException: row.CurrentDecisionEvidenceException,
+		}}
+	}
+
+	return pilotEvidenceReadinessSummary(cases.EvaluateEvidenceReadiness(cases.CaseDetail{
+		Case: cases.CaseSummary{
+			Status:               cases.CaseStatus(row.InternalStatus),
+			LinkedSeedPropertyID: uuidToString(row.LinkedSeedPropertyID),
+			LinkedPropertyID:     uuidToString(row.LinkedPropertyID),
+		},
+		Matches:   matches,
+		Evidence:  evidence,
+		Decisions: decisions,
+	}))
 }
 
 func (s PilotStore) ReopenMatter(ctx context.Context, user pilot.User, matterID string, req pilot.ReopenMatterRequest) (pilot.MatterDetail, error) {

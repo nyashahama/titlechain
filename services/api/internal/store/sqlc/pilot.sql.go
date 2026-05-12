@@ -307,6 +307,32 @@ SELECT ml.id AS matter_id,
        c.municipality_or_deeds_office,
        c.title_reference,
        c.status AS internal_status,
+       c.linked_seed_property_id,
+       c.linked_property_id,
+       EXISTS (
+           SELECT 1
+           FROM ops.case_property_matches pm
+           WHERE pm.case_id = c.id
+             AND pm.status = 'confirmed'
+       ) AS has_confirmed_property_match,
+       (
+           SELECT COUNT(*)::int
+           FROM ops.case_evidence_items e
+           WHERE e.case_id = c.id
+       ) AS evidence_count,
+       (
+           SELECT COUNT(*)::int
+           FROM ops.case_evidence_items e
+           WHERE e.case_id = c.id
+             AND e.evidence_status = 'confirmed'
+       ) AS confirmed_evidence_count,
+       (
+           SELECT COUNT(*)::int
+           FROM ops.case_evidence_items e
+           WHERE e.case_id = c.id
+             AND e.evidence_status = 'conflicting'
+       ) AS conflicting_evidence_count,
+       COALESCE(d.evidence_exception, FALSE) AS current_decision_evidence_exception,
        d.decision AS current_decision
 FROM pilot.matter_links ml
 JOIN ops.case_records c ON c.id = ml.case_id
@@ -324,19 +350,26 @@ type ListPilotMatterSummariesParams struct {
 }
 
 type ListPilotMatterSummariesRow struct {
-	MatterID                  pgtype.UUID        `json:"matter_id"`
-	CaseID                    pgtype.UUID        `json:"case_id"`
-	CustomerReference         pgtype.Text        `json:"customer_reference"`
-	CustomerStatus            string             `json:"customer_status"`
-	SubmittedAt               pgtype.Timestamptz `json:"submitted_at"`
-	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
-	CaseReference             string             `json:"case_reference"`
-	PropertyDescription       string             `json:"property_description"`
-	LocalityOrArea            string             `json:"locality_or_area"`
-	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
-	TitleReference            pgtype.Text        `json:"title_reference"`
-	InternalStatus            string             `json:"internal_status"`
-	CurrentDecision           pgtype.Text        `json:"current_decision"`
+	MatterID                         pgtype.UUID        `json:"matter_id"`
+	CaseID                           pgtype.UUID        `json:"case_id"`
+	CustomerReference                pgtype.Text        `json:"customer_reference"`
+	CustomerStatus                   string             `json:"customer_status"`
+	SubmittedAt                      pgtype.Timestamptz `json:"submitted_at"`
+	UpdatedAt                        pgtype.Timestamptz `json:"updated_at"`
+	CaseReference                    string             `json:"case_reference"`
+	PropertyDescription              string             `json:"property_description"`
+	LocalityOrArea                   string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice        string             `json:"municipality_or_deeds_office"`
+	TitleReference                   pgtype.Text        `json:"title_reference"`
+	InternalStatus                   string             `json:"internal_status"`
+	LinkedSeedPropertyID             pgtype.UUID        `json:"linked_seed_property_id"`
+	LinkedPropertyID                 pgtype.UUID        `json:"linked_property_id"`
+	HasConfirmedPropertyMatch        bool               `json:"has_confirmed_property_match"`
+	EvidenceCount                    int32              `json:"evidence_count"`
+	ConfirmedEvidenceCount           int32              `json:"confirmed_evidence_count"`
+	ConflictingEvidenceCount         int32              `json:"conflicting_evidence_count"`
+	CurrentDecisionEvidenceException bool               `json:"current_decision_evidence_exception"`
+	CurrentDecision                  pgtype.Text        `json:"current_decision"`
 }
 
 func (q *Queries) ListPilotMatterSummaries(ctx context.Context, arg ListPilotMatterSummariesParams) ([]ListPilotMatterSummariesRow, error) {
@@ -361,6 +394,13 @@ func (q *Queries) ListPilotMatterSummaries(ctx context.Context, arg ListPilotMat
 			&i.MunicipalityOrDeedsOffice,
 			&i.TitleReference,
 			&i.InternalStatus,
+			&i.LinkedSeedPropertyID,
+			&i.LinkedPropertyID,
+			&i.HasConfirmedPropertyMatch,
+			&i.EvidenceCount,
+			&i.ConfirmedEvidenceCount,
+			&i.ConflictingEvidenceCount,
+			&i.CurrentDecisionEvidenceException,
 			&i.CurrentDecision,
 		); err != nil {
 			return nil, err

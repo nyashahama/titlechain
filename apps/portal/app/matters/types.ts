@@ -1,5 +1,13 @@
 export type CustomerStatus = "submitted" | "in_review" | "resolved" | "reopened";
 
+export type EvidenceReadinessState =
+  | "unknown"
+  | "needs_source_match"
+  | "needs_evidence"
+  | "has_conflict"
+  | "ready_for_decision"
+  | "exception_approved";
+
 export type MatterSummary = {
   id: string;
   case_id: string;
@@ -11,16 +19,19 @@ export type MatterSummary = {
   municipality_or_deeds_office: string;
   title_reference: string;
   decision: string;
+  evidence_readiness?: EvidenceReadinessSummary;
   submitted_at: string;
   updated_at: string;
 };
 
 export type EvidenceReadinessSummary = {
-  state: string;
+  state: EvidenceReadinessState;
   label: string;
   description: string;
   confirmed_evidence_count: number;
   evidence_count: number;
+  has_linked_property?: boolean;
+  has_conflict?: boolean;
   missing: string[];
 };
 
