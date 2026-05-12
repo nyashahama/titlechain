@@ -145,7 +145,7 @@ export async function reevaluateCase(
 
 export async function acceptProposal(
   caseId: string,
-  input: { actor_id: string; note?: string }
+  input: { actor_id: string; note?: string; evidence_exception_note?: string }
 ): Promise<CaseDetail> {
   return fetchJson<CaseDetail>(`/api/internal/cases/${caseId}/accept-proposal`, {
     method: "POST",

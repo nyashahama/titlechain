@@ -134,6 +134,22 @@ func (s Service) AcceptProposal(ctx context.Context, caseID string, req AcceptPr
 	if strings.TrimSpace(req.ActorID) == "" {
 		return CaseDetail{}, errors.New("actor_id is required")
 	}
+	detail, err := s.repo.GetCaseDetail(ctx, caseID)
+	if err != nil {
+		return CaseDetail{}, err
+	}
+	if detail.CurrentProposal != nil {
+		evidenceExceptionNote, err := normalizeDecisionExceptionForDetail(
+			detail,
+			detail.CurrentProposal.Decision,
+			req.EvidenceExceptionNote,
+			"clear proposal requires confirmed evidence",
+		)
+		if err != nil {
+			return CaseDetail{}, err
+		}
+		req.EvidenceExceptionNote = evidenceExceptionNote
+	}
 	return s.repo.AcceptProposalWorkflow(ctx, caseID, req)
 }
 
@@ -202,7 +218,39 @@ func (s Service) RecordDecision(ctx context.Context, caseID string, req RecordDe
 		return CaseDetail{}, errors.New("invalid decision")
 	}
 
+	evidenceExceptionNote, err := s.normalizeDecisionException(ctx, caseID, req.Decision, req.EvidenceExceptionNote, "clear decision requires confirmed evidence")
+	if err != nil {
+		return CaseDetail{}, err
+	}
+	req.EvidenceExceptionNote = evidenceExceptionNote
+
 	return s.repo.RecordDecisionWorkflow(ctx, caseID, req)
+}
+
+func (s Service) normalizeDecisionException(ctx context.Context, caseID string, decision DecisionOutcome, note string, clearDecisionError string) (string, error) {
+	detail, err := s.repo.GetCaseDetail(ctx, caseID)
+	if err != nil {
+		return "", err
+	}
+	return normalizeDecisionExceptionForDetail(detail, decision, note, clearDecisionError)
+}
+
+func normalizeDecisionExceptionForDetail(detail CaseDetail, decision DecisionOutcome, note string, clearDecisionError string) (string, error) {
+	readiness := detail.EvidenceReadiness
+	if readiness.State == "" {
+		readiness = EvaluateEvidenceReadiness(detail)
+	}
+	if readiness.State == EvidenceReadinessReadyForDecision {
+		return "", nil
+	}
+	if decision == DecisionClear {
+		return "", errors.New(clearDecisionError)
+	}
+	evidenceExceptionNote := strings.TrimSpace(note)
+	if evidenceExceptionNote == "" {
+		return "", errors.New("evidence_exception_note is required when resolving without confirmed evidence")
+	}
+	return evidenceExceptionNote, nil
 }
 
 func (s Service) CloseUnresolved(ctx context.Context, caseID string, req CloseUnresolvedRequest) (CaseDetail, error) {

@@ -144,6 +144,19 @@ export function RecordDecisionForm({
         />
       </div>
 
+      <div>
+        <label htmlFor="evidence_exception_note" className="block text-[11px] text-muted mb-1.5">
+          Evidence Exception Note
+        </label>
+        <textarea
+          id="evidence_exception_note"
+          name="evidence_exception_note"
+          rows={3}
+          className="w-full resize-none rounded-md border border-tc-border bg-tc-surface-subtle px-3 py-2 text-[13px] text-tc-text transition-colors placeholder:text-tc-text-faint focus:border-tc-accent focus:outline-none"
+          placeholder="Required when resolving without confirmed evidence."
+        />
+      </div>
+
       {error && <p role="alert" className="text-[12px] text-tc-danger">{error}</p>}
 
       <button

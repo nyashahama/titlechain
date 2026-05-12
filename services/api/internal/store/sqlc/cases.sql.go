@@ -168,17 +168,19 @@ const createAcceptedDecisionFromProposal = `-- name: CreateAcceptedDecisionFromP
 INSERT INTO ops.case_decisions (
     case_id, decision, note, status, created_by, decision_source, proposal_id,
     evidence_exception, evidence_exception_note
-) VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5, FALSE, NULL)
+) VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5, $6, $7)
 RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at,
     decision_source, proposal_id, evidence_exception, evidence_exception_note
 `
 
 type CreateAcceptedDecisionFromProposalParams struct {
-	CaseID     pgtype.UUID `json:"case_id"`
-	Decision   string      `json:"decision"`
-	Note       string      `json:"note"`
-	CreatedBy  string      `json:"created_by"`
-	ProposalID pgtype.UUID `json:"proposal_id"`
+	CaseID                pgtype.UUID `json:"case_id"`
+	Decision              string      `json:"decision"`
+	Note                  string      `json:"note"`
+	CreatedBy             string      `json:"created_by"`
+	ProposalID            pgtype.UUID `json:"proposal_id"`
+	EvidenceException     bool        `json:"evidence_exception"`
+	EvidenceExceptionNote pgtype.Text `json:"evidence_exception_note"`
 }
 
 func (q *Queries) CreateAcceptedDecisionFromProposal(ctx context.Context, arg CreateAcceptedDecisionFromProposalParams) (OpsCaseDecision, error) {
@@ -188,6 +190,8 @@ func (q *Queries) CreateAcceptedDecisionFromProposal(ctx context.Context, arg Cr
 		arg.Note,
 		arg.CreatedBy,
 		arg.ProposalID,
+		arg.EvidenceException,
+		arg.EvidenceExceptionNote,
 	)
 	var i OpsCaseDecision
 	err := row.Scan(

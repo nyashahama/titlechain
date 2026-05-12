@@ -69,6 +69,7 @@ describe("case console", () => {
     expect(
       screen.getByLabelText(/Title search found no material blocker/i)
     ).toBeInTheDocument();
+    expect(screen.getByLabelText(/Evidence Exception Note/i)).toBeInTheDocument();
   });
 
   it("renders the audit timeline", () => {
@@ -151,6 +152,7 @@ describe("case console", () => {
     );
 
     expect(screen.getByText(/Normalized source coverage/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Evidence Exception Note/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Accept Recommendation/i })).toBeInTheDocument();
   });
 });

@@ -94,6 +94,8 @@ export type Decision = {
   created_at: string;
   decision_source: "manual" | "accepted_proposal" | "manual_override";
   proposal_id?: string;
+  evidence_exception: boolean;
+  evidence_exception_note?: string;
 };
 
 export type DecisionProposal = {
@@ -155,6 +157,7 @@ export type RecordDecisionInput = {
   decision: DecisionOutcome;
   reason_codes: string[];
   note: string;
+  evidence_exception_note?: string;
 };
 
 export type CloseUnresolvedInput = {

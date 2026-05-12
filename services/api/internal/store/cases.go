@@ -870,13 +870,17 @@ func (s CasesStore) AcceptProposalWorkflow(ctx context.Context, caseID string, r
 	if note == "" {
 		note = currentProposal.Summary
 	}
+	evidenceExceptionNote := strings.TrimSpace(req.EvidenceExceptionNote)
+	evidenceException := evidenceExceptionNote != ""
 
 	dec, err := queries.CreateAcceptedDecisionFromProposal(ctx, sqlc.CreateAcceptedDecisionFromProposalParams{
-		CaseID:     id,
-		Decision:   currentProposal.Decision,
-		Note:       note,
-		CreatedBy:  req.ActorID,
-		ProposalID: currentProposal.ID,
+		CaseID:                id,
+		Decision:              currentProposal.Decision,
+		Note:                  note,
+		CreatedBy:             req.ActorID,
+		ProposalID:            currentProposal.ID,
+		EvidenceException:     evidenceException,
+		EvidenceExceptionNote: pgtype.Text{String: evidenceExceptionNote, Valid: evidenceException},
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -903,12 +907,17 @@ func (s CasesStore) AcceptProposalWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
-	meta, _ := json.Marshal(map[string]any{
+	auditMeta := map[string]any{
 		"decision":        dec.Decision,
 		"decision_source": cases.DecisionSourceAcceptedProposal,
 		"proposal_id":     uuidToString(currentProposal.ID),
 		"decision_id":     uuidToString(dec.ID),
-	})
+	}
+	if evidenceException {
+		auditMeta["evidence_exception"] = true
+		auditMeta["evidence_exception_note"] = evidenceExceptionNote
+	}
+	meta, _ := json.Marshal(auditMeta)
 	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 		CaseID:    id,
 		ActorID:   req.ActorID,
@@ -970,6 +979,9 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
+	evidenceExceptionNote := strings.TrimSpace(req.EvidenceExceptionNote)
+	evidenceException := evidenceExceptionNote != ""
+
 	dec, err := queries.CreateCaseDecision(ctx, sqlc.CreateCaseDecisionParams{
 		CaseID:                id,
 		Decision:              string(req.Decision),
@@ -977,8 +989,8 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		CreatedBy:             req.ActorID,
 		DecisionSource:        string(decisionSource),
 		ProposalID:            proposalID,
-		EvidenceException:     false,
-		EvidenceExceptionNote: pgtype.Text{},
+		EvidenceException:     evidenceException,
+		EvidenceExceptionNote: pgtype.Text{String: evidenceExceptionNote, Valid: evidenceException},
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -998,11 +1010,16 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
-	meta, _ := json.Marshal(map[string]any{
+	auditMeta := map[string]any{
 		"decision":        req.Decision,
 		"reason_codes":    req.ReasonCodes,
 		"decision_source": decisionSource,
-	})
+	}
+	if evidenceException {
+		auditMeta["evidence_exception"] = true
+		auditMeta["evidence_exception_note"] = evidenceExceptionNote
+	}
+	meta, _ := json.Marshal(auditMeta)
 	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 		CaseID:    id,
 		ActorID:   req.ActorID,

@@ -403,17 +403,20 @@ func (r *memoryRepository) AcceptProposalWorkflow(_ context.Context, caseID stri
 	reasonCodes := append([]ReasonCode{}, proposal.ReasonCodes...)
 	now := time.Now()
 	decisionID := fmt.Sprintf("dec-%d", len(r.decisions[caseID])+1)
+	evidenceExceptionNote := strings.TrimSpace(req.EvidenceExceptionNote)
 	r.decisions[caseID] = append(r.decisions[caseID], Decision{
-		ID:             decisionID,
-		CaseID:         caseID,
-		Decision:       proposal.Decision,
-		ReasonCodes:    reasonCodes,
-		Note:           note,
-		Status:         "current",
-		CreatedBy:      req.ActorID,
-		CreatedAt:      now,
-		DecisionSource: DecisionSourceAcceptedProposal,
-		ProposalID:     proposal.ID,
+		ID:                    decisionID,
+		CaseID:                caseID,
+		Decision:              proposal.Decision,
+		ReasonCodes:           reasonCodes,
+		Note:                  note,
+		Status:                "current",
+		CreatedBy:             req.ActorID,
+		CreatedAt:             now,
+		DecisionSource:        DecisionSourceAcceptedProposal,
+		ProposalID:            proposal.ID,
+		EvidenceException:     evidenceExceptionNote != "",
+		EvidenceExceptionNote: evidenceExceptionNote,
 	})
 
 	c.Status = CaseStatusResolved
@@ -426,12 +429,17 @@ func (r *memoryRepository) AcceptProposalWorkflow(_ context.Context, caseID stri
 		}
 	}
 
-	r.addAuditEventLocked(caseID, req.ActorID, AuditDecisionRecorded, map[string]any{
+	auditMeta := map[string]any{
 		"decision":        proposal.Decision,
 		"decision_id":     decisionID,
 		"decision_source": DecisionSourceAcceptedProposal,
 		"proposal_id":     proposal.ID,
-	})
+	}
+	if evidenceExceptionNote != "" {
+		auditMeta["evidence_exception"] = true
+		auditMeta["evidence_exception_note"] = evidenceExceptionNote
+	}
+	r.addAuditEventLocked(caseID, req.ActorID, AuditDecisionRecorded, auditMeta)
 
 	return r.getCaseDetailLocked(caseID)
 }
@@ -493,11 +501,16 @@ func (r *memoryRepository) RecordDecisionWorkflow(_ context.Context, caseID stri
 	c.ResolvedAt = &now
 	c.UpdatedAt = now
 
-	r.addAuditEventLocked(caseID, req.ActorID, AuditDecisionRecorded, map[string]any{
+	auditMeta := map[string]any{
 		"decision":        req.Decision,
 		"decision_id":     id,
 		"decision_source": decisionSource,
-	})
+	}
+	if evidenceExceptionNote != "" {
+		auditMeta["evidence_exception"] = true
+		auditMeta["evidence_exception_note"] = evidenceExceptionNote
+	}
+	r.addAuditEventLocked(caseID, req.ActorID, AuditDecisionRecorded, auditMeta)
 
 	return r.getCaseDetailLocked(caseID)
 }

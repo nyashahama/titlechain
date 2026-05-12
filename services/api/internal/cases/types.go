@@ -243,8 +243,9 @@ type DecisionProposal struct {
 }
 
 type AcceptProposalRequest struct {
-	ActorID string `json:"actor_id"`
-	Note    string `json:"note"`
+	ActorID               string `json:"actor_id"`
+	Note                  string `json:"note"`
+	EvidenceExceptionNote string `json:"evidence_exception_note,omitempty"`
 }
 
 type CloseUnresolvedRequest struct {

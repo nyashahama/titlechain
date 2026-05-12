@@ -229,7 +229,7 @@ VALUES ($1, $2);
 INSERT INTO ops.case_decisions (
     case_id, decision, note, status, created_by, decision_source, proposal_id,
     evidence_exception, evidence_exception_note
-) VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5, FALSE, NULL)
+) VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5, $6, $7)
 RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at,
     decision_source, proposal_id, evidence_exception, evidence_exception_note;
 
