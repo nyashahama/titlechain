@@ -27,6 +27,16 @@ describe("case console", () => {
         status: "open",
         assignee_id: "ana-001",
         created_by: "ana-001",
+        evidence_readiness: {
+          state: "needs_source_match",
+          label: "Needs source match",
+          description: "Link this case to a source-backed property before relying on evidence.",
+          confirmed_evidence_count: 0,
+          evidence_count: 0,
+          has_linked_property: false,
+          has_conflict: false,
+          missing: ["source_match", "confirmed_evidence"],
+        },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -37,6 +47,7 @@ describe("case console", () => {
     expect(screen.getByText("TC-000001")).toBeInTheDocument();
     expect(screen.getByText("Erf 412 Rosebank Township")).toBeInTheDocument();
     expect(screen.getByText("Open")).toBeInTheDocument();
+    expect(screen.getByText("Needs source match")).toBeInTheDocument();
     expect(screen.getByText("Nyasha Hama")).toBeInTheDocument();
   });
 
@@ -83,6 +94,16 @@ describe("case console", () => {
         status: "open",
         assignee_id: "ana-001",
         created_by: "ana-001",
+        evidence_readiness: {
+          state: "needs_evidence",
+          label: "Needs evidence",
+          description: "Confirm at least one supporting evidence record before decisioning.",
+          confirmed_evidence_count: 0,
+          evidence_count: 1,
+          has_linked_property: true,
+          has_conflict: false,
+          missing: ["confirmed_evidence"],
+        },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -100,10 +121,24 @@ describe("case console", () => {
           created_at: new Date().toISOString(),
         },
       ],
+      evidence_readiness: {
+        state: "needs_evidence",
+        label: "Needs evidence",
+        description: "Confirm at least one supporting evidence record before decisioning.",
+        confirmed_evidence_count: 0,
+        evidence_count: 1,
+        has_linked_property: true,
+        has_conflict: false,
+        missing: ["confirmed_evidence"],
+      },
     };
     const analystMap = new Map([["ana-001", "Nyasha Hama"]]);
 
     render(<CaseDetail detail={detail} analysts={[]} actorId="ana-001" analystMap={analystMap} />);
+    expect(screen.getByText("Needs evidence")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Evidence checklist/i })).toBeInTheDocument();
+    expect(screen.getByText("Source match")).toBeInTheDocument();
+    expect(screen.getByText("Confirmed evidence")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Activity/i })).toBeInTheDocument();
     expect(screen.getByText(/case created/i)).toBeInTheDocument();
   });

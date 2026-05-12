@@ -2,6 +2,23 @@ export type CaseStatus = "open" | "in_review" | "resolved" | "closed_unresolved"
 export type DecisionOutcome = "clear" | "review" | "stop";
 export type ReasonCategory = "clear_support" | "hard_block" | "review_trigger" | "unresolved_information";
 export type EvidenceStatus = "captured" | "confirmed" | "conflicting" | "superseded";
+export type EvidenceReadinessState =
+  | "needs_source_match"
+  | "needs_evidence"
+  | "has_conflict"
+  | "ready_for_decision"
+  | "exception_approved";
+
+export type EvidenceReadinessSummary = {
+  state: EvidenceReadinessState;
+  label: string;
+  description: string;
+  confirmed_evidence_count: number;
+  evidence_count: number;
+  has_linked_property: boolean;
+  has_conflict: boolean;
+  missing: string[];
+};
 
 export type Analyst = {
   id: string;
@@ -30,6 +47,8 @@ export type CaseSummary = {
   assignee_id: string;
   created_by: string;
   linked_seed_property_id?: string;
+  linked_property_id?: string;
+  evidence_readiness: EvidenceReadinessSummary;
   pilot?: PilotCaseContext;
   created_at: string;
   updated_at: string;
@@ -126,6 +145,7 @@ export type CaseDetail = {
   decisions: Decision[];
   current_proposal?: DecisionProposal;
   audit_events: AuditEvent[];
+  evidence_readiness: EvidenceReadinessSummary;
 };
 
 export type CreateCaseInput = {

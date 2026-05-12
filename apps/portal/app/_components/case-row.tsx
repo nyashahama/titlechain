@@ -8,6 +8,7 @@ import { listItem } from "@/app/_lib/animations";
 import { CopyAction } from "@/app/_components/product/CopyAction";
 import { ProductStatusBadge } from "@/app/_components/product/ProductStatusBadge";
 import { RelativeTime } from "@/app/_components/product/RelativeTime";
+import { evidenceReadinessTone } from "@/app/_lib/product/evidence-readiness";
 import { getCaseStatusMeta } from "@/app/_lib/product/status";
 import { Avatar } from "@/app/internal/cases/_components/avatar";
 
@@ -20,6 +21,7 @@ interface CaseRowProps {
 export function CaseRow({ caseItem, index, analystMap }: CaseRowProps) {
   const assigneeName = analystMap.get(caseItem.assignee_id) ?? caseItem.assignee_id;
   const status = getCaseStatusMeta(caseItem.status);
+  const readiness = caseItem.evidence_readiness;
 
   return (
     <motion.div variants={listItem}>
@@ -51,6 +53,9 @@ export function CaseRow({ caseItem, index, analystMap }: CaseRowProps) {
           </div>
           <p className="text-[13px] text-foreground/90 font-medium truncate">{caseItem.property_description}</p>
           <p className="text-[11px] text-muted truncate">{caseItem.locality_or_area} · {caseItem.municipality_or_deeds_office}</p>
+          <div className="mt-1 flex min-h-6 flex-wrap items-center gap-1.5">
+            <ProductStatusBadge label={readiness.label} tone={evidenceReadinessTone(readiness.state)} />
+          </div>
           {caseItem.pilot ? (
             <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted">
               <span className="rounded-md border border-tc-info/30 bg-tc-info/10 px-2 py-0.5 font-medium text-tc-info">

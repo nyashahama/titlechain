@@ -17,6 +17,16 @@ describe("CaseRow", () => {
       status: "open" as const,
       assignee_id: "ana-001",
       created_by: "ana-001",
+      evidence_readiness: {
+        state: "ready_for_decision" as const,
+        label: "Ready for decision",
+        description: "Confirmed evidence is ready for analyst decisioning.",
+        confirmed_evidence_count: 1,
+        evidence_count: 1,
+        has_linked_property: true,
+        has_conflict: false,
+        missing: [],
+      },
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -37,6 +47,16 @@ describe("CaseRow", () => {
       status: "open" as const,
       assignee_id: "ana-001",
       created_by: "ana-001",
+      evidence_readiness: {
+        state: "needs_evidence" as const,
+        label: "Needs evidence",
+        description: "Confirm supporting evidence before decisioning.",
+        confirmed_evidence_count: 0,
+        evidence_count: 0,
+        has_linked_property: true,
+        has_conflict: false,
+        missing: ["confirmed_evidence"],
+      },
       pilot: {
         matter_id: "matter-1",
         organization_id: "org-1",
