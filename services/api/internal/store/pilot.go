@@ -347,7 +347,7 @@ func pilotEvidenceReadinessSummary(readiness cases.EvidenceReadinessSummary) pil
 		Description:            readiness.Description,
 		ConfirmedEvidenceCount: readiness.ConfirmedEvidenceCount,
 		EvidenceCount:          readiness.EvidenceCount,
-		Missing:                append([]string(nil), readiness.Missing...),
+		Missing:                append([]string{}, readiness.Missing...),
 	}
 }
 

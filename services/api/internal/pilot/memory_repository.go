@@ -213,10 +213,11 @@ func (r *memoryRepository) GetMatterDetail(ctx context.Context, user User, matte
 	}
 
 	return MatterDetail{
-		Summary:  m.MatterSummary,
-		Evidence: m.evidence,
-		Reasons:  m.reasons,
-		Timeline: m.timeline,
+		Summary:           m.MatterSummary,
+		EvidenceReadiness: memoryEvidenceReadinessSummary(m.evidence),
+		Evidence:          m.evidence,
+		Reasons:           m.reasons,
+		Timeline:          m.timeline,
 	}, nil
 }
 
@@ -245,11 +246,28 @@ func (r *memoryRepository) ReopenMatter(ctx context.Context, user User, matterID
 	})
 
 	return MatterDetail{
-		Summary:  m.MatterSummary,
-		Evidence: m.evidence,
-		Reasons:  m.reasons,
-		Timeline: m.timeline,
+		Summary:           m.MatterSummary,
+		EvidenceReadiness: memoryEvidenceReadinessSummary(m.evidence),
+		Evidence:          m.evidence,
+		Reasons:           m.reasons,
+		Timeline:          m.timeline,
 	}, nil
+}
+
+func memoryEvidenceReadinessSummary(evidence []VisibleEvidence) EvidenceReadinessSummary {
+	readiness := EvidenceReadinessSummary{
+		State:         "unknown",
+		Label:         "Evidence readiness unavailable",
+		Description:   "Evidence readiness is not available for this matter yet.",
+		EvidenceCount: len(evidence),
+		Missing:       []string{},
+	}
+	for _, item := range evidence {
+		if item.Status == "confirmed" || item.Status == "verified" {
+			readiness.ConfirmedEvidenceCount++
+		}
+	}
+	return readiness
 }
 
 func (r *memoryRepository) CreateSummaryExport(ctx context.Context, user User, matterID string) (SummaryExport, error) {

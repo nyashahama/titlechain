@@ -260,6 +260,21 @@ func TestPilotEvidenceReadinessSummaryKeepsCustomerFacingFields(t *testing.T) {
 	}
 }
 
+func TestPilotEvidenceReadinessSummaryReturnsNonNilMissing(t *testing.T) {
+	got := pilotEvidenceReadinessSummary(cases.EvidenceReadinessSummary{
+		State:       cases.EvidenceReadinessReadyForDecision,
+		Label:       "Ready for decision",
+		Description: "Confirmed evidence is available and no active conflict is present.",
+	})
+
+	if got.Missing == nil {
+		t.Fatal("missing = nil, want empty slice")
+	}
+	if len(got.Missing) != 0 {
+		t.Fatalf("missing = %#v, want empty slice", got.Missing)
+	}
+}
+
 func mustTestUUID(t *testing.T, value string) pgtype.UUID {
 	t.Helper()
 	id, err := parseUUID(value)

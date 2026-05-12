@@ -10,6 +10,9 @@ export function evidenceReadinessTone(state: string): ProductTone {
 
 export function evidenceReadinessAction(state: string): string {
   switch (state) {
+    case "ready":
+    case "ready_for_decision":
+      return "TitleChain is using confirmed evidence for this matter.";
     case "needs_source_match":
       return "TitleChain is still matching this matter to a source-backed property record.";
     case "needs_evidence":
@@ -21,6 +24,6 @@ export function evidenceReadinessAction(state: string): string {
     case "exception_approved":
       return "This matter was resolved with an approved evidence exception. Treat the decision as support, not a deeds-office guarantee.";
     default:
-      return "TitleChain is using confirmed evidence for this matter.";
+      return "Evidence readiness is not available for this matter yet.";
   }
 }

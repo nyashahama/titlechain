@@ -120,4 +120,19 @@ describe("MatterRecord", () => {
     expect(screen.getByText("No visible evidence has been attached to this matter yet.")).toBeInTheDocument();
     expect(screen.getByText("No activity has been recorded for this matter yet.")).toBeInTheDocument();
   });
+
+  it("uses neutral verification copy when readiness is absent", () => {
+    render(
+      <MatterRecord
+        detail={{ ...detail, evidence_readiness: undefined } as unknown as MatterDetail}
+        onReopen={async () => undefined}
+        reopening={false}
+        reopenError=""
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Verification Basis" })).toBeInTheDocument();
+    expect(screen.getByText("Unknown")).toBeInTheDocument();
+    expect(screen.getByText("Evidence readiness is not available for this matter yet.")).toBeInTheDocument();
+  });
 });
