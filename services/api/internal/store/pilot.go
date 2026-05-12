@@ -18,6 +18,8 @@ type PilotStore struct {
 	pool *pgxpool.Pool
 }
 
+const pilotMatterActorID = "ana-001"
+
 var _ pilot.Repository = PilotStore{}
 
 func NewPilotStore(pool *pgxpool.Pool) PilotStore {
@@ -57,6 +59,19 @@ func (s PilotStore) RevokeSession(ctx context.Context, tokenHash string) error {
 	return sqlc.New(s.pool).RevokePilotSession(ctx, tokenHash)
 }
 
+func selectSourceBackedPropertyCandidate(candidates []sqlc.FindPropertySummaryCandidatesRow) (pgtype.UUID, bool) {
+	if len(candidates) != 1 {
+		return pgtype.UUID{}, false
+	}
+
+	candidate := candidates[0]
+	if !candidate.PropertyID.Valid || candidate.ConfidenceScore < 85 || candidate.SourceProvenanceCount < 1 {
+		return pgtype.UUID{}, false
+	}
+
+	return candidate.PropertyID, true
+}
+
 func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot.CreateMatterRequest) (pilot.MatterSummary, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -76,6 +91,17 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 		return pilot.MatterSummary{}, err
 	}
 
+	candidates, err := queries.FindPropertySummaryCandidates(ctx, sqlc.FindPropertySummaryCandidatesParams{
+		TitleReference:            req.TitleReference,
+		PropertyDescription:       req.PropertyDescription,
+		LocalityOrArea:            req.LocalityOrArea,
+		MunicipalityOrDeedsOffice: req.MunicipalityOrDeedsOffice,
+	})
+	if err != nil {
+		return pilot.MatterSummary{}, err
+	}
+	linkedPropID, autoLinked := selectSourceBackedPropertyCandidate(candidates)
+
 	c, err := queries.CreateCaseRecord(ctx, sqlc.CreateCaseRecordParams{
 		CaseReference:             caseReference,
 		PropertyDescription:       req.PropertyDescription,
@@ -84,11 +110,18 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 		TitleReference:            pgtype.Text{String: req.TitleReference, Valid: req.TitleReference != ""},
 		MatterReference:           pgtype.Text{String: req.CustomerReference, Valid: req.CustomerReference != ""},
 		IntakeNote:                pgtype.Text{String: req.IntakeNote, Valid: req.IntakeNote != ""},
-		AssigneeID:                "ana-001",
-		LinkedPropertyID:          pgtype.UUID{},
+		AssigneeID:                pilotMatterActorID,
+		LinkedPropertyID:          linkedPropID,
 	})
 	if err != nil {
 		return pilot.MatterSummary{}, err
+	}
+
+	caseStore := CasesStore{pool: s.pool}
+	if autoLinked {
+		if err := caseStore.attachCanonicalEvidenceForLinkedPropertyInTx(ctx, queries, c.ID, uuidToString(linkedPropID), pilotMatterActorID); err != nil {
+			return pilot.MatterSummary{}, err
+		}
 	}
 
 	meta, _ := json.Marshal(map[string]any{
@@ -99,7 +132,7 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 	})
 	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 		CaseID:    c.ID,
-		ActorID:   "ana-001",
+		ActorID:   pilotMatterActorID,
 		EventType: "case_created",
 		Metadata:  meta,
 	})
@@ -117,7 +150,6 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 		return pilot.MatterSummary{}, err
 	}
 
-	caseStore := CasesStore{pool: s.pool}
 	if _, err := caseStore.reevaluateCaseInTx(ctx, queries, c.ID); err != nil {
 		return pilot.MatterSummary{}, err
 	}

@@ -73,6 +73,75 @@ func buildCanonicalEvidenceDrafts(
 	return drafts, nil
 }
 
+func (s CasesStore) attachCanonicalEvidenceForLinkedPropertyInTx(
+	ctx context.Context,
+	queries *sqlc.Queries,
+	caseID pgtype.UUID,
+	linkedPropertyID string,
+	actorID string,
+) error {
+	propID, err := parseUUID(linkedPropertyID)
+	if err != nil {
+		return fmt.Errorf("invalid linked_property_id: %w", err)
+	}
+
+	propRow, err := queries.GetPropertySummary(ctx, propID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errors.New("linked property not found")
+		}
+		return err
+	}
+
+	sourceLinkRows, err := queries.ListCoreSourceLinksByProperty(ctx, propID)
+	if err != nil {
+		return err
+	}
+
+	sourceLinks := make([]canonicalSourceLink, 0, len(sourceLinkRows))
+	for _, row := range sourceLinkRows {
+		sourceLinks = append(sourceLinks, canonicalSourceLink{
+			ID:             uuidToString(row.ID),
+			BatchID:        uuidToString(row.BatchID),
+			SourceRecordID: uuidToString(row.SourceRecordID),
+			FactTable:      row.FactTable,
+			FactID:         uuidToString(row.FactID),
+		})
+	}
+
+	drafts, err := buildCanonicalEvidenceDrafts(
+		linkedPropertyID,
+		propRow.PropertyDescription,
+		propRow.TitleReference,
+		sourceLinks,
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, draft := range drafts {
+		facts, err := json.Marshal(draft.Facts)
+		if err != nil {
+			return fmt.Errorf("marshal canonical evidence facts: %w", err)
+		}
+		_, err = queries.UpsertCaseEvidence(ctx, sqlc.UpsertCaseEvidenceParams{
+			CaseID:            caseID,
+			EvidenceType:      "canonical_property",
+			SourceType:        "normalized_data",
+			SourceReference:   draft.SourceReference,
+			ExternalReference: pgtype.Text{String: draft.ExternalReference, Valid: draft.ExternalReference != ""},
+			ExtractedFacts:    facts,
+			EvidenceStatus:    string(cases.EvidenceStatusConfirmed),
+			CreatedBy:         actorID,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s CasesStore) ListAnalysts(ctx context.Context) ([]cases.Analyst, error) {
 	queries := sqlc.New(s.pool)
 	rows, err := queries.ListAnalysts(ctx)
@@ -455,64 +524,8 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 	}
 
 	if req.LinkedPropertyID != "" {
-		propID, err := parseUUID(req.LinkedPropertyID)
-		if err != nil {
-			return cases.CaseDetail{}, fmt.Errorf("invalid linked_property_id: %w", err)
-		}
-
-		// Try to get property summary
-		propRow, err := queries.GetPropertySummary(ctx, propID)
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return cases.CaseDetail{}, errors.New("linked property not found")
-			}
+		if err := s.attachCanonicalEvidenceForLinkedPropertyInTx(ctx, queries, c.ID, req.LinkedPropertyID, req.ActorID); err != nil {
 			return cases.CaseDetail{}, err
-		}
-
-		sourceLinkRows, err := queries.ListCoreSourceLinksByProperty(ctx, propID)
-		if err != nil {
-			return cases.CaseDetail{}, err
-		}
-
-		sourceLinks := make([]canonicalSourceLink, 0, len(sourceLinkRows))
-		for _, row := range sourceLinkRows {
-			sourceLinks = append(sourceLinks, canonicalSourceLink{
-				ID:             uuidToString(row.ID),
-				BatchID:        uuidToString(row.BatchID),
-				SourceRecordID: uuidToString(row.SourceRecordID),
-				FactTable:      row.FactTable,
-				FactID:         uuidToString(row.FactID),
-			})
-		}
-
-		drafts, err := buildCanonicalEvidenceDrafts(
-			req.LinkedPropertyID,
-			propRow.PropertyDescription,
-			propRow.TitleReference,
-			sourceLinks,
-		)
-		if err != nil {
-			return cases.CaseDetail{}, err
-		}
-
-		for _, draft := range drafts {
-			facts, err := json.Marshal(draft.Facts)
-			if err != nil {
-				return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
-			}
-			_, err = queries.UpsertCaseEvidence(ctx, sqlc.UpsertCaseEvidenceParams{
-				CaseID:            c.ID,
-				EvidenceType:      "canonical_property",
-				SourceType:        "normalized_data",
-				SourceReference:   draft.SourceReference,
-				ExternalReference: pgtype.Text{String: draft.ExternalReference, Valid: draft.ExternalReference != ""},
-				ExtractedFacts:    facts,
-				EvidenceStatus:    string(cases.EvidenceStatusConfirmed),
-				CreatedBy:         req.ActorID,
-			})
-			if err != nil {
-				return cases.CaseDetail{}, err
-			}
 		}
 	}
 

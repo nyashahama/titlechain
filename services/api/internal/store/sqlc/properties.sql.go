@@ -11,6 +11,148 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const findPropertySummaryCandidates = `-- name: FindPropertySummaryCandidates :many
+WITH submitted AS (
+    SELECT
+        NULLIF(BTRIM($1::text), '') AS title_reference,
+        NULLIF(BTRIM($2::text), '') AS property_description,
+        NULLIF(BTRIM($3::text), '') AS locality_or_area,
+        NULLIF(BTRIM($4::text), '') AS municipality_or_deeds_office
+),
+scored AS (
+    SELECT
+        ps.property_id,
+        ps.property_description,
+        ps.locality_or_area,
+        ps.municipality_or_deeds_office,
+        ps.title_reference,
+        ps.current_owner_name,
+        ps.status,
+        ps.updated_at,
+        CASE
+            WHEN submitted.title_reference IS NOT NULL
+                AND LOWER(BTRIM(ps.title_reference)) = LOWER(submitted.title_reference)
+                THEN 100
+            WHEN submitted.property_description IS NOT NULL
+                AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
+                AND LOWER(BTRIM(ps.property_description)) = LOWER(submitted.property_description)
+                THEN 85
+            WHEN submitted.property_description IS NOT NULL
+                AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
+                AND (
+                    LOWER(ps.property_description) LIKE '%' || LOWER(submitted.property_description) || '%'
+                    OR LOWER(submitted.property_description) LIKE '%' || LOWER(ps.property_description) || '%'
+                )
+                THEN 70
+            WHEN submitted.locality_or_area IS NOT NULL
+                AND submitted.municipality_or_deeds_office IS NOT NULL
+                AND LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+                AND LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
+                THEN 60
+            WHEN submitted.locality_or_area IS NOT NULL
+                AND LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+                THEN 55
+            WHEN submitted.municipality_or_deeds_office IS NOT NULL
+                AND LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
+                THEN 50
+            ELSE 0
+        END::int AS confidence_score,
+        COUNT(sl.id)::int AS source_provenance_count
+    FROM read.property_summaries ps
+    CROSS JOIN submitted
+    LEFT JOIN core.source_links sl ON sl.property_id = ps.property_id
+    WHERE (
+        submitted.title_reference IS NOT NULL
+            AND LOWER(BTRIM(ps.title_reference)) = LOWER(submitted.title_reference)
+    ) OR (
+        submitted.property_description IS NOT NULL
+            AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
+            AND LOWER(BTRIM(ps.property_description)) = LOWER(submitted.property_description)
+    ) OR (
+        submitted.property_description IS NOT NULL
+            AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
+            AND (
+                LOWER(ps.property_description) LIKE '%' || LOWER(submitted.property_description) || '%'
+                OR LOWER(submitted.property_description) LIKE '%' || LOWER(ps.property_description) || '%'
+            )
+    ) OR (
+        submitted.locality_or_area IS NOT NULL
+            AND LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+    ) OR (
+        submitted.municipality_or_deeds_office IS NOT NULL
+            AND LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
+    )
+    GROUP BY ps.property_id, ps.property_description, ps.locality_or_area,
+             ps.municipality_or_deeds_office, ps.title_reference,
+             ps.current_owner_name, ps.status, ps.updated_at,
+             submitted.title_reference, submitted.property_description,
+             submitted.locality_or_area, submitted.municipality_or_deeds_office
+)
+SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office,
+       title_reference, current_owner_name, status, updated_at,
+       confidence_score, source_provenance_count
+FROM scored
+WHERE confidence_score > 0
+ORDER BY confidence_score DESC, source_provenance_count DESC, updated_at DESC, property_id
+LIMIT 5
+`
+
+type FindPropertySummaryCandidatesParams struct {
+	TitleReference            string `json:"title_reference"`
+	PropertyDescription       string `json:"property_description"`
+	LocalityOrArea            string `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string `json:"municipality_or_deeds_office"`
+}
+
+type FindPropertySummaryCandidatesRow struct {
+	PropertyID                pgtype.UUID        `json:"property_id"`
+	PropertyDescription       string             `json:"property_description"`
+	LocalityOrArea            string             `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string             `json:"municipality_or_deeds_office"`
+	TitleReference            string             `json:"title_reference"`
+	CurrentOwnerName          pgtype.Text        `json:"current_owner_name"`
+	Status                    string             `json:"status"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+	ConfidenceScore           int32              `json:"confidence_score"`
+	SourceProvenanceCount     int32              `json:"source_provenance_count"`
+}
+
+func (q *Queries) FindPropertySummaryCandidates(ctx context.Context, arg FindPropertySummaryCandidatesParams) ([]FindPropertySummaryCandidatesRow, error) {
+	rows, err := q.db.Query(ctx, findPropertySummaryCandidates,
+		arg.TitleReference,
+		arg.PropertyDescription,
+		arg.LocalityOrArea,
+		arg.MunicipalityOrDeedsOffice,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FindPropertySummaryCandidatesRow
+	for rows.Next() {
+		var i FindPropertySummaryCandidatesRow
+		if err := rows.Scan(
+			&i.PropertyID,
+			&i.PropertyDescription,
+			&i.LocalityOrArea,
+			&i.MunicipalityOrDeedsOffice,
+			&i.TitleReference,
+			&i.CurrentOwnerName,
+			&i.Status,
+			&i.UpdatedAt,
+			&i.ConfidenceScore,
+			&i.SourceProvenanceCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPropertySummary = `-- name: GetPropertySummary :one
 SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office, title_reference, current_owner_name, status, updated_at
 FROM read.property_summaries

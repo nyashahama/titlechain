@@ -33,6 +33,7 @@ type Querier interface {
 	CreateRun(ctx context.Context, arg CreateRunParams) (OpsRun, error)
 	CreateSourceBatch(ctx context.Context, arg CreateSourceBatchParams) (RawBatch, error)
 	FindActiveRun(ctx context.Context, runType string) (OpsRun, error)
+	FindPropertySummaryCandidates(ctx context.Context, arg FindPropertySummaryCandidatesParams) ([]FindPropertySummaryCandidatesRow, error)
 	GetAnalyst(ctx context.Context, id string) (OpsAnalyst, error)
 	GetAnalyticsEvidenceSummary(ctx context.Context, arg GetAnalyticsEvidenceSummaryParams) (GetAnalyticsEvidenceSummaryRow, error)
 	GetAnalyticsOperatingSummary(ctx context.Context, arg GetAnalyticsOperatingSummaryParams) (GetAnalyticsOperatingSummaryRow, error)

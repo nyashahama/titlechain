@@ -10,6 +10,91 @@ WHERE (sqlc.narg('query')::text IS NULL
 ORDER BY updated_at DESC
 LIMIT sqlc.arg('limit');
 
+-- name: FindPropertySummaryCandidates :many
+WITH submitted AS (
+    SELECT
+        NULLIF(BTRIM(sqlc.arg('title_reference')::text), '') AS title_reference,
+        NULLIF(BTRIM(sqlc.arg('property_description')::text), '') AS property_description,
+        NULLIF(BTRIM(sqlc.arg('locality_or_area')::text), '') AS locality_or_area,
+        NULLIF(BTRIM(sqlc.arg('municipality_or_deeds_office')::text), '') AS municipality_or_deeds_office
+),
+scored AS (
+    SELECT
+        ps.property_id,
+        ps.property_description,
+        ps.locality_or_area,
+        ps.municipality_or_deeds_office,
+        ps.title_reference,
+        ps.current_owner_name,
+        ps.status,
+        ps.updated_at,
+        CASE
+            WHEN submitted.title_reference IS NOT NULL
+                AND LOWER(BTRIM(ps.title_reference)) = LOWER(submitted.title_reference)
+                THEN 100
+            WHEN submitted.property_description IS NOT NULL
+                AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
+                AND LOWER(BTRIM(ps.property_description)) = LOWER(submitted.property_description)
+                THEN 85
+            WHEN submitted.property_description IS NOT NULL
+                AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
+                AND (
+                    LOWER(ps.property_description) LIKE '%' || LOWER(submitted.property_description) || '%'
+                    OR LOWER(submitted.property_description) LIKE '%' || LOWER(ps.property_description) || '%'
+                )
+                THEN 70
+            WHEN submitted.locality_or_area IS NOT NULL
+                AND submitted.municipality_or_deeds_office IS NOT NULL
+                AND LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+                AND LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
+                THEN 60
+            WHEN submitted.locality_or_area IS NOT NULL
+                AND LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+                THEN 55
+            WHEN submitted.municipality_or_deeds_office IS NOT NULL
+                AND LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
+                THEN 50
+            ELSE 0
+        END::int AS confidence_score,
+        COUNT(sl.id)::int AS source_provenance_count
+    FROM read.property_summaries ps
+    CROSS JOIN submitted
+    LEFT JOIN core.source_links sl ON sl.property_id = ps.property_id
+    WHERE (
+        submitted.title_reference IS NOT NULL
+            AND LOWER(BTRIM(ps.title_reference)) = LOWER(submitted.title_reference)
+    ) OR (
+        submitted.property_description IS NOT NULL
+            AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
+            AND LOWER(BTRIM(ps.property_description)) = LOWER(submitted.property_description)
+    ) OR (
+        submitted.property_description IS NOT NULL
+            AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
+            AND (
+                LOWER(ps.property_description) LIKE '%' || LOWER(submitted.property_description) || '%'
+                OR LOWER(submitted.property_description) LIKE '%' || LOWER(ps.property_description) || '%'
+            )
+    ) OR (
+        submitted.locality_or_area IS NOT NULL
+            AND LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+    ) OR (
+        submitted.municipality_or_deeds_office IS NOT NULL
+            AND LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
+    )
+    GROUP BY ps.property_id, ps.property_description, ps.locality_or_area,
+             ps.municipality_or_deeds_office, ps.title_reference,
+             ps.current_owner_name, ps.status, ps.updated_at,
+             submitted.title_reference, submitted.property_description,
+             submitted.locality_or_area, submitted.municipality_or_deeds_office
+)
+SELECT property_id, property_description, locality_or_area, municipality_or_deeds_office,
+       title_reference, current_owner_name, status, updated_at,
+       confidence_score, source_provenance_count
+FROM scored
+WHERE confidence_score > 0
+ORDER BY confidence_score DESC, source_provenance_count DESC, updated_at DESC, property_id
+LIMIT 5;
+
 -- name: UpsertCoreProperty :one
 INSERT INTO core.properties (property_fingerprint, municipality_or_deeds_office, property_description, latest_title_reference)
 VALUES ($1, $2, $3, $4)
