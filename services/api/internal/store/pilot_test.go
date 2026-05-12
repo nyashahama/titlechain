@@ -5,6 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 
+	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 	"github.com/nyasha-hama/titlechain/services/api/internal/pilot"
 	"github.com/nyasha-hama/titlechain/services/api/internal/store/sqlc"
 )
@@ -204,6 +205,58 @@ func TestSelectSourceBackedPropertyCandidateRejectsSourceLessCandidate(t *testin
 
 	if got, ok := selectSourceBackedPropertyCandidate(pilot.CreateMatterRequest{}, candidates); ok {
 		t.Fatalf("selected source-less candidate %s, want no selection", uuidToString(got))
+	}
+}
+
+func TestPilotTimelineLabelUsesCustomerFriendlyCopy(t *testing.T) {
+	tests := map[string]string{
+		"case_created":             "Matter received",
+		"evidence_added":           "Evidence added",
+		"decision_recorded":        "Decision published",
+		"case_reopened":            "Matter reopened",
+		"reopened":                 "Matter reopened",
+		"property_match_confirmed": "Property source matched",
+		"manual_review_started":    "manual review started",
+	}
+
+	for eventType, want := range tests {
+		t.Run(eventType, func(t *testing.T) {
+			if got := pilotTimelineLabel(eventType); got != want {
+				t.Fatalf("label = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+func TestPilotEvidenceReadinessSummaryKeepsCustomerFacingFields(t *testing.T) {
+	got := pilotEvidenceReadinessSummary(cases.EvidenceReadinessSummary{
+		State:                  cases.EvidenceReadinessNeedsEvidence,
+		Label:                  "Needs evidence",
+		Description:            "Confirm at least one evidence item before recording a decision.",
+		ConfirmedEvidenceCount: 0,
+		EvidenceCount:          2,
+		HasLinkedProperty:      true,
+		HasConflict:            false,
+		Missing:                []string{"confirmed_evidence"},
+	})
+
+	if got.State != "needs_evidence" {
+		t.Fatalf("state = %q, want needs_evidence", got.State)
+	}
+	if got.Label != "Needs evidence" {
+		t.Fatalf("label = %q, want Needs evidence", got.Label)
+	}
+	if got.Description != "Confirm at least one evidence item before recording a decision." {
+		t.Fatalf("description = %q", got.Description)
+	}
+	if got.ConfirmedEvidenceCount != 0 {
+		t.Fatalf("confirmed evidence count = %d, want 0", got.ConfirmedEvidenceCount)
+	}
+	if got.EvidenceCount != 2 {
+		t.Fatalf("evidence count = %d, want 2", got.EvidenceCount)
+	}
+	if len(got.Missing) != 1 || got.Missing[0] != "confirmed_evidence" {
+		t.Fatalf("missing = %#v, want confirmed_evidence", got.Missing)
 	}
 }
 

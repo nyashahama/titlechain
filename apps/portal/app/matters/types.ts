@@ -15,6 +15,15 @@ export type MatterSummary = {
   updated_at: string;
 };
 
+export type EvidenceReadinessSummary = {
+  state: string;
+  label: string;
+  description: string;
+  confirmed_evidence_count: number;
+  evidence_count: number;
+  missing: string[];
+};
+
 export type VisibleEvidence = {
   type: string;
   source_type: string;
@@ -36,6 +45,7 @@ export type VisibleTimelineEvent = {
 
 export type MatterDetail = {
   summary: MatterSummary;
+  evidence_readiness: EvidenceReadinessSummary;
   evidence: VisibleEvidence[];
   reasons: VisibleReason[];
   timeline: VisibleTimelineEvent[];

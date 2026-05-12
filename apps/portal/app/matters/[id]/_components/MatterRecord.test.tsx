@@ -18,6 +18,14 @@ const detail: MatterDetail = {
     submitted_at: "2026-05-01T08:00:00Z",
     updated_at: "2026-05-01T09:00:00Z",
   },
+  evidence_readiness: {
+    state: "ready_for_decision",
+    label: "Ready for decision",
+    description: "Confirmed evidence is available and no active conflict is present.",
+    confirmed_evidence_count: 1,
+    evidence_count: 1,
+    missing: [],
+  },
   evidence: [
     {
       type: "deeds_search",
@@ -35,6 +43,11 @@ describe("MatterRecord", () => {
   it("renders decision, reasons, evidence, and activity", () => {
     render(<MatterRecord detail={detail} onReopen={async () => undefined} reopening={false} reopenError="" />);
     expect(screen.getAllByText("Clear to Lodge")).toHaveLength(3);
+    expect(screen.getByRole("heading", { name: "Verification Basis" })).toBeInTheDocument();
+    expect(screen.getByText("Ready for decision")).toBeInTheDocument();
+    expect(screen.getByText("Confirmed evidence is available and no active conflict is present.")).toBeInTheDocument();
+    expect(screen.getByText("TitleChain is using confirmed evidence for this matter.")).toBeInTheDocument();
+    expect(screen.getByText("1 / 1 confirmed")).toBeInTheDocument();
     expect(screen.getByText("TITLE_MATCH")).toBeInTheDocument();
     expect(screen.getByText("Owner and title reference matched.")).toBeInTheDocument();
     expect(screen.getByText("Matter resolved")).toBeInTheDocument();
@@ -80,13 +93,29 @@ describe("MatterRecord", () => {
   it("renders empty sections when the API returns null collections", () => {
     render(
       <MatterRecord
-        detail={{ ...detail, evidence: null, reasons: null, timeline: null } as unknown as MatterDetail}
+        detail={{
+          ...detail,
+          evidence_readiness: {
+            state: "needs_evidence",
+            label: "Needs evidence",
+            description: "Confirm at least one evidence item before recording a decision.",
+            confirmed_evidence_count: 0,
+            evidence_count: 0,
+            missing: ["confirmed_evidence"],
+          },
+          evidence: null,
+          reasons: null,
+          timeline: null,
+        } as unknown as MatterDetail}
         onReopen={async () => undefined}
         reopening={false}
         reopenError=""
       />
     );
 
+    expect(screen.getByRole("heading", { name: "Verification Basis" })).toBeInTheDocument();
+    expect(screen.getByText("Needs evidence")).toBeInTheDocument();
+    expect(screen.getByText("TitleChain is waiting for confirmed supporting evidence before relying on this matter record.")).toBeInTheDocument();
     expect(screen.getByText("No decision reasons have been published yet.")).toBeInTheDocument();
     expect(screen.getByText("No visible evidence has been attached to this matter yet.")).toBeInTheDocument();
     expect(screen.getByText("No activity has been recorded for this matter yet.")).toBeInTheDocument();

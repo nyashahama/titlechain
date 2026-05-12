@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/nyasha-hama/titlechain/services/api/internal/cases"
 	"github.com/nyasha-hama/titlechain/services/api/internal/pilot"
 	"github.com/nyasha-hama/titlechain/services/api/internal/store/sqlc"
 )
@@ -257,81 +258,97 @@ func (s PilotStore) GetMatterDetail(ctx context.Context, user pilot.User, matter
 		return pilot.MatterDetail{}, err
 	}
 
-	caseUUID := ml.CaseID
-	caseRow, err := queries.GetCaseRecord(ctx, caseUUID)
+	caseStore := CasesStore{pool: s.pool}
+	caseDetail, err := caseStore.buildCaseDetail(ctx, queries, ml.CaseID)
 	if err != nil {
 		return pilot.MatterDetail{}, err
 	}
 
-	decisions, err := queries.ListCaseDecisions(ctx, caseUUID)
-	if err != nil {
-		return pilot.MatterDetail{}, err
-	}
 	var decision string
 	var reasons []pilot.VisibleReason
-	for _, d := range decisions {
+	for _, d := range caseDetail.Decisions {
 		if d.Status == "current" {
-			decision = d.Decision
-			codes, err := queries.ListDecisionReasonCodes(ctx, d.ID)
-			if err == nil {
-				for _, rc := range codes {
-					reasons = append(reasons, pilot.VisibleReason{
-						Code:  rc.Code,
-						Label: rc.Label,
-					})
-				}
+			decision = string(d.Decision)
+			for _, rc := range d.ReasonCodes {
+				reasons = append(reasons, pilot.VisibleReason{
+					Code:  rc.Code,
+					Label: rc.Label,
+				})
 			}
 			break
 		}
 	}
 
-	evidenceRows, err := queries.ListCaseEvidence(ctx, caseUUID)
-	var evidence []pilot.VisibleEvidence
-	if err == nil {
-		for _, e := range evidenceRows {
-			evidence = append(evidence, pilot.VisibleEvidence{
-				Type:            e.EvidenceType,
-				SourceType:      e.SourceType,
-				SourceReference: e.SourceReference,
-				Excerpt:         textToString(e.Excerpt),
-				Status:          e.EvidenceStatus,
-			})
-		}
+	evidence := make([]pilot.VisibleEvidence, 0, len(caseDetail.Evidence))
+	for _, e := range caseDetail.Evidence {
+		evidence = append(evidence, pilot.VisibleEvidence{
+			Type:            e.EvidenceType,
+			SourceType:      e.SourceType,
+			SourceReference: e.SourceReference,
+			Excerpt:         e.Excerpt,
+			Status:          string(e.EvidenceStatus),
+		})
 	}
 
-	auditRows, err := queries.ListCaseAuditEvents(ctx, caseUUID)
-	var timeline []pilot.VisibleTimelineEvent
-	if err == nil {
-		for _, a := range auditRows {
-			timeline = append(timeline, pilot.VisibleTimelineEvent{
-				Type:      a.EventType,
-				Label:     a.EventType,
-				CreatedAt: a.CreatedAt.Time,
-			})
-		}
+	timeline := make([]pilot.VisibleTimelineEvent, 0, len(caseDetail.AuditEvents))
+	for _, a := range caseDetail.AuditEvents {
+		timeline = append(timeline, pilot.VisibleTimelineEvent{
+			Type:      a.EventType,
+			Label:     pilotTimelineLabel(a.EventType),
+			CreatedAt: a.CreatedAt,
+		})
 	}
 
 	summary := pilot.MatterSummary{
 		ID:                        uuidToString(ml.ID),
 		CaseID:                    uuidToString(ml.CaseID),
-		CaseReference:             caseRow.CaseReference,
+		CaseReference:             caseDetail.Case.CaseReference,
 		CustomerReference:         textToString(ml.CustomerReference),
 		CustomerStatus:            ml.CustomerStatus,
-		PropertyDescription:       caseRow.PropertyDescription,
-		LocalityOrArea:            caseRow.LocalityOrArea,
-		MunicipalityOrDeedsOffice: caseRow.MunicipalityOrDeedsOffice,
-		TitleReference:            textToString(caseRow.TitleReference),
+		PropertyDescription:       caseDetail.Case.PropertyDescription,
+		LocalityOrArea:            caseDetail.Case.LocalityOrArea,
+		MunicipalityOrDeedsOffice: caseDetail.Case.MunicipalityOrDeedsOffice,
+		TitleReference:            caseDetail.Case.TitleReference,
 		Decision:                  decision,
 		SubmittedAt:               ml.SubmittedAt.Time,
 		UpdatedAt:                 ml.UpdatedAt.Time,
 	}
 
 	return pilot.MatterDetail{
-		Summary:  summary,
-		Evidence: evidence,
-		Reasons:  reasons,
-		Timeline: timeline,
+		Summary:           summary,
+		EvidenceReadiness: pilotEvidenceReadinessSummary(caseDetail.EvidenceReadiness),
+		Evidence:          evidence,
+		Reasons:           reasons,
+		Timeline:          timeline,
 	}, nil
+}
+
+func pilotTimelineLabel(eventType string) string {
+	switch eventType {
+	case "case_created":
+		return "Matter received"
+	case "evidence_added":
+		return "Evidence added"
+	case "decision_recorded":
+		return "Decision published"
+	case "case_reopened", "reopened":
+		return "Matter reopened"
+	case "property_match_confirmed":
+		return "Property source matched"
+	default:
+		return strings.ReplaceAll(eventType, "_", " ")
+	}
+}
+
+func pilotEvidenceReadinessSummary(readiness cases.EvidenceReadinessSummary) pilot.EvidenceReadinessSummary {
+	return pilot.EvidenceReadinessSummary{
+		State:                  string(readiness.State),
+		Label:                  readiness.Label,
+		Description:            readiness.Description,
+		ConfirmedEvidenceCount: readiness.ConfirmedEvidenceCount,
+		EvidenceCount:          readiness.EvidenceCount,
+		Missing:                append([]string(nil), readiness.Missing...),
+	}
 }
 
 func (s PilotStore) ReopenMatter(ctx context.Context, user pilot.User, matterID string, req pilot.ReopenMatterRequest) (pilot.MatterDetail, error) {
