@@ -82,7 +82,14 @@ func (r *memoryRepository) ListCases(_ context.Context, filter ListCasesFilter) 
 		if filter.AssigneeID != "" && c.AssigneeID != filter.AssigneeID {
 			continue
 		}
-		result = append(result, c.CaseSummary)
+		summary := c.CaseSummary
+		summary.EvidenceReadiness = EvaluateEvidenceReadiness(CaseDetail{
+			Case:      summary,
+			Matches:   r.matches[summary.ID],
+			Evidence:  r.evidence[summary.ID],
+			Decisions: r.decisions[summary.ID],
+		})
+		result = append(result, summary)
 	}
 
 	if filter.Limit > 0 && int32(len(result)) > filter.Limit {
@@ -120,6 +127,9 @@ func (r *memoryRepository) getCaseDetailLocked(caseID string) (CaseDetail, error
 	if proposal, ok := r.currentProposalLocked(caseID); ok {
 		detail.CurrentProposal = &proposal
 	}
+
+	detail.EvidenceReadiness = EvaluateEvidenceReadiness(detail)
+	detail.Case.EvidenceReadiness = detail.EvidenceReadiness
 
 	return detail, nil
 }
@@ -456,6 +466,7 @@ func (r *memoryRepository) RecordDecisionWorkflow(_ context.Context, caseID stri
 
 	id := fmt.Sprintf("dec-%d", len(r.decisions[caseID])+1)
 	now := time.Now()
+	evidenceExceptionNote := strings.TrimSpace(req.EvidenceExceptionNote)
 
 	decisionSource := DecisionSourceManual
 	if proposal, ok := r.currentProposalLocked(caseID); ok {
@@ -465,15 +476,17 @@ func (r *memoryRepository) RecordDecisionWorkflow(_ context.Context, caseID stri
 	}
 
 	r.decisions[caseID] = append(r.decisions[caseID], Decision{
-		ID:             id,
-		CaseID:         caseID,
-		Decision:       req.Decision,
-		ReasonCodes:    reasonCodes,
-		Note:           req.Note,
-		Status:         "current",
-		CreatedBy:      req.ActorID,
-		CreatedAt:      now,
-		DecisionSource: decisionSource,
+		ID:                    id,
+		CaseID:                caseID,
+		Decision:              req.Decision,
+		ReasonCodes:           reasonCodes,
+		Note:                  req.Note,
+		Status:                "current",
+		CreatedBy:             req.ActorID,
+		CreatedAt:             now,
+		DecisionSource:        decisionSource,
+		EvidenceException:     evidenceExceptionNote != "",
+		EvidenceExceptionNote: evidenceExceptionNote,
 	})
 
 	c.Status = CaseStatusResolved
