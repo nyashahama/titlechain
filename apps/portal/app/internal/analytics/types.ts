@@ -47,6 +47,7 @@ export type AnalyticsEvidence = {
   total_items: number;
   cases_without_evidence: number;
   cases_without_confirmed_evidence: number;
+  exception_approved_count: number;
   status_mix: AnalyticsEvidenceStatusMetric[];
   source_type_mix: AnalyticsEvidenceSourceMetric[];
 };

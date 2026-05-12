@@ -23,6 +23,8 @@ import {
   getDecisionMeta,
   getEvidenceStatusMeta,
 } from "@/app/_lib/product/status";
+import { evidenceReadinessTone } from "@/app/_lib/product/evidence-readiness";
+import { caseEvidenceReadiness } from "../case-readiness";
 
 const timelineIcons: Record<string, LucideIcon> = {
   case_created: FilePlus2,
@@ -62,6 +64,29 @@ export function CaseDetail({
   const assigneeName = analystMap.get(c.assignee_id) ?? c.assignee_id;
   const createdByName = analystMap.get(c.created_by) ?? c.created_by;
   const caseStatus = getCaseStatusMeta(c.status);
+  const readiness = caseEvidenceReadiness(detail.evidence_readiness ?? c.evidence_readiness);
+  const hasKnownReadiness = readiness.state !== "unknown";
+  const checklistItems = [
+    {
+      label: "Source match",
+      complete: hasKnownReadiness && readiness.has_linked_property,
+    },
+    {
+      label: "Confirmed evidence",
+      complete: hasKnownReadiness && readiness.confirmed_evidence_count > 0,
+      detail: `${readiness.confirmed_evidence_count} / ${readiness.evidence_count} confirmed`,
+    },
+    {
+      label: "No conflicts",
+      complete: hasKnownReadiness && !readiness.has_conflict,
+    },
+    {
+      label: "Decision support",
+      complete:
+        hasKnownReadiness &&
+        (readiness.state === "ready_for_decision" || readiness.state === "exception_approved"),
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -82,6 +107,7 @@ export function CaseDetail({
         </div>
         <div className="flex flex-wrap gap-2 lg:justify-end">
           <ProductStatusBadge label={caseStatus.label} tone={caseStatus.tone} />
+          <ProductStatusBadge label={readiness.label} tone={evidenceReadinessTone(readiness.state)} />
         </div>
       </header>
 
@@ -136,6 +162,36 @@ export function CaseDetail({
                   <span className="font-mono text-[11px] text-tc-text-faint">{match.confidence}% confidence</span>
                 </div>
                 <PropertyMatchActions caseId={c.id} matchId={match.id} actorId={actorId} status={match.status} />
+              </div>
+            ))}
+          </div>
+        </ProductPanel>
+      ) : null}
+
+      {activeTab === "overview" || activeTab === "evidence" ? (
+        <ProductPanel aria-labelledby="evidence-checklist-title" className="space-y-4">
+          <div className="min-w-0">
+            <h2 id="evidence-checklist-title" className="text-sm font-medium text-tc-text">
+              Evidence checklist
+            </h2>
+            <p className="mt-1 text-[13px] leading-5 text-tc-text-muted">{readiness.description}</p>
+          </div>
+          <div className="divide-y divide-tc-border">
+            {checklistItems.map((item) => (
+              <div
+                key={item.label}
+                className="grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-2 first:pt-0 last:pb-0"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-medium text-tc-text">{item.label}</p>
+                  {item.detail ? (
+                    <p className="mt-0.5 text-[11px] text-tc-text-faint">{item.detail}</p>
+                  ) : null}
+                </div>
+                <ProductStatusBadge
+                  label={item.complete ? "Complete" : "Needed"}
+                  tone={item.complete ? "success" : "info"}
+                />
               </div>
             ))}
           </div>

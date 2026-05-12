@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { CaseQueue } from "./_components/case-queue";
 import { CaseIntakeForm } from "./_components/case-intake-form";
@@ -27,6 +27,16 @@ describe("case console", () => {
         status: "open",
         assignee_id: "ana-001",
         created_by: "ana-001",
+        evidence_readiness: {
+          state: "needs_source_match",
+          label: "Needs source match",
+          description: "Link this case to a source-backed property before relying on evidence.",
+          confirmed_evidence_count: 0,
+          evidence_count: 0,
+          has_linked_property: false,
+          has_conflict: false,
+          missing: ["source_match", "confirmed_evidence"],
+        },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -37,6 +47,7 @@ describe("case console", () => {
     expect(screen.getByText("TC-000001")).toBeInTheDocument();
     expect(screen.getByText("Erf 412 Rosebank Township")).toBeInTheDocument();
     expect(screen.getByText("Open")).toBeInTheDocument();
+    expect(screen.getByText("Needs source match")).toBeInTheDocument();
     expect(screen.getByText("Nyasha Hama")).toBeInTheDocument();
   });
 
@@ -69,6 +80,7 @@ describe("case console", () => {
     expect(
       screen.getByLabelText(/Title search found no material blocker/i)
     ).toBeInTheDocument();
+    expect(screen.getByLabelText(/Evidence Exception Note/i)).toBeInTheDocument();
   });
 
   it("renders the audit timeline", () => {
@@ -82,6 +94,16 @@ describe("case console", () => {
         status: "open",
         assignee_id: "ana-001",
         created_by: "ana-001",
+        evidence_readiness: {
+          state: "needs_evidence",
+          label: "Needs evidence",
+          description: "Confirm at least one supporting evidence record before decisioning.",
+          confirmed_evidence_count: 0,
+          evidence_count: 1,
+          has_linked_property: true,
+          has_conflict: false,
+          missing: ["confirmed_evidence"],
+        },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -99,12 +121,59 @@ describe("case console", () => {
           created_at: new Date().toISOString(),
         },
       ],
+      evidence_readiness: {
+        state: "needs_evidence",
+        label: "Needs evidence",
+        description: "Confirm at least one supporting evidence record before decisioning.",
+        confirmed_evidence_count: 0,
+        evidence_count: 1,
+        has_linked_property: true,
+        has_conflict: false,
+        missing: ["confirmed_evidence"],
+      },
     };
     const analystMap = new Map([["ana-001", "Nyasha Hama"]]);
 
     render(<CaseDetail detail={detail} analysts={[]} actorId="ana-001" analystMap={analystMap} />);
+    expect(screen.getByText("Needs evidence")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Evidence checklist/i })).toBeInTheDocument();
+    expect(screen.getByText("Source match")).toBeInTheDocument();
+    expect(screen.getByText("Confirmed evidence")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Activity/i })).toBeInTheDocument();
     expect(screen.getByText(/case created/i)).toBeInTheDocument();
+  });
+
+  it("renders neutral readiness in case detail when wire data omits readiness", () => {
+    const detail = {
+      case: {
+        id: "case-1",
+        case_reference: "TC-000001",
+        property_description: "Erf 412 Rosebank Township",
+        locality_or_area: "Rosebank",
+        municipality_or_deeds_office: "Johannesburg",
+        status: "open",
+        assignee_id: "ana-001",
+        created_by: "ana-001",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      matches: [],
+      evidence: [],
+      parties: [],
+      decisions: [],
+      audit_events: [],
+    } as unknown as CaseDetailType;
+    const analystMap = new Map([["ana-001", "Nyasha Hama"]]);
+
+    expect(() =>
+      render(<CaseDetail detail={detail} analysts={[]} actorId="ana-001" analystMap={analystMap} />)
+    ).not.toThrow();
+    expect(screen.getByText("Readiness unavailable")).toBeInTheDocument();
+    const checklist = screen.getByRole("region", { name: /Evidence checklist/i });
+    expect(checklist).toBeInTheDocument();
+    expect(screen.getByText("Evidence readiness is not available for this case yet.")).toBeInTheDocument();
+    expect(within(checklist).getAllByText("Needed")).toHaveLength(4);
+    expect(within(checklist).queryByText("Complete")).not.toBeInTheDocument();
   });
 
   it("prefills the case intake form from a selected property", () => {
@@ -151,6 +220,7 @@ describe("case console", () => {
     );
 
     expect(screen.getByText(/Normalized source coverage/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Evidence Exception Note/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Accept Recommendation/i })).toBeInTheDocument();
   });
 });

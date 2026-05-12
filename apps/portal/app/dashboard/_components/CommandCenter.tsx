@@ -4,6 +4,7 @@ import { PageHeader } from "@/app/_components/product-shell/PageHeader";
 import { ProductPage } from "@/app/_components/product-shell/ProductPage";
 import type { MatterSummary } from "@/app/matters/types";
 import { DecisionExceptions } from "./DecisionExceptions";
+import { EvidenceWorkQueues } from "./EvidenceWorkQueues";
 import { MatterReadiness } from "./MatterReadiness";
 import { QueueHealth } from "./QueueHealth";
 import { RecentActivity } from "./RecentActivity";
@@ -26,6 +27,7 @@ export function CommandCenter({ matters }: { matters: MatterSummary[] }) {
         }
       />
       <QueueHealth matters={matters} />
+      <EvidenceWorkQueues matters={matters} />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.35fr)]">
         <DecisionExceptions matters={matters} />
         <MatterReadiness matters={matters} />

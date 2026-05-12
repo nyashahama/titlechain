@@ -98,11 +98,23 @@ RETURNING id, case_reference, property_description, locality_or_area, municipali
     title_reference, matter_reference, intake_note, status, assignee_id, created_by,
     linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at;
 
--- name: AddCaseEvidence :one
+-- name: UpsertCaseEvidence :one
 INSERT INTO ops.case_evidence_items (
     case_id, evidence_type, source_type, source_reference, external_reference,
     excerpt, extracted_facts, evidence_status, analyst_note, created_by
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+ON CONFLICT (
+    case_id,
+    source_type,
+    source_reference,
+    (coalesce(external_reference, ''::text)),
+    evidence_type
+) WHERE evidence_status != 'superseded'
+DO UPDATE SET
+    excerpt = EXCLUDED.excerpt,
+    extracted_facts = EXCLUDED.extracted_facts,
+    evidence_status = EXCLUDED.evidence_status,
+    analyst_note = EXCLUDED.analyst_note
 RETURNING id, case_id, evidence_type, source_type, source_reference, external_reference,
     excerpt, extracted_facts, evidence_status, analyst_note, created_by, created_at;
 
@@ -138,9 +150,12 @@ SET status = 'superseded', superseded_at = NOW()
 WHERE case_id = $1 AND status = 'current';
 
 -- name: CreateCaseDecision :one
-INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by, decision_source, proposal_id)
-VALUES ($1, $2, $3, 'current', $4, $5, $6)
-RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id;
+INSERT INTO ops.case_decisions (
+    case_id, decision, note, status, created_by, decision_source, proposal_id,
+    evidence_exception, evidence_exception_note
+) VALUES ($1, $2, $3, 'current', $4, $5, $6, $7, $8)
+RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at,
+    decision_source, proposal_id, evidence_exception, evidence_exception_note;
 
 -- name: AddDecisionReasonCode :exec
 INSERT INTO ops.case_decision_reason_codes (decision_id, reason_code)
@@ -171,7 +186,8 @@ RETURNING id, case_reference, property_description, locality_or_area, municipali
     linked_seed_property_id, linked_property_id, resolved_at, created_at, updated_at;
 
 -- name: ListCaseDecisions :many
-SELECT id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id
+SELECT id, case_id, decision, note, status, created_by, created_at, superseded_at,
+    decision_source, proposal_id, evidence_exception, evidence_exception_note
 FROM ops.case_decisions
 WHERE case_id = $1
 ORDER BY created_at DESC;
@@ -210,9 +226,12 @@ INSERT INTO ops.case_decision_proposal_reason_codes (proposal_id, reason_code)
 VALUES ($1, $2);
 
 -- name: CreateAcceptedDecisionFromProposal :one
-INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by, decision_source, proposal_id)
-VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5)
-RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id;
+INSERT INTO ops.case_decisions (
+    case_id, decision, note, status, created_by, decision_source, proposal_id,
+    evidence_exception, evidence_exception_note
+) VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5, $6, $7)
+RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at,
+    decision_source, proposal_id, evidence_exception, evidence_exception_note;
 
 -- name: CreateCaseAuditEvent :one
 INSERT INTO ops.case_audit_events (case_id, actor_id, event_type, metadata)

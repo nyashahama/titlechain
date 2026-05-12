@@ -62,6 +62,7 @@ type EvidenceAnalytics struct {
 	TotalItems                    int                    `json:"total_items"`
 	CasesWithoutEvidence          int                    `json:"cases_without_evidence"`
 	CasesWithoutConfirmedEvidence int                    `json:"cases_without_confirmed_evidence"`
+	ExceptionApprovedCount        int                    `json:"exception_approved_count"`
 	StatusMix                     []EvidenceStatusMetric `json:"status_mix"`
 	SourceTypeMix                 []EvidenceSourceMetric `json:"source_type_mix"`
 }

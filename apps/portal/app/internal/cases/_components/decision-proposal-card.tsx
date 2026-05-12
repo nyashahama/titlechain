@@ -85,9 +85,21 @@ export function DecisionProposalCard({
 
       {error && <p role="alert" className="text-[12px] text-tc-danger">{error}</p>}
 
-      <div className="flex gap-2">
-        <form action={handleAccept} className="flex-1">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+        <form action={handleAccept} className="space-y-3">
           <input type="hidden" name="actor_id" value={actorId} />
+          <div>
+            <label htmlFor="proposal_evidence_exception_note" className="block text-[11px] text-muted mb-1.5">
+              Evidence Exception Note
+            </label>
+            <textarea
+              id="proposal_evidence_exception_note"
+              name="evidence_exception_note"
+              rows={3}
+              className="w-full resize-none rounded-md border border-tc-border bg-tc-surface-subtle px-3 py-2 text-[13px] text-tc-text transition-colors placeholder:text-tc-text-faint focus:border-tc-accent focus:outline-none"
+              placeholder="Required when accepting without confirmed evidence."
+            />
+          </div>
           <button
             type="submit"
             className="w-full rounded-md bg-tc-accent px-4 py-[8px] text-[13px] font-medium text-white transition-opacity duration-200 hover:opacity-85"
@@ -95,11 +107,11 @@ export function DecisionProposalCard({
             Accept Recommendation
           </button>
         </form>
-        <form action={handleReevaluate}>
+        <form action={handleReevaluate} className="flex items-end">
           <input type="hidden" name="actor_id" value={actorId} />
           <button
             type="submit"
-            className="rounded-md border border-tc-border px-4 py-[8px] text-[13px] font-medium text-tc-text transition-colors duration-200 hover:bg-white/5"
+            className="w-full rounded-md border border-tc-border px-4 py-[8px] text-[13px] font-medium text-tc-text transition-colors duration-200 hover:bg-white/5"
           >
             Re-run Evaluation
           </button>

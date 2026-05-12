@@ -73,6 +73,75 @@ func buildCanonicalEvidenceDrafts(
 	return drafts, nil
 }
 
+func (s CasesStore) attachCanonicalEvidenceForLinkedPropertyInTx(
+	ctx context.Context,
+	queries *sqlc.Queries,
+	caseID pgtype.UUID,
+	linkedPropertyID string,
+	actorID string,
+) error {
+	propID, err := parseUUID(linkedPropertyID)
+	if err != nil {
+		return fmt.Errorf("invalid linked_property_id: %w", err)
+	}
+
+	propRow, err := queries.GetPropertySummary(ctx, propID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errors.New("linked property not found")
+		}
+		return err
+	}
+
+	sourceLinkRows, err := queries.ListCoreSourceLinksByProperty(ctx, propID)
+	if err != nil {
+		return err
+	}
+
+	sourceLinks := make([]canonicalSourceLink, 0, len(sourceLinkRows))
+	for _, row := range sourceLinkRows {
+		sourceLinks = append(sourceLinks, canonicalSourceLink{
+			ID:             uuidToString(row.ID),
+			BatchID:        uuidToString(row.BatchID),
+			SourceRecordID: uuidToString(row.SourceRecordID),
+			FactTable:      row.FactTable,
+			FactID:         uuidToString(row.FactID),
+		})
+	}
+
+	drafts, err := buildCanonicalEvidenceDrafts(
+		linkedPropertyID,
+		propRow.PropertyDescription,
+		propRow.TitleReference,
+		sourceLinks,
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, draft := range drafts {
+		facts, err := json.Marshal(draft.Facts)
+		if err != nil {
+			return fmt.Errorf("marshal canonical evidence facts: %w", err)
+		}
+		_, err = queries.UpsertCaseEvidence(ctx, sqlc.UpsertCaseEvidenceParams{
+			CaseID:            caseID,
+			EvidenceType:      "canonical_property",
+			SourceType:        "normalized_data",
+			SourceReference:   draft.SourceReference,
+			ExternalReference: pgtype.Text{String: draft.ExternalReference, Valid: draft.ExternalReference != ""},
+			ExtractedFacts:    facts,
+			EvidenceStatus:    string(cases.EvidenceStatusConfirmed),
+			CreatedBy:         actorID,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s CasesStore) ListAnalysts(ctx context.Context) ([]cases.Analyst, error) {
 	queries := sqlc.New(s.pool)
 	rows, err := queries.ListAnalysts(ctx)
@@ -163,6 +232,9 @@ func (s CasesStore) ListCases(ctx context.Context, filter cases.ListCasesFilter)
 		}
 		result = filtered
 	}
+	if err := s.attachEvidenceReadinessToSummaries(ctx, queries, result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 
@@ -203,6 +275,38 @@ func attachPilotContexts(summaries []cases.CaseSummary, contexts map[string]case
 		}
 		summaries[i].Pilot = &ctx
 	}
+}
+
+func (s CasesStore) attachEvidenceReadinessToSummaries(ctx context.Context, queries sqlc.Querier, summaries []cases.CaseSummary) error {
+	for i := range summaries {
+		id, err := parseUUID(summaries[i].ID)
+		if err != nil {
+			return err
+		}
+		matches, err := queries.ListCasePropertyMatches(ctx, id)
+		if err != nil {
+			return err
+		}
+		evidence, err := queries.ListCaseEvidence(ctx, id)
+		if err != nil {
+			return err
+		}
+		decisions, err := queries.ListCaseDecisions(ctx, id)
+		if err != nil {
+			return err
+		}
+		mappedDecisions := make([]cases.Decision, 0, len(decisions))
+		for _, decision := range decisions {
+			mappedDecisions = append(mappedDecisions, decisionFromRow(decision))
+		}
+		summaries[i] = caseSummaryWithEvidenceReadiness(
+			summaries[i],
+			propertyMatchesFromRows(matches),
+			evidenceItemsFromRows(evidence),
+			mappedDecisions,
+		)
+	}
+	return nil
 }
 
 func pilotContextFromListRow(row sqlc.ListPilotCaseContextsRow) cases.PilotContext {
@@ -360,7 +464,7 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 				"property_id": req.LinkedPropertyID,
 				"field":       item.EvidenceType,
 			})
-			_, err := queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+			_, err := queries.UpsertCaseEvidence(ctx, sqlc.UpsertCaseEvidenceParams{
 				CaseID:          c.ID,
 				EvidenceType:    item.EvidenceType,
 				SourceType:      "canonical_property",
@@ -420,64 +524,8 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 	}
 
 	if req.LinkedPropertyID != "" {
-		propID, err := parseUUID(req.LinkedPropertyID)
-		if err != nil {
-			return cases.CaseDetail{}, fmt.Errorf("invalid linked_property_id: %w", err)
-		}
-
-		// Try to get property summary
-		propRow, err := queries.GetPropertySummary(ctx, propID)
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return cases.CaseDetail{}, errors.New("linked property not found")
-			}
+		if err := s.attachCanonicalEvidenceForLinkedPropertyInTx(ctx, queries, c.ID, req.LinkedPropertyID, req.ActorID); err != nil {
 			return cases.CaseDetail{}, err
-		}
-
-		sourceLinkRows, err := queries.ListCoreSourceLinksByProperty(ctx, propID)
-		if err != nil {
-			return cases.CaseDetail{}, err
-		}
-
-		sourceLinks := make([]canonicalSourceLink, 0, len(sourceLinkRows))
-		for _, row := range sourceLinkRows {
-			sourceLinks = append(sourceLinks, canonicalSourceLink{
-				ID:             uuidToString(row.ID),
-				BatchID:        uuidToString(row.BatchID),
-				SourceRecordID: uuidToString(row.SourceRecordID),
-				FactTable:      row.FactTable,
-				FactID:         uuidToString(row.FactID),
-			})
-		}
-
-		drafts, err := buildCanonicalEvidenceDrafts(
-			req.LinkedPropertyID,
-			propRow.PropertyDescription,
-			propRow.TitleReference,
-			sourceLinks,
-		)
-		if err != nil {
-			return cases.CaseDetail{}, err
-		}
-
-		for _, draft := range drafts {
-			facts, err := json.Marshal(draft.Facts)
-			if err != nil {
-				return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
-			}
-			_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
-				CaseID:            c.ID,
-				EvidenceType:      "canonical_property",
-				SourceType:        "normalized_data",
-				SourceReference:   draft.SourceReference,
-				ExternalReference: pgtype.Text{String: draft.ExternalReference, Valid: draft.ExternalReference != ""},
-				ExtractedFacts:    facts,
-				EvidenceStatus:    string(cases.EvidenceStatusConfirmed),
-				CreatedBy:         req.ActorID,
-			})
-			if err != nil {
-				return cases.CaseDetail{}, err
-			}
 		}
 	}
 
@@ -620,7 +668,7 @@ func (s CasesStore) AddEvidenceWorkflow(ctx context.Context, caseID string, req 
 	}
 
 	facts, _ := json.Marshal(req.ExtractedFacts)
-	_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+	_, err = queries.UpsertCaseEvidence(ctx, sqlc.UpsertCaseEvidenceParams{
 		CaseID:            id,
 		EvidenceType:      req.EvidenceType,
 		SourceType:        req.SourceType,
@@ -835,13 +883,17 @@ func (s CasesStore) AcceptProposalWorkflow(ctx context.Context, caseID string, r
 	if note == "" {
 		note = currentProposal.Summary
 	}
+	evidenceExceptionNote := strings.TrimSpace(req.EvidenceExceptionNote)
+	evidenceException := evidenceExceptionNote != ""
 
 	dec, err := queries.CreateAcceptedDecisionFromProposal(ctx, sqlc.CreateAcceptedDecisionFromProposalParams{
-		CaseID:     id,
-		Decision:   currentProposal.Decision,
-		Note:       note,
-		CreatedBy:  req.ActorID,
-		ProposalID: currentProposal.ID,
+		CaseID:                id,
+		Decision:              currentProposal.Decision,
+		Note:                  note,
+		CreatedBy:             req.ActorID,
+		ProposalID:            currentProposal.ID,
+		EvidenceException:     evidenceException,
+		EvidenceExceptionNote: pgtype.Text{String: evidenceExceptionNote, Valid: evidenceException},
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -868,12 +920,17 @@ func (s CasesStore) AcceptProposalWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
-	meta, _ := json.Marshal(map[string]any{
+	auditMeta := map[string]any{
 		"decision":        dec.Decision,
 		"decision_source": cases.DecisionSourceAcceptedProposal,
 		"proposal_id":     uuidToString(currentProposal.ID),
 		"decision_id":     uuidToString(dec.ID),
-	})
+	}
+	if evidenceException {
+		auditMeta["evidence_exception"] = true
+		auditMeta["evidence_exception_note"] = evidenceExceptionNote
+	}
+	meta, _ := json.Marshal(auditMeta)
 	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 		CaseID:    id,
 		ActorID:   req.ActorID,
@@ -935,13 +992,18 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
+	evidenceExceptionNote := strings.TrimSpace(req.EvidenceExceptionNote)
+	evidenceException := evidenceExceptionNote != ""
+
 	dec, err := queries.CreateCaseDecision(ctx, sqlc.CreateCaseDecisionParams{
-		CaseID:         id,
-		Decision:       string(req.Decision),
-		Note:           req.Note,
-		CreatedBy:      req.ActorID,
-		DecisionSource: string(decisionSource),
-		ProposalID:     proposalID,
+		CaseID:                id,
+		Decision:              string(req.Decision),
+		Note:                  req.Note,
+		CreatedBy:             req.ActorID,
+		DecisionSource:        string(decisionSource),
+		ProposalID:            proposalID,
+		EvidenceException:     evidenceException,
+		EvidenceExceptionNote: pgtype.Text{String: evidenceExceptionNote, Valid: evidenceException},
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -961,11 +1023,16 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 		return cases.CaseDetail{}, err
 	}
 
-	meta, _ := json.Marshal(map[string]any{
+	auditMeta := map[string]any{
 		"decision":        req.Decision,
 		"reason_codes":    req.ReasonCodes,
 		"decision_source": decisionSource,
-	})
+	}
+	if evidenceException {
+		auditMeta["evidence_exception"] = true
+		auditMeta["evidence_exception_note"] = evidenceExceptionNote
+	}
+	meta, _ := json.Marshal(auditMeta)
 	_, err = queries.CreateCaseAuditEvent(ctx, sqlc.CreateCaseAuditEventParams{
 		CaseID:    id,
 		ActorID:   req.ActorID,
@@ -1188,10 +1255,26 @@ func (s CasesStore) buildCaseDetail(ctx context.Context, queries sqlc.Querier, c
 		detail.CurrentProposal = decisionProposalFromRow(proposal, proposalCodes)
 	}
 
-	return detail, nil
+	return caseDetailWithEvidenceReadiness(detail), nil
 }
 
 // Conversion helpers
+
+func caseDetailWithEvidenceReadiness(detail cases.CaseDetail) cases.CaseDetail {
+	detail.EvidenceReadiness = cases.EvaluateEvidenceReadiness(detail)
+	detail.Case.EvidenceReadiness = detail.EvidenceReadiness
+	return detail
+}
+
+func caseSummaryWithEvidenceReadiness(summary cases.CaseSummary, matches []cases.PropertyMatch, evidence []cases.EvidenceItem, decisions []cases.Decision) cases.CaseSummary {
+	summary.EvidenceReadiness = cases.EvaluateEvidenceReadiness(cases.CaseDetail{
+		Case:      summary,
+		Matches:   matches,
+		Evidence:  evidence,
+		Decisions: decisions,
+	})
+	return summary
+}
 
 func caseSummaryFromRow(row sqlc.ListCaseSummariesRow) cases.CaseSummary {
 	return cases.CaseSummary{
@@ -1323,15 +1406,17 @@ func partiesFromRows(rows []sqlc.OpsCaseParty) []cases.Party {
 
 func decisionFromRow(row sqlc.OpsCaseDecision) cases.Decision {
 	return cases.Decision{
-		ID:             uuidToString(row.ID),
-		CaseID:         uuidToString(row.CaseID),
-		Decision:       cases.DecisionOutcome(row.Decision),
-		Note:           row.Note,
-		Status:         row.Status,
-		CreatedBy:      row.CreatedBy,
-		CreatedAt:      row.CreatedAt.Time,
-		DecisionSource: cases.DecisionSource(row.DecisionSource),
-		ProposalID:     uuidToString(row.ProposalID),
+		ID:                    uuidToString(row.ID),
+		CaseID:                uuidToString(row.CaseID),
+		Decision:              cases.DecisionOutcome(row.Decision),
+		Note:                  row.Note,
+		Status:                row.Status,
+		CreatedBy:             row.CreatedBy,
+		CreatedAt:             row.CreatedAt.Time,
+		DecisionSource:        cases.DecisionSource(row.DecisionSource),
+		ProposalID:            uuidToString(row.ProposalID),
+		EvidenceException:     row.EvidenceException,
+		EvidenceExceptionNote: textToString(row.EvidenceExceptionNote),
 	}
 }
 

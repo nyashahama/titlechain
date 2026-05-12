@@ -72,7 +72,8 @@ func TestService_AcceptProposalCreatesAcceptedDecision(t *testing.T) {
 	}
 
 	detail, err = svc.AcceptProposal(context.Background(), detail.Case.ID, AcceptProposalRequest{
-		ActorID: "ana-001",
+		ActorID:               "ana-001",
+		EvidenceExceptionNote: "This note should be ignored because the case is ready.",
 	})
 	if err != nil {
 		t.Fatalf("accept proposal: %v", err)
@@ -85,6 +86,78 @@ func TestService_AcceptProposalCreatesAcceptedDecision(t *testing.T) {
 	}
 	if detail.Decisions[0].ProposalID == "" {
 		t.Fatal("proposal_id = empty, want proposal back-reference")
+	}
+	if detail.Decisions[0].EvidenceException {
+		t.Fatal("evidence_exception = true, want false")
+	}
+	if detail.Decisions[0].EvidenceExceptionNote != "" {
+		t.Fatalf("evidence_exception_note = %q, want empty", detail.Decisions[0].EvidenceExceptionNote)
+	}
+}
+
+func TestService_AcceptProposalRequiresEvidenceExceptionNoteWhenNotReady(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	detail, err := svc.CreateCase(ctx, unresolvedCaseRequest())
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+	if detail.CurrentProposal == nil {
+		t.Fatal("current_proposal = nil, want proposal")
+	}
+	if detail.CurrentProposal.Decision != DecisionReview {
+		t.Fatalf("proposal decision = %s, want %s", detail.CurrentProposal.Decision, DecisionReview)
+	}
+
+	_, err = svc.AcceptProposal(ctx, detail.Case.ID, AcceptProposalRequest{
+		ActorID: "ana-001",
+	})
+	if err == nil {
+		t.Fatal("expected error for accepted review proposal without evidence exception note, got nil")
+	}
+}
+
+func TestService_AcceptProposalAllowsEvidenceExceptionForReview(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	detail, err := svc.CreateCase(ctx, unresolvedCaseRequest())
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+	if detail.CurrentProposal == nil {
+		t.Fatal("current_proposal = nil, want proposal")
+	}
+	if detail.CurrentProposal.Decision != DecisionReview {
+		t.Fatalf("proposal decision = %s, want %s", detail.CurrentProposal.Decision, DecisionReview)
+	}
+
+	const exceptionNote = "Source match is pending; review recommendation accepted with manually captured intake context."
+	detail, err = svc.AcceptProposal(ctx, detail.Case.ID, AcceptProposalRequest{
+		ActorID:               "ana-001",
+		EvidenceExceptionNote: "  " + exceptionNote + "  ",
+	})
+	if err != nil {
+		t.Fatalf("accept proposal: %v", err)
+	}
+
+	if len(detail.Decisions) != 1 {
+		t.Fatalf("decisions = %d, want 1", len(detail.Decisions))
+	}
+	if detail.Decisions[0].Decision != DecisionReview {
+		t.Fatalf("decision = %s, want %s", detail.Decisions[0].Decision, DecisionReview)
+	}
+	if !detail.Decisions[0].EvidenceException {
+		t.Fatal("evidence_exception = false, want true")
+	}
+	if detail.Decisions[0].EvidenceExceptionNote != exceptionNote {
+		t.Fatalf("evidence_exception_note = %q, want %q", detail.Decisions[0].EvidenceExceptionNote, exceptionNote)
+	}
+	if detail.EvidenceReadiness.State != EvidenceReadinessExceptionApproved {
+		t.Fatalf("readiness = %s, want %s", detail.EvidenceReadiness.State, EvidenceReadinessExceptionApproved)
 	}
 }
 
@@ -116,6 +189,134 @@ func TestService_RecordDecisionRejectsStopWithoutHardBlock(t *testing.T) {
 	}
 }
 
+func TestService_RecordDecisionRejectsClearWithoutConfirmedEvidence(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	detail, err := svc.CreateCase(ctx, CreateCaseRequest{
+		ActorID:                   "ana-001",
+		PropertyDescription:       "Erf 22 Parktown",
+		LocalityOrArea:            "Parktown",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+	})
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+
+	_, err = svc.RecordDecision(ctx, detail.Case.ID, RecordDecisionRequest{
+		ActorID:     "ana-001",
+		Decision:    DecisionClear,
+		ReasonCodes: []string{"TITLE_SEARCH_CLEAN"},
+		Note:        "Title search returned no material blocker.",
+	})
+	if err == nil {
+		t.Fatal("expected error for clear without confirmed evidence, got nil")
+	}
+}
+
+func TestService_RecordDecisionRequiresEvidenceExceptionNoteWhenNotReady(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	detail, err := svc.CreateCase(ctx, CreateCaseRequest{
+		ActorID:                   "ana-001",
+		PropertyDescription:       "Erf 49 Braamfontein",
+		LocalityOrArea:            "Braamfontein",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+	})
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+
+	_, err = svc.RecordDecision(ctx, detail.Case.ID, RecordDecisionRequest{
+		ActorID:     "ana-001",
+		Decision:    DecisionReview,
+		ReasonCodes: []string{"INSUFFICIENT_SOURCE_COVERAGE"},
+		Note:        "Source coverage is incomplete.",
+	})
+	if err == nil {
+		t.Fatal("expected error for review without evidence exception note, got nil")
+	}
+}
+
+func TestService_RecordDecisionAllowsEvidenceExceptionForReview(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	detail, err := svc.CreateCase(ctx, CreateCaseRequest{
+		ActorID:                   "ana-001",
+		PropertyDescription:       "Erf 77 Newlands",
+		LocalityOrArea:            "Newlands",
+		MunicipalityOrDeedsOffice: "Cape Town",
+	})
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+
+	const exceptionNote = "Source match unavailable; senior analyst approved manual review resolution."
+	detail, err = svc.RecordDecision(ctx, detail.Case.ID, RecordDecisionRequest{
+		ActorID:               "ana-001",
+		Decision:              DecisionReview,
+		ReasonCodes:           []string{"INSUFFICIENT_SOURCE_COVERAGE"},
+		Note:                  "Source coverage is incomplete.",
+		EvidenceExceptionNote: exceptionNote,
+	})
+	if err != nil {
+		t.Fatalf("record decision: %v", err)
+	}
+
+	if len(detail.Decisions) != 1 {
+		t.Fatalf("decisions = %d, want 1", len(detail.Decisions))
+	}
+	if !detail.Decisions[0].EvidenceException {
+		t.Fatal("evidence_exception = false, want true")
+	}
+	if detail.Decisions[0].EvidenceExceptionNote != exceptionNote {
+		t.Fatalf("evidence_exception_note = %q, want %q", detail.Decisions[0].EvidenceExceptionNote, exceptionNote)
+	}
+	if detail.EvidenceReadiness.State != EvidenceReadinessExceptionApproved {
+		t.Fatalf("readiness = %s, want %s", detail.EvidenceReadiness.State, EvidenceReadinessExceptionApproved)
+	}
+}
+
+func TestService_RecordDecisionIgnoresEvidenceExceptionNoteWhenReady(t *testing.T) {
+	repo := NewMemoryRepository()
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	detail, err := svc.CreateCase(ctx, normalizedCleanCaseRequest())
+	if err != nil {
+		t.Fatalf("create case: %v", err)
+	}
+
+	detail, err = svc.RecordDecision(ctx, detail.Case.ID, RecordDecisionRequest{
+		ActorID:               "ana-001",
+		Decision:              DecisionClear,
+		ReasonCodes:           []string{"TITLE_SEARCH_CLEAN"},
+		Note:                  "Title search returned no material blocker.",
+		EvidenceExceptionNote: "This note should be ignored because the case is ready.",
+	})
+	if err != nil {
+		t.Fatalf("record decision: %v", err)
+	}
+
+	if len(detail.Decisions) != 1 {
+		t.Fatalf("decisions = %d, want 1", len(detail.Decisions))
+	}
+	if detail.Decisions[0].EvidenceException {
+		t.Fatal("evidence_exception = true, want false")
+	}
+	if detail.Decisions[0].EvidenceExceptionNote != "" {
+		t.Fatalf("evidence_exception_note = %q, want empty", detail.Decisions[0].EvidenceExceptionNote)
+	}
+	if detail.EvidenceReadiness.State != EvidenceReadinessReadyForDecision {
+		t.Fatalf("readiness = %s, want %s", detail.EvidenceReadiness.State, EvidenceReadinessReadyForDecision)
+	}
+}
+
 func TestService_RecordDecisionAllowsStopWithHardBlock(t *testing.T) {
 	repo := NewMemoryRepository()
 	svc := NewService(repo)
@@ -131,11 +332,13 @@ func TestService_RecordDecisionAllowsStopWithHardBlock(t *testing.T) {
 		t.Fatalf("create case: %v", err)
 	}
 
+	const exceptionNote = "Confirmed source evidence is unavailable; interdict notice supplied directly by counsel."
 	detail, err = svc.RecordDecision(ctx, detail.Case.ID, RecordDecisionRequest{
-		ActorID:     "ana-001",
-		Decision:    DecisionStop,
-		ReasonCodes: []string{"ACTIVE_INTERDICT"},
-		Note:        "Active interdict found against transfer.",
+		ActorID:               "ana-001",
+		Decision:              DecisionStop,
+		ReasonCodes:           []string{"ACTIVE_INTERDICT"},
+		Note:                  "Active interdict found against transfer.",
+		EvidenceExceptionNote: exceptionNote,
 	})
 	if err != nil {
 		t.Fatalf("record decision: %v", err)
@@ -149,6 +352,12 @@ func TestService_RecordDecisionAllowsStopWithHardBlock(t *testing.T) {
 	}
 	if detail.Decisions[0].Decision != DecisionStop {
 		t.Errorf("decision = %s, want stop", detail.Decisions[0].Decision)
+	}
+	if !detail.Decisions[0].EvidenceException {
+		t.Fatal("evidence_exception = false, want true")
+	}
+	if detail.Decisions[0].EvidenceExceptionNote != exceptionNote {
+		t.Fatalf("evidence_exception_note = %q, want %q", detail.Decisions[0].EvidenceExceptionNote, exceptionNote)
 	}
 }
 

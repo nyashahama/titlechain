@@ -88,5 +88,12 @@ function formatReasons(reasons: string[]): string {
     return "No risk reasons recorded";
   }
 
-  return reasons.map((reason) => titleize(reason)).join(", ");
+  return reasons.map((reason) => riskReasonLabel(reason)).join(", ");
+}
+
+function riskReasonLabel(reason: string): string {
+  if (reason === "evidence_exception_approved") {
+    return "Evidence exception approved";
+  }
+  return titleize(reason);
 }

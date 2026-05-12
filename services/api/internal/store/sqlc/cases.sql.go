@@ -11,59 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const addCaseEvidence = `-- name: AddCaseEvidence :one
-INSERT INTO ops.case_evidence_items (
-    case_id, evidence_type, source_type, source_reference, external_reference,
-    excerpt, extracted_facts, evidence_status, analyst_note, created_by
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, case_id, evidence_type, source_type, source_reference, external_reference,
-    excerpt, extracted_facts, evidence_status, analyst_note, created_by, created_at
-`
-
-type AddCaseEvidenceParams struct {
-	CaseID            pgtype.UUID `json:"case_id"`
-	EvidenceType      string      `json:"evidence_type"`
-	SourceType        string      `json:"source_type"`
-	SourceReference   string      `json:"source_reference"`
-	ExternalReference pgtype.Text `json:"external_reference"`
-	Excerpt           pgtype.Text `json:"excerpt"`
-	ExtractedFacts    []byte      `json:"extracted_facts"`
-	EvidenceStatus    string      `json:"evidence_status"`
-	AnalystNote       pgtype.Text `json:"analyst_note"`
-	CreatedBy         string      `json:"created_by"`
-}
-
-func (q *Queries) AddCaseEvidence(ctx context.Context, arg AddCaseEvidenceParams) (OpsCaseEvidenceItem, error) {
-	row := q.db.QueryRow(ctx, addCaseEvidence,
-		arg.CaseID,
-		arg.EvidenceType,
-		arg.SourceType,
-		arg.SourceReference,
-		arg.ExternalReference,
-		arg.Excerpt,
-		arg.ExtractedFacts,
-		arg.EvidenceStatus,
-		arg.AnalystNote,
-		arg.CreatedBy,
-	)
-	var i OpsCaseEvidenceItem
-	err := row.Scan(
-		&i.ID,
-		&i.CaseID,
-		&i.EvidenceType,
-		&i.SourceType,
-		&i.SourceReference,
-		&i.ExternalReference,
-		&i.Excerpt,
-		&i.ExtractedFacts,
-		&i.EvidenceStatus,
-		&i.AnalystNote,
-		&i.CreatedBy,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const addCaseParty = `-- name: AddCaseParty :one
 INSERT INTO ops.case_parties (case_id, role, entity_type, display_name, identifier, note, created_by)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -218,17 +165,22 @@ func (q *Queries) ConfirmCasePropertyMatch(ctx context.Context, arg ConfirmCaseP
 }
 
 const createAcceptedDecisionFromProposal = `-- name: CreateAcceptedDecisionFromProposal :one
-INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by, decision_source, proposal_id)
-VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5)
-RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id
+INSERT INTO ops.case_decisions (
+    case_id, decision, note, status, created_by, decision_source, proposal_id,
+    evidence_exception, evidence_exception_note
+) VALUES ($1, $2, $3, 'current', $4, 'accepted_proposal', $5, $6, $7)
+RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at,
+    decision_source, proposal_id, evidence_exception, evidence_exception_note
 `
 
 type CreateAcceptedDecisionFromProposalParams struct {
-	CaseID     pgtype.UUID `json:"case_id"`
-	Decision   string      `json:"decision"`
-	Note       string      `json:"note"`
-	CreatedBy  string      `json:"created_by"`
-	ProposalID pgtype.UUID `json:"proposal_id"`
+	CaseID                pgtype.UUID `json:"case_id"`
+	Decision              string      `json:"decision"`
+	Note                  string      `json:"note"`
+	CreatedBy             string      `json:"created_by"`
+	ProposalID            pgtype.UUID `json:"proposal_id"`
+	EvidenceException     bool        `json:"evidence_exception"`
+	EvidenceExceptionNote pgtype.Text `json:"evidence_exception_note"`
 }
 
 func (q *Queries) CreateAcceptedDecisionFromProposal(ctx context.Context, arg CreateAcceptedDecisionFromProposalParams) (OpsCaseDecision, error) {
@@ -238,6 +190,8 @@ func (q *Queries) CreateAcceptedDecisionFromProposal(ctx context.Context, arg Cr
 		arg.Note,
 		arg.CreatedBy,
 		arg.ProposalID,
+		arg.EvidenceException,
+		arg.EvidenceExceptionNote,
 	)
 	var i OpsCaseDecision
 	err := row.Scan(
@@ -251,6 +205,8 @@ func (q *Queries) CreateAcceptedDecisionFromProposal(ctx context.Context, arg Cr
 		&i.SupersededAt,
 		&i.DecisionSource,
 		&i.ProposalID,
+		&i.EvidenceException,
+		&i.EvidenceExceptionNote,
 	)
 	return i, err
 }
@@ -288,18 +244,23 @@ func (q *Queries) CreateCaseAuditEvent(ctx context.Context, arg CreateCaseAuditE
 }
 
 const createCaseDecision = `-- name: CreateCaseDecision :one
-INSERT INTO ops.case_decisions (case_id, decision, note, status, created_by, decision_source, proposal_id)
-VALUES ($1, $2, $3, 'current', $4, $5, $6)
-RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id
+INSERT INTO ops.case_decisions (
+    case_id, decision, note, status, created_by, decision_source, proposal_id,
+    evidence_exception, evidence_exception_note
+) VALUES ($1, $2, $3, 'current', $4, $5, $6, $7, $8)
+RETURNING id, case_id, decision, note, status, created_by, created_at, superseded_at,
+    decision_source, proposal_id, evidence_exception, evidence_exception_note
 `
 
 type CreateCaseDecisionParams struct {
-	CaseID         pgtype.UUID `json:"case_id"`
-	Decision       string      `json:"decision"`
-	Note           string      `json:"note"`
-	CreatedBy      string      `json:"created_by"`
-	DecisionSource string      `json:"decision_source"`
-	ProposalID     pgtype.UUID `json:"proposal_id"`
+	CaseID                pgtype.UUID `json:"case_id"`
+	Decision              string      `json:"decision"`
+	Note                  string      `json:"note"`
+	CreatedBy             string      `json:"created_by"`
+	DecisionSource        string      `json:"decision_source"`
+	ProposalID            pgtype.UUID `json:"proposal_id"`
+	EvidenceException     bool        `json:"evidence_exception"`
+	EvidenceExceptionNote pgtype.Text `json:"evidence_exception_note"`
 }
 
 func (q *Queries) CreateCaseDecision(ctx context.Context, arg CreateCaseDecisionParams) (OpsCaseDecision, error) {
@@ -310,6 +271,8 @@ func (q *Queries) CreateCaseDecision(ctx context.Context, arg CreateCaseDecision
 		arg.CreatedBy,
 		arg.DecisionSource,
 		arg.ProposalID,
+		arg.EvidenceException,
+		arg.EvidenceExceptionNote,
 	)
 	var i OpsCaseDecision
 	err := row.Scan(
@@ -323,6 +286,8 @@ func (q *Queries) CreateCaseDecision(ctx context.Context, arg CreateCaseDecision
 		&i.SupersededAt,
 		&i.DecisionSource,
 		&i.ProposalID,
+		&i.EvidenceException,
+		&i.EvidenceExceptionNote,
 	)
 	return i, err
 }
@@ -725,7 +690,8 @@ func (q *Queries) ListCaseAuditEvents(ctx context.Context, caseID pgtype.UUID) (
 }
 
 const listCaseDecisions = `-- name: ListCaseDecisions :many
-SELECT id, case_id, decision, note, status, created_by, created_at, superseded_at, decision_source, proposal_id
+SELECT id, case_id, decision, note, status, created_by, created_at, superseded_at,
+    decision_source, proposal_id, evidence_exception, evidence_exception_note
 FROM ops.case_decisions
 WHERE case_id = $1
 ORDER BY created_at DESC
@@ -751,6 +717,8 @@ func (q *Queries) ListCaseDecisions(ctx context.Context, caseID pgtype.UUID) ([]
 			&i.SupersededAt,
 			&i.DecisionSource,
 			&i.ProposalID,
+			&i.EvidenceException,
+			&i.EvidenceExceptionNote,
 		); err != nil {
 			return nil, err
 		}
@@ -1360,4 +1328,69 @@ WHERE case_id = $1 AND status = 'current'
 func (q *Queries) SupersedeCurrentDecisions(ctx context.Context, caseID pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, supersedeCurrentDecisions, caseID)
 	return err
+}
+
+const upsertCaseEvidence = `-- name: UpsertCaseEvidence :one
+INSERT INTO ops.case_evidence_items (
+    case_id, evidence_type, source_type, source_reference, external_reference,
+    excerpt, extracted_facts, evidence_status, analyst_note, created_by
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+ON CONFLICT (
+    case_id,
+    source_type,
+    source_reference,
+    (coalesce(external_reference, ''::text)),
+    evidence_type
+) WHERE evidence_status != 'superseded'
+DO UPDATE SET
+    excerpt = EXCLUDED.excerpt,
+    extracted_facts = EXCLUDED.extracted_facts,
+    evidence_status = EXCLUDED.evidence_status,
+    analyst_note = EXCLUDED.analyst_note
+RETURNING id, case_id, evidence_type, source_type, source_reference, external_reference,
+    excerpt, extracted_facts, evidence_status, analyst_note, created_by, created_at
+`
+
+type UpsertCaseEvidenceParams struct {
+	CaseID            pgtype.UUID `json:"case_id"`
+	EvidenceType      string      `json:"evidence_type"`
+	SourceType        string      `json:"source_type"`
+	SourceReference   string      `json:"source_reference"`
+	ExternalReference pgtype.Text `json:"external_reference"`
+	Excerpt           pgtype.Text `json:"excerpt"`
+	ExtractedFacts    []byte      `json:"extracted_facts"`
+	EvidenceStatus    string      `json:"evidence_status"`
+	AnalystNote       pgtype.Text `json:"analyst_note"`
+	CreatedBy         string      `json:"created_by"`
+}
+
+func (q *Queries) UpsertCaseEvidence(ctx context.Context, arg UpsertCaseEvidenceParams) (OpsCaseEvidenceItem, error) {
+	row := q.db.QueryRow(ctx, upsertCaseEvidence,
+		arg.CaseID,
+		arg.EvidenceType,
+		arg.SourceType,
+		arg.SourceReference,
+		arg.ExternalReference,
+		arg.Excerpt,
+		arg.ExtractedFacts,
+		arg.EvidenceStatus,
+		arg.AnalystNote,
+		arg.CreatedBy,
+	)
+	var i OpsCaseEvidenceItem
+	err := row.Scan(
+		&i.ID,
+		&i.CaseID,
+		&i.EvidenceType,
+		&i.SourceType,
+		&i.SourceReference,
+		&i.ExternalReference,
+		&i.Excerpt,
+		&i.ExtractedFacts,
+		&i.EvidenceStatus,
+		&i.AnalystNote,
+		&i.CreatedBy,
+		&i.CreatedAt,
+	)
+	return i, err
 }

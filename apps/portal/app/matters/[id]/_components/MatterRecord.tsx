@@ -12,11 +12,13 @@ import {
   Home,
   MapPin,
   RefreshCcw,
+  ShieldCheck,
 } from "lucide-react";
 import { CopyAction } from "@/app/_components/product/CopyAction";
 import { ProductPanel } from "@/app/_components/product/ProductPanel";
 import { ProductStatusBadge } from "@/app/_components/product/ProductStatusBadge";
 import { RelativeTime } from "@/app/_components/product/RelativeTime";
+import { evidenceReadinessAction, evidenceReadinessTone } from "@/app/_lib/product/evidence-readiness";
 import { getDecisionMeta, getMatterStatusMeta, type ProductTone } from "@/app/_lib/product/status";
 import type { MatterDetail } from "../../types";
 
@@ -50,6 +52,14 @@ export function MatterRecord({ detail, onReopen, reopening, reopenError }: Matte
   const evidence = detail.evidence ?? [];
   const reasons = detail.reasons ?? [];
   const timeline = detail.timeline ?? [];
+  const readiness = detail.evidence_readiness ?? {
+    state: "unknown",
+    label: "Unknown",
+    description: "Evidence readiness could not be evaluated.",
+    confirmed_evidence_count: evidence.filter((item) => item.status === "confirmed" || item.status === "verified").length,
+    evidence_count: evidence.length,
+    missing: [],
+  };
   const decision = getDecisionMeta(matter.decision);
   const status = getMatterStatusMeta(matter.customer_status);
 
@@ -161,6 +171,30 @@ export function MatterRecord({ detail, onReopen, reopening, reopenError }: Matte
                 <dd className="mt-1 font-mono text-sm text-tc-text">{matter.case_reference}</dd>
               </div>
             </dl>
+          </ProductPanel>
+
+          <ProductPanel aria-labelledby="verification-title" className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="size-4 text-tc-text-faint" />
+                <h2 id="verification-title" className="text-sm font-medium text-tc-text">
+                  Verification Basis
+                </h2>
+              </div>
+              <ProductStatusBadge label={readiness.label} tone={evidenceReadinessTone(readiness.state)} />
+            </div>
+            <div className="rounded-md border border-tc-border bg-white/[0.02] p-4">
+              <p className="text-sm leading-6 text-tc-text">{readiness.description}</p>
+              <p className="mt-2 text-[13px] leading-6 text-tc-text-muted">{evidenceReadinessAction(readiness.state)}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-[12px] text-tc-text-faint">
+                <span className="rounded-md border border-tc-border bg-tc-surface-subtle px-2 py-1 font-mono tabular-nums text-tc-text-muted">
+                  {readiness.confirmed_evidence_count} / {readiness.evidence_count} confirmed
+                </span>
+                {readiness.missing?.length ? (
+                  <span>Missing {readiness.missing.map((item) => item.replace(/_/g, " ")).join(", ")}</span>
+                ) : null}
+              </div>
+            </div>
           </ProductPanel>
 
           <ProductPanel aria-labelledby="evidence-title" className="space-y-4">

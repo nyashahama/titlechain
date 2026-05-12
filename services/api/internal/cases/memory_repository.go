@@ -82,7 +82,14 @@ func (r *memoryRepository) ListCases(_ context.Context, filter ListCasesFilter) 
 		if filter.AssigneeID != "" && c.AssigneeID != filter.AssigneeID {
 			continue
 		}
-		result = append(result, c.CaseSummary)
+		summary := c.CaseSummary
+		summary.EvidenceReadiness = EvaluateEvidenceReadiness(CaseDetail{
+			Case:      summary,
+			Matches:   r.matches[summary.ID],
+			Evidence:  r.evidence[summary.ID],
+			Decisions: r.decisions[summary.ID],
+		})
+		result = append(result, summary)
 	}
 
 	if filter.Limit > 0 && int32(len(result)) > filter.Limit {
@@ -120,6 +127,9 @@ func (r *memoryRepository) getCaseDetailLocked(caseID string) (CaseDetail, error
 	if proposal, ok := r.currentProposalLocked(caseID); ok {
 		detail.CurrentProposal = &proposal
 	}
+
+	detail.EvidenceReadiness = EvaluateEvidenceReadiness(detail)
+	detail.Case.EvidenceReadiness = detail.EvidenceReadiness
 
 	return detail, nil
 }
@@ -393,17 +403,20 @@ func (r *memoryRepository) AcceptProposalWorkflow(_ context.Context, caseID stri
 	reasonCodes := append([]ReasonCode{}, proposal.ReasonCodes...)
 	now := time.Now()
 	decisionID := fmt.Sprintf("dec-%d", len(r.decisions[caseID])+1)
+	evidenceExceptionNote := strings.TrimSpace(req.EvidenceExceptionNote)
 	r.decisions[caseID] = append(r.decisions[caseID], Decision{
-		ID:             decisionID,
-		CaseID:         caseID,
-		Decision:       proposal.Decision,
-		ReasonCodes:    reasonCodes,
-		Note:           note,
-		Status:         "current",
-		CreatedBy:      req.ActorID,
-		CreatedAt:      now,
-		DecisionSource: DecisionSourceAcceptedProposal,
-		ProposalID:     proposal.ID,
+		ID:                    decisionID,
+		CaseID:                caseID,
+		Decision:              proposal.Decision,
+		ReasonCodes:           reasonCodes,
+		Note:                  note,
+		Status:                "current",
+		CreatedBy:             req.ActorID,
+		CreatedAt:             now,
+		DecisionSource:        DecisionSourceAcceptedProposal,
+		ProposalID:            proposal.ID,
+		EvidenceException:     evidenceExceptionNote != "",
+		EvidenceExceptionNote: evidenceExceptionNote,
 	})
 
 	c.Status = CaseStatusResolved
@@ -416,12 +429,17 @@ func (r *memoryRepository) AcceptProposalWorkflow(_ context.Context, caseID stri
 		}
 	}
 
-	r.addAuditEventLocked(caseID, req.ActorID, AuditDecisionRecorded, map[string]any{
+	auditMeta := map[string]any{
 		"decision":        proposal.Decision,
 		"decision_id":     decisionID,
 		"decision_source": DecisionSourceAcceptedProposal,
 		"proposal_id":     proposal.ID,
-	})
+	}
+	if evidenceExceptionNote != "" {
+		auditMeta["evidence_exception"] = true
+		auditMeta["evidence_exception_note"] = evidenceExceptionNote
+	}
+	r.addAuditEventLocked(caseID, req.ActorID, AuditDecisionRecorded, auditMeta)
 
 	return r.getCaseDetailLocked(caseID)
 }
@@ -456,6 +474,7 @@ func (r *memoryRepository) RecordDecisionWorkflow(_ context.Context, caseID stri
 
 	id := fmt.Sprintf("dec-%d", len(r.decisions[caseID])+1)
 	now := time.Now()
+	evidenceExceptionNote := strings.TrimSpace(req.EvidenceExceptionNote)
 
 	decisionSource := DecisionSourceManual
 	if proposal, ok := r.currentProposalLocked(caseID); ok {
@@ -465,26 +484,33 @@ func (r *memoryRepository) RecordDecisionWorkflow(_ context.Context, caseID stri
 	}
 
 	r.decisions[caseID] = append(r.decisions[caseID], Decision{
-		ID:             id,
-		CaseID:         caseID,
-		Decision:       req.Decision,
-		ReasonCodes:    reasonCodes,
-		Note:           req.Note,
-		Status:         "current",
-		CreatedBy:      req.ActorID,
-		CreatedAt:      now,
-		DecisionSource: decisionSource,
+		ID:                    id,
+		CaseID:                caseID,
+		Decision:              req.Decision,
+		ReasonCodes:           reasonCodes,
+		Note:                  req.Note,
+		Status:                "current",
+		CreatedBy:             req.ActorID,
+		CreatedAt:             now,
+		DecisionSource:        decisionSource,
+		EvidenceException:     evidenceExceptionNote != "",
+		EvidenceExceptionNote: evidenceExceptionNote,
 	})
 
 	c.Status = CaseStatusResolved
 	c.ResolvedAt = &now
 	c.UpdatedAt = now
 
-	r.addAuditEventLocked(caseID, req.ActorID, AuditDecisionRecorded, map[string]any{
+	auditMeta := map[string]any{
 		"decision":        req.Decision,
 		"decision_id":     id,
 		"decision_source": decisionSource,
-	})
+	}
+	if evidenceExceptionNote != "" {
+		auditMeta["evidence_exception"] = true
+		auditMeta["evidence_exception_note"] = evidenceExceptionNote
+	}
+	r.addAuditEventLocked(caseID, req.ActorID, AuditDecisionRecorded, auditMeta)
 
 	return r.getCaseDetailLocked(caseID)
 }

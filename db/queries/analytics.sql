@@ -70,6 +70,14 @@ case_evidence AS (
     LEFT JOIN ops.case_evidence_items e ON e.case_id = sc.id
         AND e.created_at < sqlc.arg('to_at')::timestamptz
     GROUP BY sc.id
+),
+exception_decisions AS (
+    SELECT DISTINCT d.case_id
+    FROM ops.case_decisions d
+    WHERE d.status = 'current'
+      AND d.evidence_exception = TRUE
+      AND (sqlc.narg('from_at')::timestamptz IS NULL OR d.created_at >= sqlc.narg('from_at')::timestamptz)
+      AND d.created_at < sqlc.arg('to_at')::timestamptz
 )
 SELECT
     COALESCE((
@@ -79,7 +87,8 @@ SELECT
           AND e.created_at < sqlc.arg('to_at')::timestamptz
     ), 0)::int AS total_items,
     COUNT(*) FILTER (WHERE evidence_count = 0)::int AS cases_without_evidence,
-    COUNT(*) FILTER (WHERE confirmed_count = 0)::int AS cases_without_confirmed_evidence
+    COUNT(*) FILTER (WHERE confirmed_count = 0)::int AS cases_without_confirmed_evidence,
+    (SELECT COUNT(*) FROM exception_decisions)::int AS exception_approved_count
 FROM case_evidence;
 
 -- name: ListAnalyticsEvidenceStatusMix :many
@@ -157,6 +166,7 @@ SELECT
         CASE WHEN c.status = 'reopened' THEN 'reopened' END,
         CASE WHEN d.decision = 'stop' THEN 'stop_decision' END,
         CASE WHEN d.decision = 'review' THEN 'review_decision' END,
+        CASE WHEN d.evidence_exception = TRUE THEN 'evidence_exception_approved' END,
         CASE WHEN COUNT(e.id) FILTER (WHERE e.evidence_status = 'confirmed') = 0 THEN 'no_confirmed_evidence' END,
         CASE WHEN COUNT(e.id) FILTER (WHERE e.evidence_status = 'conflicting') > 0 THEN 'conflicting_evidence' END
     ], NULL)::text[] AS risk_reasons
@@ -172,6 +182,7 @@ WHERE (sqlc.narg('from_at')::timestamptz IS NULL OR c.created_at >= sqlc.narg('f
   AND (
       c.status IN ('in_review', 'reopened')
       OR d.decision IN ('stop', 'review')
+      OR d.evidence_exception = TRUE
       OR EXISTS (
           SELECT 1
           FROM ops.case_evidence_items ce
@@ -187,6 +198,6 @@ WHERE (sqlc.narg('from_at')::timestamptz IS NULL OR c.created_at >= sqlc.narg('f
             AND ce.created_at < sqlc.arg('to_at')::timestamptz
       )
   )
-GROUP BY c.id, c.case_reference, c.status, ml.customer_status, o.name, c.created_at, d.decision
+GROUP BY c.id, c.case_reference, c.status, ml.customer_status, o.name, c.created_at, d.decision, d.evidence_exception
 ORDER BY age_seconds DESC
 LIMIT 12;

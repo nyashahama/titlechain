@@ -1,9 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { TitlechainMark } from "@/app/_components/landing/shared/TitlechainMark";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/app/_components/ui/dropdown-menu";
 import { cn } from "@/app/_lib/cn";
 import {
   getVisibleProductNavigation,
@@ -34,6 +42,53 @@ export function AppTopbar({ user, onSignOut }: { user: User; onSignOut: () => vo
             <p className="truncate text-[12px] font-medium text-tc-text">{user.display_name}</p>
             <p className="truncate text-[11px] text-tc-text-muted">{user.email}</p>
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Open navigation"
+                className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-tc-border bg-tc-surface-subtle px-3 text-[12px] font-medium text-tc-text-muted transition-colors hover:text-tc-text"
+              >
+                <Menu className="size-4" aria-hidden="true" />
+                <span>Navigate</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-64 border-tc-border bg-tc-surface p-2 text-tc-text shadow-xl"
+            >
+              {navigation.map((group, groupIndex) => (
+                <div key={group.label}>
+                  {groupIndex > 0 ? <DropdownMenuSeparator className="bg-tc-border" /> : null}
+                  <DropdownMenuLabel className="px-2 py-2 text-[11px] uppercase tracking-[0.08em] text-tc-text-faint">
+                    {group.label}
+                  </DropdownMenuLabel>
+                  {group.items.map((item) => {
+                    const active = activeRoute === item.href;
+                    const Icon = item.icon;
+
+                    return (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium outline-none transition-colors",
+                            active
+                              ? "bg-white/[0.07] text-tc-text"
+                              : "text-tc-text-muted hover:bg-white/[0.04] hover:text-tc-text",
+                          )}
+                        >
+                          <Icon className="size-4 shrink-0" aria-hidden="true" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <button
             type="button"
             onClick={onSignOut}
@@ -44,35 +99,6 @@ export function AppTopbar({ user, onSignOut }: { user: User; onSignOut: () => vo
           </button>
         </div>
       </div>
-
-      <nav
-        aria-label="Mobile product navigation"
-        className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1"
-      >
-        {navigation.flatMap((group) =>
-          group.items.map((item) => {
-            const active = activeRoute === item.href;
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex shrink-0 items-center gap-2 rounded-md border px-3 py-2 text-[12px] font-medium transition-colors",
-                  active
-                    ? "border-tc-border-strong bg-white/[0.08] text-tc-text"
-                    : "border-tc-border bg-tc-surface-subtle text-tc-text-muted hover:text-tc-text",
-                )}
-              >
-                <Icon className="size-3.5" aria-hidden="true" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          }),
-        )}
-      </nav>
     </header>
   );
 }

@@ -28,3 +28,72 @@ func TestMemoryRepositoryFindUserByEmailNotFound(t *testing.T) {
 		t.Fatal("err = nil, want not found")
 	}
 }
+
+func TestMemoryRepositoryGetMatterDetailIncludesNeutralEvidenceReadiness(t *testing.T) {
+	repo := NewMemoryRepository()
+	user := repo.AddUser("pilot@example.com", "password", Organization{
+		ID:     "org-1",
+		Name:   "Org 1",
+		Slug:   "org-1",
+		Status: "active",
+	})
+	summary, err := repo.CreateMatter(context.Background(), user, CreateMatterRequest{
+		PropertyDescription:       "Erf 1",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+	})
+	if err != nil {
+		t.Fatalf("create matter: %v", err)
+	}
+
+	detail, err := repo.GetMatterDetail(context.Background(), user, summary.ID)
+	if err != nil {
+		t.Fatalf("get matter detail: %v", err)
+	}
+
+	if detail.EvidenceReadiness.State == "" {
+		t.Fatal("readiness state is empty")
+	}
+	if detail.EvidenceReadiness.Label == "" {
+		t.Fatal("readiness label is empty")
+	}
+	if detail.EvidenceReadiness.Description == "" {
+		t.Fatal("readiness description is empty")
+	}
+	if detail.EvidenceReadiness.Missing == nil {
+		t.Fatal("readiness missing = nil, want empty slice")
+	}
+}
+
+func TestMemoryRepositoryListMattersIncludesNeutralEvidenceReadiness(t *testing.T) {
+	repo := NewMemoryRepository()
+	user := repo.AddUser("pilot@example.com", "password", Organization{
+		ID:     "org-1",
+		Name:   "Org 1",
+		Slug:   "org-1",
+		Status: "active",
+	})
+	_, err := repo.CreateMatter(context.Background(), user, CreateMatterRequest{
+		PropertyDescription:       "Erf 1",
+		LocalityOrArea:            "Rosebank",
+		MunicipalityOrDeedsOffice: "Johannesburg",
+	})
+	if err != nil {
+		t.Fatalf("create matter: %v", err)
+	}
+
+	summaries, err := repo.ListMatters(context.Background(), user, "", 100)
+	if err != nil {
+		t.Fatalf("list matters: %v", err)
+	}
+
+	if len(summaries) != 1 {
+		t.Fatalf("summaries length = %d, want 1", len(summaries))
+	}
+	if summaries[0].EvidenceReadiness.State == "" {
+		t.Fatal("readiness state is empty")
+	}
+	if summaries[0].EvidenceReadiness.Missing == nil {
+		t.Fatal("readiness missing = nil, want empty slice")
+	}
+}

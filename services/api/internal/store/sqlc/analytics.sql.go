@@ -27,6 +27,14 @@ case_evidence AS (
     LEFT JOIN ops.case_evidence_items e ON e.case_id = sc.id
         AND e.created_at < $2::timestamptz
     GROUP BY sc.id
+),
+exception_decisions AS (
+    SELECT DISTINCT d.case_id
+    FROM ops.case_decisions d
+    WHERE d.status = 'current'
+      AND d.evidence_exception = TRUE
+      AND ($1::timestamptz IS NULL OR d.created_at >= $1::timestamptz)
+      AND d.created_at < $2::timestamptz
 )
 SELECT
     COALESCE((
@@ -36,7 +44,8 @@ SELECT
           AND e.created_at < $2::timestamptz
     ), 0)::int AS total_items,
     COUNT(*) FILTER (WHERE evidence_count = 0)::int AS cases_without_evidence,
-    COUNT(*) FILTER (WHERE confirmed_count = 0)::int AS cases_without_confirmed_evidence
+    COUNT(*) FILTER (WHERE confirmed_count = 0)::int AS cases_without_confirmed_evidence,
+    (SELECT COUNT(*) FROM exception_decisions)::int AS exception_approved_count
 FROM case_evidence
 `
 
@@ -49,12 +58,18 @@ type GetAnalyticsEvidenceSummaryRow struct {
 	TotalItems                    int32 `json:"total_items"`
 	CasesWithoutEvidence          int32 `json:"cases_without_evidence"`
 	CasesWithoutConfirmedEvidence int32 `json:"cases_without_confirmed_evidence"`
+	ExceptionApprovedCount        int32 `json:"exception_approved_count"`
 }
 
 func (q *Queries) GetAnalyticsEvidenceSummary(ctx context.Context, arg GetAnalyticsEvidenceSummaryParams) (GetAnalyticsEvidenceSummaryRow, error) {
 	row := q.db.QueryRow(ctx, getAnalyticsEvidenceSummary, arg.FromAt, arg.ToAt)
 	var i GetAnalyticsEvidenceSummaryRow
-	err := row.Scan(&i.TotalItems, &i.CasesWithoutEvidence, &i.CasesWithoutConfirmedEvidence)
+	err := row.Scan(
+		&i.TotalItems,
+		&i.CasesWithoutEvidence,
+		&i.CasesWithoutConfirmedEvidence,
+		&i.ExceptionApprovedCount,
+	)
 	return i, err
 }
 
@@ -392,6 +407,7 @@ SELECT
         CASE WHEN c.status = 'reopened' THEN 'reopened' END,
         CASE WHEN d.decision = 'stop' THEN 'stop_decision' END,
         CASE WHEN d.decision = 'review' THEN 'review_decision' END,
+        CASE WHEN d.evidence_exception = TRUE THEN 'evidence_exception_approved' END,
         CASE WHEN COUNT(e.id) FILTER (WHERE e.evidence_status = 'confirmed') = 0 THEN 'no_confirmed_evidence' END,
         CASE WHEN COUNT(e.id) FILTER (WHERE e.evidence_status = 'conflicting') > 0 THEN 'conflicting_evidence' END
     ], NULL)::text[] AS risk_reasons
@@ -407,6 +423,7 @@ WHERE ($2::timestamptz IS NULL OR c.created_at >= $2::timestamptz)
   AND (
       c.status IN ('in_review', 'reopened')
       OR d.decision IN ('stop', 'review')
+      OR d.evidence_exception = TRUE
       OR EXISTS (
           SELECT 1
           FROM ops.case_evidence_items ce
@@ -422,7 +439,7 @@ WHERE ($2::timestamptz IS NULL OR c.created_at >= $2::timestamptz)
             AND ce.created_at < $1::timestamptz
       )
   )
-GROUP BY c.id, c.case_reference, c.status, ml.customer_status, o.name, c.created_at, d.decision
+GROUP BY c.id, c.case_reference, c.status, ml.customer_status, o.name, c.created_at, d.decision, d.evidence_exception
 ORDER BY age_seconds DESC
 LIMIT 12
 `

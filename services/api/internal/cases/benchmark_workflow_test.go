@@ -10,7 +10,7 @@ func TestBenchmarkWorkflow_ClearCase(t *testing.T) {
 	svc := NewService(repo)
 	ctx := context.Background()
 
-	detail, err := svc.CreateCase(ctx, cleanCaseRequest())
+	detail, err := svc.CreateCase(ctx, normalizedCleanCaseRequest())
 	if err != nil {
 		t.Fatalf("create case: %v", err)
 	}
@@ -72,11 +72,13 @@ func TestBenchmarkWorkflow_ReviewCase(t *testing.T) {
 	}
 
 	// Record review decision
+	const reviewExceptionNote = "Ownership conflict was reviewed with manually captured evidence before source matching completed."
 	detail, err = svc.RecordDecision(ctx, detail.Case.ID, RecordDecisionRequest{
-		ActorID:     "ana-002",
-		Decision:    DecisionReview,
-		ReasonCodes: []string{"OWNERSHIP_CONFLICT", "SOURCE_CONFLICT"},
-		Note:        "Ownership conflict between matter file and deeds record.",
+		ActorID:               "ana-002",
+		Decision:              DecisionReview,
+		ReasonCodes:           []string{"OWNERSHIP_CONFLICT", "SOURCE_CONFLICT"},
+		Note:                  "Ownership conflict between matter file and deeds record.",
+		EvidenceExceptionNote: reviewExceptionNote,
 	})
 	if err != nil {
 		t.Fatalf("record decision: %v", err)
@@ -87,6 +89,12 @@ func TestBenchmarkWorkflow_ReviewCase(t *testing.T) {
 	}
 	if len(detail.Decisions) != 1 || detail.Decisions[0].Decision != DecisionReview {
 		t.Errorf("decision = %v, want review", detail.Decisions)
+	}
+	if !detail.Decisions[0].EvidenceException {
+		t.Fatal("evidence_exception = false, want true")
+	}
+	if detail.Decisions[0].EvidenceExceptionNote != reviewExceptionNote {
+		t.Fatalf("evidence_exception_note = %q, want %q", detail.Decisions[0].EvidenceExceptionNote, reviewExceptionNote)
 	}
 	for _, rc := range detail.Decisions[0].ReasonCodes {
 		if rc.Category == ReasonCategoryHardBlock {
@@ -121,11 +129,13 @@ func TestBenchmarkWorkflow_StopCase(t *testing.T) {
 	}
 
 	// Record stop decision with hard block
+	const stopExceptionNote = "Hard blocker was confirmed manually before source matching completed."
 	detail, err = svc.RecordDecision(ctx, detail.Case.ID, RecordDecisionRequest{
-		ActorID:     "ana-003",
-		Decision:    DecisionStop,
-		ReasonCodes: []string{"ACTIVE_INTERDICT"},
-		Note:        "Active interdict prevents transfer.",
+		ActorID:               "ana-003",
+		Decision:              DecisionStop,
+		ReasonCodes:           []string{"ACTIVE_INTERDICT"},
+		Note:                  "Active interdict prevents transfer.",
+		EvidenceExceptionNote: stopExceptionNote,
 	})
 	if err != nil {
 		t.Fatalf("record decision: %v", err)
@@ -136,6 +146,12 @@ func TestBenchmarkWorkflow_StopCase(t *testing.T) {
 	}
 	if len(detail.Decisions) != 1 || detail.Decisions[0].Decision != DecisionStop {
 		t.Errorf("decision = %v, want stop", detail.Decisions)
+	}
+	if !detail.Decisions[0].EvidenceException {
+		t.Fatal("evidence_exception = false, want true")
+	}
+	if detail.Decisions[0].EvidenceExceptionNote != stopExceptionNote {
+		t.Fatalf("evidence_exception_note = %q, want %q", detail.Decisions[0].EvidenceExceptionNote, stopExceptionNote)
 	}
 	var hasHardBlock bool
 	for _, rc := range detail.Decisions[0].ReasonCodes {

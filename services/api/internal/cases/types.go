@@ -46,6 +46,27 @@ const (
 	EvidenceStatusSuperseded  EvidenceStatus = "superseded"
 )
 
+type EvidenceReadiness string
+
+const (
+	EvidenceReadinessNeedsSourceMatch  EvidenceReadiness = "needs_source_match"
+	EvidenceReadinessNeedsEvidence     EvidenceReadiness = "needs_evidence"
+	EvidenceReadinessHasConflict       EvidenceReadiness = "has_conflict"
+	EvidenceReadinessReadyForDecision  EvidenceReadiness = "ready_for_decision"
+	EvidenceReadinessExceptionApproved EvidenceReadiness = "exception_approved"
+)
+
+type EvidenceReadinessSummary struct {
+	State                  EvidenceReadiness `json:"state"`
+	Label                  string            `json:"label"`
+	Description            string            `json:"description"`
+	ConfirmedEvidenceCount int               `json:"confirmed_evidence_count"`
+	EvidenceCount          int               `json:"evidence_count"`
+	HasLinkedProperty      bool              `json:"has_linked_property"`
+	HasConflict            bool              `json:"has_conflict"`
+	Missing                []string          `json:"missing"`
+}
+
 type Analyst struct {
 	ID          string    `json:"id"`
 	DisplayName string    `json:"display_name"`
@@ -73,21 +94,22 @@ type PilotContext struct {
 }
 
 type CaseSummary struct {
-	ID                        string        `json:"id"`
-	CaseReference             string        `json:"case_reference"`
-	PropertyDescription       string        `json:"property_description"`
-	LocalityOrArea            string        `json:"locality_or_area"`
-	MunicipalityOrDeedsOffice string        `json:"municipality_or_deeds_office"`
-	TitleReference            string        `json:"title_reference,omitempty"`
-	MatterReference           string        `json:"matter_reference,omitempty"`
-	Status                    CaseStatus    `json:"status"`
-	AssigneeID                string        `json:"assignee_id"`
-	CreatedBy                 string        `json:"created_by"`
-	LinkedSeedPropertyID      string        `json:"linked_seed_property_id,omitempty"`
-	LinkedPropertyID          string        `json:"linked_property_id,omitempty"`
-	Pilot                     *PilotContext `json:"pilot,omitempty"`
-	CreatedAt                 time.Time     `json:"created_at"`
-	UpdatedAt                 time.Time     `json:"updated_at"`
+	ID                        string                   `json:"id"`
+	CaseReference             string                   `json:"case_reference"`
+	PropertyDescription       string                   `json:"property_description"`
+	LocalityOrArea            string                   `json:"locality_or_area"`
+	MunicipalityOrDeedsOffice string                   `json:"municipality_or_deeds_office"`
+	TitleReference            string                   `json:"title_reference,omitempty"`
+	MatterReference           string                   `json:"matter_reference,omitempty"`
+	Status                    CaseStatus               `json:"status"`
+	AssigneeID                string                   `json:"assignee_id"`
+	CreatedBy                 string                   `json:"created_by"`
+	LinkedSeedPropertyID      string                   `json:"linked_seed_property_id,omitempty"`
+	LinkedPropertyID          string                   `json:"linked_property_id,omitempty"`
+	EvidenceReadiness         EvidenceReadinessSummary `json:"evidence_readiness"`
+	Pilot                     *PilotContext            `json:"pilot,omitempty"`
+	CreatedAt                 time.Time                `json:"created_at"`
+	UpdatedAt                 time.Time                `json:"updated_at"`
 }
 
 type CreateCaseRequest struct {
@@ -103,10 +125,11 @@ type CreateCaseRequest struct {
 }
 
 type RecordDecisionRequest struct {
-	ActorID     string          `json:"actor_id"`
-	Decision    DecisionOutcome `json:"decision"`
-	ReasonCodes []string        `json:"reason_codes"`
-	Note        string          `json:"note"`
+	ActorID               string          `json:"actor_id"`
+	Decision              DecisionOutcome `json:"decision"`
+	ReasonCodes           []string        `json:"reason_codes"`
+	Note                  string          `json:"note"`
+	EvidenceExceptionNote string          `json:"evidence_exception_note,omitempty"`
 }
 
 type ListCasesFilter struct {
@@ -194,16 +217,18 @@ type AddPartyRequest struct {
 }
 
 type Decision struct {
-	ID             string          `json:"id"`
-	CaseID         string          `json:"case_id"`
-	Decision       DecisionOutcome `json:"decision"`
-	ReasonCodes    []ReasonCode    `json:"reason_codes"`
-	Note           string          `json:"note"`
-	Status         string          `json:"status"`
-	CreatedBy      string          `json:"created_by"`
-	CreatedAt      time.Time       `json:"created_at"`
-	DecisionSource DecisionSource  `json:"decision_source"`
-	ProposalID     string          `json:"proposal_id,omitempty"`
+	ID                    string          `json:"id"`
+	CaseID                string          `json:"case_id"`
+	Decision              DecisionOutcome `json:"decision"`
+	ReasonCodes           []ReasonCode    `json:"reason_codes"`
+	Note                  string          `json:"note"`
+	Status                string          `json:"status"`
+	CreatedBy             string          `json:"created_by"`
+	CreatedAt             time.Time       `json:"created_at"`
+	DecisionSource        DecisionSource  `json:"decision_source"`
+	ProposalID            string          `json:"proposal_id,omitempty"`
+	EvidenceException     bool            `json:"evidence_exception"`
+	EvidenceExceptionNote string          `json:"evidence_exception_note,omitempty"`
 }
 
 type DecisionProposal struct {
@@ -218,8 +243,9 @@ type DecisionProposal struct {
 }
 
 type AcceptProposalRequest struct {
-	ActorID string `json:"actor_id"`
-	Note    string `json:"note"`
+	ActorID               string `json:"actor_id"`
+	Note                  string `json:"note"`
+	EvidenceExceptionNote string `json:"evidence_exception_note,omitempty"`
 }
 
 type CloseUnresolvedRequest struct {
@@ -249,11 +275,12 @@ type AuditEvent struct {
 }
 
 type CaseDetail struct {
-	Case            CaseSummary       `json:"case"`
-	Matches         []PropertyMatch   `json:"matches"`
-	Evidence        []EvidenceItem    `json:"evidence"`
-	Parties         []Party           `json:"parties"`
-	Decisions       []Decision        `json:"decisions"`
-	CurrentProposal *DecisionProposal `json:"current_proposal,omitempty"`
-	AuditEvents     []AuditEvent      `json:"audit_events"`
+	Case              CaseSummary              `json:"case"`
+	Matches           []PropertyMatch          `json:"matches"`
+	Evidence          []EvidenceItem           `json:"evidence"`
+	Parties           []Party                  `json:"parties"`
+	Decisions         []Decision               `json:"decisions"`
+	CurrentProposal   *DecisionProposal        `json:"current_proposal,omitempty"`
+	AuditEvents       []AuditEvent             `json:"audit_events"`
+	EvidenceReadiness EvidenceReadinessSummary `json:"evidence_readiness"`
 }

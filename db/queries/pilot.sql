@@ -45,6 +45,32 @@ SELECT ml.id AS matter_id,
        c.municipality_or_deeds_office,
        c.title_reference,
        c.status AS internal_status,
+       c.linked_seed_property_id,
+       c.linked_property_id,
+       EXISTS (
+           SELECT 1
+           FROM ops.case_property_matches pm
+           WHERE pm.case_id = c.id
+             AND pm.status = 'confirmed'
+       ) AS has_confirmed_property_match,
+       (
+           SELECT COUNT(*)::int
+           FROM ops.case_evidence_items e
+           WHERE e.case_id = c.id
+       ) AS evidence_count,
+       (
+           SELECT COUNT(*)::int
+           FROM ops.case_evidence_items e
+           WHERE e.case_id = c.id
+             AND e.evidence_status = 'confirmed'
+       ) AS confirmed_evidence_count,
+       (
+           SELECT COUNT(*)::int
+           FROM ops.case_evidence_items e
+           WHERE e.case_id = c.id
+             AND e.evidence_status = 'conflicting'
+       ) AS conflicting_evidence_count,
+       COALESCE(d.evidence_exception, FALSE) AS current_decision_evidence_exception,
        d.decision AS current_decision
 FROM pilot.matter_links ml
 JOIN ops.case_records c ON c.id = ml.case_id

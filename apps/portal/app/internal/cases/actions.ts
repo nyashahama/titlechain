@@ -81,6 +81,7 @@ export async function recordDecisionAction(caseId: string, formData: FormData) {
       decision: (formData.get("decision") as string) as "clear" | "review" | "stop",
       reason_codes: reasonCodes,
       note: formData.get("note") as string,
+      evidence_exception_note: String(formData.get("evidence_exception_note") ?? ""),
     });
     toast.success("Decision recorded");
     revalidatePath(`/internal/cases/${caseId}`);
@@ -189,6 +190,7 @@ export async function acceptProposalAction(caseId: string, formData: FormData) {
   const detail = await acceptProposal(caseId, {
     actor_id: formData.get("actor_id") as string,
     note: (formData.get("note") as string) || undefined,
+    evidence_exception_note: String(formData.get("evidence_exception_note") ?? ""),
   });
   revalidatePath(`/internal/cases/${caseId}`);
   return detail;

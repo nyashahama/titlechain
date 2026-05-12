@@ -8,6 +8,7 @@ import { ProductPanel } from "@/app/_components/product/ProductPanel";
 import { ProductStatusBadge } from "@/app/_components/product/ProductStatusBadge";
 import { StateView } from "@/app/_components/product/StateView";
 import { ProductPage } from "@/app/_components/product-shell/ProductPage";
+import { evidenceReadinessAction, evidenceReadinessTone } from "@/app/_lib/product/evidence-readiness";
 import { getDecisionMeta, getEvidenceStatusMeta, getMatterStatusMeta } from "@/app/_lib/product/status";
 import { createSummary, getMatterDetail } from "../../api";
 import type { SummaryExport } from "../../types";
@@ -60,6 +61,14 @@ export default function SummaryPage() {
   const matter = export_.matter.summary;
   const evidence = export_.matter.evidence ?? [];
   const reasons = export_.matter.reasons ?? [];
+  const readiness = export_.matter.evidence_readiness ?? {
+    state: "unknown",
+    label: "Unknown",
+    description: "Evidence readiness could not be evaluated.",
+    confirmed_evidence_count: evidence.filter((item) => item.status === "confirmed" || item.status === "verified").length,
+    evidence_count: evidence.length,
+    missing: [],
+  };
   const decision = getDecisionMeta(matter.decision);
   const status = getMatterStatusMeta(matter.customer_status);
 
@@ -132,6 +141,21 @@ export default function SummaryPage() {
               <p className="font-mono text-sm text-tc-text">{matter.title_reference}</p>
             </div>
           )}
+
+          <div className="rounded-lg border border-tc-border bg-white/[0.03] p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-tc-text-faint">Evidence Basis</p>
+              <ProductStatusBadge label={readiness.label} tone={evidenceReadinessTone(readiness.state)} />
+            </div>
+            <p className="text-sm leading-6 text-tc-text">{readiness.description}</p>
+            <p className="mt-2 text-[12px] leading-5 text-tc-text-muted">{evidenceReadinessAction(readiness.state)}</p>
+            <p className="mt-3 font-mono text-[11px] text-tc-text-faint">
+              {readiness.confirmed_evidence_count} of {readiness.evidence_count} evidence items confirmed
+            </p>
+            <p className="mt-3 text-[11px] leading-relaxed text-tc-text-faint">
+              TitleChain provides verification support, not a deeds-office guarantee.
+            </p>
+          </div>
 
           {evidence.length > 0 && (
             <div>
