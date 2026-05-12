@@ -24,6 +24,7 @@ import {
   getEvidenceStatusMeta,
 } from "@/app/_lib/product/status";
 import { evidenceReadinessTone } from "@/app/_lib/product/evidence-readiness";
+import { caseEvidenceReadiness } from "../case-readiness";
 
 const timelineIcons: Record<string, LucideIcon> = {
   case_created: FilePlus2,
@@ -63,7 +64,7 @@ export function CaseDetail({
   const assigneeName = analystMap.get(c.assignee_id) ?? c.assignee_id;
   const createdByName = analystMap.get(c.created_by) ?? c.created_by;
   const caseStatus = getCaseStatusMeta(c.status);
-  const readiness = detail.evidence_readiness;
+  const readiness = caseEvidenceReadiness(detail.evidence_readiness ?? c.evidence_readiness);
   const checklistItems = [
     {
       label: "Source match",

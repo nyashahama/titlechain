@@ -143,6 +143,36 @@ describe("case console", () => {
     expect(screen.getByText(/case created/i)).toBeInTheDocument();
   });
 
+  it("renders neutral readiness in case detail when wire data omits readiness", () => {
+    const detail = {
+      case: {
+        id: "case-1",
+        case_reference: "TC-000001",
+        property_description: "Erf 412 Rosebank Township",
+        locality_or_area: "Rosebank",
+        municipality_or_deeds_office: "Johannesburg",
+        status: "open",
+        assignee_id: "ana-001",
+        created_by: "ana-001",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      matches: [],
+      evidence: [],
+      parties: [],
+      decisions: [],
+      audit_events: [],
+    } as unknown as CaseDetailType;
+    const analystMap = new Map([["ana-001", "Nyasha Hama"]]);
+
+    expect(() =>
+      render(<CaseDetail detail={detail} analysts={[]} actorId="ana-001" analystMap={analystMap} />)
+    ).not.toThrow();
+    expect(screen.getByText("Readiness unavailable")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Evidence checklist/i })).toBeInTheDocument();
+    expect(screen.getByText("Evidence readiness is not available for this case yet.")).toBeInTheDocument();
+  });
+
   it("prefills the case intake form from a selected property", () => {
     render(
       <CaseIntakeForm

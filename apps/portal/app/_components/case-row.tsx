@@ -10,6 +10,7 @@ import { ProductStatusBadge } from "@/app/_components/product/ProductStatusBadge
 import { RelativeTime } from "@/app/_components/product/RelativeTime";
 import { evidenceReadinessTone } from "@/app/_lib/product/evidence-readiness";
 import { getCaseStatusMeta } from "@/app/_lib/product/status";
+import { caseEvidenceReadiness } from "@/app/internal/cases/case-readiness";
 import { Avatar } from "@/app/internal/cases/_components/avatar";
 
 interface CaseRowProps {
@@ -21,7 +22,7 @@ interface CaseRowProps {
 export function CaseRow({ caseItem, index, analystMap }: CaseRowProps) {
   const assigneeName = analystMap.get(caseItem.assignee_id) ?? caseItem.assignee_id;
   const status = getCaseStatusMeta(caseItem.status);
-  const readiness = caseItem.evidence_readiness;
+  const readiness = caseEvidenceReadiness(caseItem.evidence_readiness);
 
   return (
     <motion.div variants={listItem}>
