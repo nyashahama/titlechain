@@ -3,6 +3,7 @@ export type DecisionOutcome = "clear" | "review" | "stop";
 export type ReasonCategory = "clear_support" | "hard_block" | "review_trigger" | "unresolved_information";
 export type EvidenceStatus = "captured" | "confirmed" | "conflicting" | "superseded";
 export type EvidenceReadinessState =
+  | "unknown"
   | "needs_source_match"
   | "needs_evidence"
   | "has_conflict"

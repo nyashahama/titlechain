@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { CaseQueue } from "./_components/case-queue";
 import { CaseIntakeForm } from "./_components/case-intake-form";
@@ -169,8 +169,11 @@ describe("case console", () => {
       render(<CaseDetail detail={detail} analysts={[]} actorId="ana-001" analystMap={analystMap} />)
     ).not.toThrow();
     expect(screen.getByText("Readiness unavailable")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Evidence checklist/i })).toBeInTheDocument();
+    const checklist = screen.getByRole("region", { name: /Evidence checklist/i });
+    expect(checklist).toBeInTheDocument();
     expect(screen.getByText("Evidence readiness is not available for this case yet.")).toBeInTheDocument();
+    expect(within(checklist).getAllByText("Needed")).toHaveLength(4);
+    expect(within(checklist).queryByText("Complete")).not.toBeInTheDocument();
   });
 
   it("prefills the case intake form from a selected property", () => {

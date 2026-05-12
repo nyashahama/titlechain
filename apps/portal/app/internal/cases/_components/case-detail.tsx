@@ -65,23 +65,26 @@ export function CaseDetail({
   const createdByName = analystMap.get(c.created_by) ?? c.created_by;
   const caseStatus = getCaseStatusMeta(c.status);
   const readiness = caseEvidenceReadiness(detail.evidence_readiness ?? c.evidence_readiness);
+  const hasKnownReadiness = readiness.state !== "unknown";
   const checklistItems = [
     {
       label: "Source match",
-      complete: readiness.has_linked_property,
+      complete: hasKnownReadiness && readiness.has_linked_property,
     },
     {
       label: "Confirmed evidence",
-      complete: readiness.confirmed_evidence_count > 0,
+      complete: hasKnownReadiness && readiness.confirmed_evidence_count > 0,
       detail: `${readiness.confirmed_evidence_count} / ${readiness.evidence_count} confirmed`,
     },
     {
       label: "No conflicts",
-      complete: !readiness.has_conflict,
+      complete: hasKnownReadiness && !readiness.has_conflict,
     },
     {
       label: "Decision support",
-      complete: readiness.state === "ready_for_decision" || readiness.state === "exception_approved",
+      complete:
+        hasKnownReadiness &&
+        (readiness.state === "ready_for_decision" || readiness.state === "exception_approved"),
     },
   ];
 
