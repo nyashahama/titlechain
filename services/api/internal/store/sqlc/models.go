@@ -71,16 +71,18 @@ type OpsCaseAuditEvent struct {
 }
 
 type OpsCaseDecision struct {
-	ID             pgtype.UUID        `json:"id"`
-	CaseID         pgtype.UUID        `json:"case_id"`
-	Decision       string             `json:"decision"`
-	Note           string             `json:"note"`
-	Status         string             `json:"status"`
-	CreatedBy      string             `json:"created_by"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	SupersededAt   pgtype.Timestamptz `json:"superseded_at"`
-	DecisionSource string             `json:"decision_source"`
-	ProposalID     pgtype.UUID        `json:"proposal_id"`
+	ID                    pgtype.UUID        `json:"id"`
+	CaseID                pgtype.UUID        `json:"case_id"`
+	Decision              string             `json:"decision"`
+	Note                  string             `json:"note"`
+	Status                string             `json:"status"`
+	CreatedBy             string             `json:"created_by"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	SupersededAt          pgtype.Timestamptz `json:"superseded_at"`
+	DecisionSource        string             `json:"decision_source"`
+	ProposalID            pgtype.UUID        `json:"proposal_id"`
+	EvidenceException     bool               `json:"evidence_exception"`
+	EvidenceExceptionNote pgtype.Text        `json:"evidence_exception_note"`
 }
 
 type OpsCaseDecisionProposal struct {

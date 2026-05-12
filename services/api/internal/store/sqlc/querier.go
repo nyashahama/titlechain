@@ -11,7 +11,6 @@ import (
 )
 
 type Querier interface {
-	AddCaseEvidence(ctx context.Context, arg AddCaseEvidenceParams) (OpsCaseEvidenceItem, error)
 	AddCaseParty(ctx context.Context, arg AddCasePartyParams) (OpsCaseParty, error)
 	AddDecisionProposalReasonCode(ctx context.Context, arg AddDecisionProposalReasonCodeParams) error
 	AddDecisionReasonCode(ctx context.Context, arg AddDecisionReasonCodeParams) error
@@ -85,6 +84,7 @@ type Querier interface {
 	TouchPilotMatterViewed(ctx context.Context, arg TouchPilotMatterViewedParams) error
 	UnblockNextJob(ctx context.Context, arg UnblockNextJobParams) error
 	UpdatePilotMatterStatusByCase(ctx context.Context, arg UpdatePilotMatterStatusByCaseParams) error
+	UpsertCaseEvidence(ctx context.Context, arg UpsertCaseEvidenceParams) (OpsCaseEvidenceItem, error)
 	UpsertCoreProperty(ctx context.Context, arg UpsertCorePropertyParams) (CoreProperty, error)
 	UpsertPropertySummary(ctx context.Context, arg UpsertPropertySummaryParams) error
 }

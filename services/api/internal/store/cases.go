@@ -360,7 +360,7 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 				"property_id": req.LinkedPropertyID,
 				"field":       item.EvidenceType,
 			})
-			_, err := queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+			_, err := queries.UpsertCaseEvidence(ctx, sqlc.UpsertCaseEvidenceParams{
 				CaseID:          c.ID,
 				EvidenceType:    item.EvidenceType,
 				SourceType:      "canonical_property",
@@ -465,7 +465,7 @@ func (s CasesStore) CreateCaseWorkflow(ctx context.Context, req cases.CreateCase
 			if err != nil {
 				return cases.CaseDetail{}, fmt.Errorf("marshal canonical evidence facts: %w", err)
 			}
-			_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+			_, err = queries.UpsertCaseEvidence(ctx, sqlc.UpsertCaseEvidenceParams{
 				CaseID:            c.ID,
 				EvidenceType:      "canonical_property",
 				SourceType:        "normalized_data",
@@ -620,7 +620,7 @@ func (s CasesStore) AddEvidenceWorkflow(ctx context.Context, caseID string, req 
 	}
 
 	facts, _ := json.Marshal(req.ExtractedFacts)
-	_, err = queries.AddCaseEvidence(ctx, sqlc.AddCaseEvidenceParams{
+	_, err = queries.UpsertCaseEvidence(ctx, sqlc.UpsertCaseEvidenceParams{
 		CaseID:            id,
 		EvidenceType:      req.EvidenceType,
 		SourceType:        req.SourceType,
@@ -936,12 +936,14 @@ func (s CasesStore) RecordDecisionWorkflow(ctx context.Context, caseID string, r
 	}
 
 	dec, err := queries.CreateCaseDecision(ctx, sqlc.CreateCaseDecisionParams{
-		CaseID:         id,
-		Decision:       string(req.Decision),
-		Note:           req.Note,
-		CreatedBy:      req.ActorID,
-		DecisionSource: string(decisionSource),
-		ProposalID:     proposalID,
+		CaseID:                id,
+		Decision:              string(req.Decision),
+		Note:                  req.Note,
+		CreatedBy:             req.ActorID,
+		DecisionSource:        string(decisionSource),
+		ProposalID:            proposalID,
+		EvidenceException:     false,
+		EvidenceExceptionNote: pgtype.Text{},
 	})
 	if err != nil {
 		return cases.CaseDetail{}, err
@@ -1323,15 +1325,17 @@ func partiesFromRows(rows []sqlc.OpsCaseParty) []cases.Party {
 
 func decisionFromRow(row sqlc.OpsCaseDecision) cases.Decision {
 	return cases.Decision{
-		ID:             uuidToString(row.ID),
-		CaseID:         uuidToString(row.CaseID),
-		Decision:       cases.DecisionOutcome(row.Decision),
-		Note:           row.Note,
-		Status:         row.Status,
-		CreatedBy:      row.CreatedBy,
-		CreatedAt:      row.CreatedAt.Time,
-		DecisionSource: cases.DecisionSource(row.DecisionSource),
-		ProposalID:     uuidToString(row.ProposalID),
+		ID:                    uuidToString(row.ID),
+		CaseID:                uuidToString(row.CaseID),
+		Decision:              cases.DecisionOutcome(row.Decision),
+		Note:                  row.Note,
+		Status:                row.Status,
+		CreatedBy:             row.CreatedBy,
+		CreatedAt:             row.CreatedAt.Time,
+		DecisionSource:        cases.DecisionSource(row.DecisionSource),
+		ProposalID:            uuidToString(row.ProposalID),
+		EvidenceException:     row.EvidenceException,
+		EvidenceExceptionNote: textToString(row.EvidenceExceptionNote),
 	}
 }
 
