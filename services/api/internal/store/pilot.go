@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -59,11 +60,11 @@ func (s PilotStore) RevokeSession(ctx context.Context, tokenHash string) error {
 	return sqlc.New(s.pool).RevokePilotSession(ctx, tokenHash)
 }
 
-func selectSourceBackedPropertyCandidate(candidates []sqlc.FindPropertySummaryCandidatesRow) (pgtype.UUID, bool) {
+func selectSourceBackedPropertyCandidate(req pilot.CreateMatterRequest, candidates []sqlc.FindPropertySummaryCandidatesRow) (pgtype.UUID, bool) {
 	var selected pgtype.UUID
 	qualifyingCount := 0
 	for _, candidate := range candidates {
-		if !candidate.PropertyID.Valid || candidate.ConfidenceScore < 85 || candidate.SourceProvenanceCount < 1 {
+		if !propertyCandidateQualifiesForAutoLink(req, candidate) {
 			continue
 		}
 		qualifyingCount++
@@ -74,6 +75,26 @@ func selectSourceBackedPropertyCandidate(candidates []sqlc.FindPropertySummaryCa
 		return pgtype.UUID{}, false
 	}
 	return selected, true
+}
+
+func propertyCandidateQualifiesForAutoLink(req pilot.CreateMatterRequest, candidate sqlc.FindPropertySummaryCandidatesRow) bool {
+	if !candidate.PropertyID.Valid || candidate.ConfidenceScore < 85 || candidate.SourceProvenanceCount < 1 {
+		return false
+	}
+	if candidate.ConfidenceScore == 100 {
+		return true
+	}
+	return submittedContextCompatible(req.LocalityOrArea, candidate.LocalityOrArea) &&
+		submittedContextCompatible(req.MunicipalityOrDeedsOffice, candidate.MunicipalityOrDeedsOffice)
+}
+
+func submittedContextCompatible(submitted, candidate string) bool {
+	submitted = strings.TrimSpace(submitted)
+	candidate = strings.TrimSpace(candidate)
+	if submitted == "" || candidate == "" {
+		return true
+	}
+	return strings.EqualFold(submitted, candidate)
 }
 
 func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot.CreateMatterRequest) (pilot.MatterSummary, error) {
@@ -104,7 +125,7 @@ func (s PilotStore) CreateMatter(ctx context.Context, user pilot.User, req pilot
 	if err != nil {
 		return pilot.MatterSummary{}, err
 	}
-	linkedPropID, autoLinked := selectSourceBackedPropertyCandidate(candidates)
+	linkedPropID, autoLinked := selectSourceBackedPropertyCandidate(req, candidates)
 
 	c, err := queries.CreateCaseRecord(ctx, sqlc.CreateCaseRecordParams{
 		CaseReference:             caseReference,

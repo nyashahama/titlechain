@@ -35,12 +35,32 @@ scored AS (
             WHEN submitted.property_description IS NOT NULL
                 AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
                 AND LOWER(BTRIM(ps.property_description)) = LOWER(submitted.property_description)
+                AND (
+                    submitted.locality_or_area IS NULL
+                    OR NULLIF(BTRIM(ps.locality_or_area), '') IS NULL
+                    OR LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+                )
+                AND (
+                    submitted.municipality_or_deeds_office IS NULL
+                    OR NULLIF(BTRIM(ps.municipality_or_deeds_office), '') IS NULL
+                    OR LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
+                )
                 THEN 85
             WHEN submitted.property_description IS NOT NULL
                 AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
                 AND (
                     LOWER(ps.property_description) LIKE '%' || LOWER(submitted.property_description) || '%'
                     OR LOWER(submitted.property_description) LIKE '%' || LOWER(ps.property_description) || '%'
+                )
+                AND (
+                    submitted.locality_or_area IS NULL
+                    OR NULLIF(BTRIM(ps.locality_or_area), '') IS NULL
+                    OR LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+                )
+                AND (
+                    submitted.municipality_or_deeds_office IS NULL
+                    OR NULLIF(BTRIM(ps.municipality_or_deeds_office), '') IS NULL
+                    OR LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
                 )
                 THEN 70
             WHEN submitted.locality_or_area IS NOT NULL
@@ -67,12 +87,32 @@ scored AS (
         submitted.property_description IS NOT NULL
             AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
             AND LOWER(BTRIM(ps.property_description)) = LOWER(submitted.property_description)
+            AND (
+                submitted.locality_or_area IS NULL
+                OR NULLIF(BTRIM(ps.locality_or_area), '') IS NULL
+                OR LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+            )
+            AND (
+                submitted.municipality_or_deeds_office IS NULL
+                OR NULLIF(BTRIM(ps.municipality_or_deeds_office), '') IS NULL
+                OR LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
+            )
     ) OR (
         submitted.property_description IS NOT NULL
             AND NULLIF(BTRIM(ps.property_description), '') IS NOT NULL
             AND (
                 LOWER(ps.property_description) LIKE '%' || LOWER(submitted.property_description) || '%'
                 OR LOWER(submitted.property_description) LIKE '%' || LOWER(ps.property_description) || '%'
+            )
+            AND (
+                submitted.locality_or_area IS NULL
+                OR NULLIF(BTRIM(ps.locality_or_area), '') IS NULL
+                OR LOWER(BTRIM(ps.locality_or_area)) = LOWER(submitted.locality_or_area)
+            )
+            AND (
+                submitted.municipality_or_deeds_office IS NULL
+                OR NULLIF(BTRIM(ps.municipality_or_deeds_office), '') IS NULL
+                OR LOWER(BTRIM(ps.municipality_or_deeds_office)) = LOWER(submitted.municipality_or_deeds_office)
             )
     ) OR (
         submitted.locality_or_area IS NOT NULL
