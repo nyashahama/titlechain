@@ -163,6 +163,9 @@ func (s CasesStore) ListCases(ctx context.Context, filter cases.ListCasesFilter)
 		}
 		result = filtered
 	}
+	if err := s.attachEvidenceReadinessToSummaries(ctx, queries, result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 
@@ -203,6 +206,38 @@ func attachPilotContexts(summaries []cases.CaseSummary, contexts map[string]case
 		}
 		summaries[i].Pilot = &ctx
 	}
+}
+
+func (s CasesStore) attachEvidenceReadinessToSummaries(ctx context.Context, queries sqlc.Querier, summaries []cases.CaseSummary) error {
+	for i := range summaries {
+		id, err := parseUUID(summaries[i].ID)
+		if err != nil {
+			return err
+		}
+		matches, err := queries.ListCasePropertyMatches(ctx, id)
+		if err != nil {
+			return err
+		}
+		evidence, err := queries.ListCaseEvidence(ctx, id)
+		if err != nil {
+			return err
+		}
+		decisions, err := queries.ListCaseDecisions(ctx, id)
+		if err != nil {
+			return err
+		}
+		mappedDecisions := make([]cases.Decision, 0, len(decisions))
+		for _, decision := range decisions {
+			mappedDecisions = append(mappedDecisions, decisionFromRow(decision))
+		}
+		summaries[i] = caseSummaryWithEvidenceReadiness(
+			summaries[i],
+			propertyMatchesFromRows(matches),
+			evidenceItemsFromRows(evidence),
+			mappedDecisions,
+		)
+	}
+	return nil
 }
 
 func pilotContextFromListRow(row sqlc.ListPilotCaseContextsRow) cases.PilotContext {
@@ -1190,10 +1225,26 @@ func (s CasesStore) buildCaseDetail(ctx context.Context, queries sqlc.Querier, c
 		detail.CurrentProposal = decisionProposalFromRow(proposal, proposalCodes)
 	}
 
-	return detail, nil
+	return caseDetailWithEvidenceReadiness(detail), nil
 }
 
 // Conversion helpers
+
+func caseDetailWithEvidenceReadiness(detail cases.CaseDetail) cases.CaseDetail {
+	detail.EvidenceReadiness = cases.EvaluateEvidenceReadiness(detail)
+	detail.Case.EvidenceReadiness = detail.EvidenceReadiness
+	return detail
+}
+
+func caseSummaryWithEvidenceReadiness(summary cases.CaseSummary, matches []cases.PropertyMatch, evidence []cases.EvidenceItem, decisions []cases.Decision) cases.CaseSummary {
+	summary.EvidenceReadiness = cases.EvaluateEvidenceReadiness(cases.CaseDetail{
+		Case:      summary,
+		Matches:   matches,
+		Evidence:  evidence,
+		Decisions: decisions,
+	})
+	return summary
+}
 
 func caseSummaryFromRow(row sqlc.ListCaseSummariesRow) cases.CaseSummary {
 	return cases.CaseSummary{

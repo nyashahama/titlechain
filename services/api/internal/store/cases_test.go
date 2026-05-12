@@ -53,6 +53,57 @@ func TestBuildCanonicalEvidenceDraftsUsesSourceLinksAsProvenance(t *testing.T) {
 	}
 }
 
+func TestBuildCanonicalEvidenceDraftsRequiresSourceProvenance(t *testing.T) {
+	_, err := buildCanonicalEvidenceDrafts("property-1", "Erf 1", "T1/2026", nil)
+	if err == nil {
+		t.Fatal("expected missing provenance error")
+	}
+}
+
+func TestCaseDetailWithEvidenceReadinessMarksLinkedConfirmedEvidenceReady(t *testing.T) {
+	detail := cases.CaseDetail{
+		Case: cases.CaseSummary{
+			ID:               "case-1",
+			Status:           cases.CaseStatusInReview,
+			LinkedPropertyID: "property-1",
+		},
+		Evidence: []cases.EvidenceItem{
+			{
+				EvidenceType:   "canonical_property",
+				EvidenceStatus: cases.EvidenceStatusConfirmed,
+			},
+		},
+	}
+
+	got := caseDetailWithEvidenceReadiness(detail)
+
+	if got.EvidenceReadiness.State != cases.EvidenceReadinessReadyForDecision {
+		t.Fatalf("detail readiness = %s, want %s", got.EvidenceReadiness.State, cases.EvidenceReadinessReadyForDecision)
+	}
+	if got.Case.EvidenceReadiness.State != cases.EvidenceReadinessReadyForDecision {
+		t.Fatalf("case readiness = %s, want %s", got.Case.EvidenceReadiness.State, cases.EvidenceReadinessReadyForDecision)
+	}
+}
+
+func TestCaseSummaryWithEvidenceReadinessMarksUnmatchedCaseNeedsSourceMatch(t *testing.T) {
+	summary := cases.CaseSummary{
+		ID:     "case-1",
+		Status: cases.CaseStatusOpen,
+	}
+
+	got := caseSummaryWithEvidenceReadiness(summary, nil, nil, nil)
+
+	if got.EvidenceReadiness.State != cases.EvidenceReadinessNeedsSourceMatch {
+		t.Fatalf("readiness = %s, want %s", got.EvidenceReadiness.State, cases.EvidenceReadinessNeedsSourceMatch)
+	}
+	if got.EvidenceReadiness.HasLinkedProperty {
+		t.Fatal("has linked property = true, want false")
+	}
+	if got.EvidenceReadiness.EvidenceCount != 0 {
+		t.Fatalf("evidence count = %d, want 0", got.EvidenceReadiness.EvidenceCount)
+	}
+}
+
 func TestAttachPilotContextsAddsPilotMetadataToCaseSummaries(t *testing.T) {
 	submittedAt := time.Date(2026, 4, 26, 9, 0, 0, 0, time.UTC)
 	summaries := []cases.CaseSummary{
