@@ -72,6 +72,16 @@ describe("landing: public quality", () => {
     expect(combinedSource).toMatch(/id=(?:"solutions"|'solutions'|\{"solutions"\})/);
   });
 
+  it("uses an Appwrite-style centered hero with the dashboard mockup below the CTAs", () => {
+    const heroSource = sources.find(({ file }) =>
+      file.endsWith(join("Hero", "Hero.tsx"))
+    );
+
+    expect(heroSource?.content).toContain('HeroDashboardMockup placement="below"');
+    expect(heroSource?.content).not.toContain("md:grid-cols-2");
+    expect(heroSource?.content).toContain("text-center");
+  });
+
   it("does not use emoji as integration or feature icons", () => {
     const emojiMatches = combinedSource.match(/\p{Extended_Pictographic}/gu) ?? [];
     expect(emojiMatches).toEqual([]);
