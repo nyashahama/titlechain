@@ -196,6 +196,21 @@ describe("landing: public quality", () => {
     expect(markSource?.content).not.toContain('transform="rotate(-45');
   });
 
+  it("uses the refined TitleChain mark for the browser icon", () => {
+    const iconSource = readFileSync(join(appDir, "icon.svg"), "utf-8");
+
+    expect(iconSource).toContain('viewBox="0 0 42 42"');
+    expect(iconSource).toContain("#F8A1BA");
+    expect(iconSource).toContain("#AEB7FF");
+    expect(iconSource).toContain("#6573FF");
+    expect(iconSource).toContain("#151518");
+    expect(iconSource).toContain("stroke-linecap=\"round\"");
+    expect(iconSource).not.toContain("rotate(-45");
+    expect(iconSource).not.toContain("#F97316");
+    expect(iconSource).not.toContain("#FDBA74");
+    expect(iconSource).not.toContain("#FFF7ED");
+  });
+
   it("uses an Appwrite-style post-hero source and audience rail", () => {
     const platformSource = sources.find(({ file }) =>
       matchesLandingPath(file, "Platforms.tsx")
