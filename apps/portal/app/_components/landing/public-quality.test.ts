@@ -101,9 +101,12 @@ describe("landing: public quality", () => {
     }
   });
 
-  it("uses an Appwrite-inspired Inter typography system with assertive hero scale", () => {
+  it("uses Appwrite typography with balanced hero proportions", () => {
     const heroSource = sources.find(({ file }) =>
       file.endsWith(join("Hero", "Hero.tsx"))
+    );
+    const mockupSource = sources.find(({ file }) =>
+      file.endsWith(join("Hero", "HeroDashboardMockup.tsx"))
     );
 
     expect(layoutSource).not.toContain('from "next/font/google"');
@@ -119,8 +122,15 @@ describe("landing: public quality", () => {
     expect(globalsSource).toContain('--font-inter: "Inter"');
     expect(globalsSource).toContain("--font-display: var(--font-aeonik-pro)");
     expect(heroSource?.content).toContain("font-display");
-    expect(heroSource?.content).toContain("xl:text-[6.75rem]");
+    expect(heroSource?.content).toContain("font-medium");
+    expect(heroSource?.content).toContain("lg:text-[5.25rem]");
+    expect(heroSource?.content).not.toContain("xl:text-[6.75rem]");
+    expect(heroSource?.content).toContain("opacity-25");
+    expect(heroSource?.content).not.toContain("opacity-80");
+    expect(heroSource?.content).not.toContain("stroke-opacity='.28'");
     expect(heroSource?.content).toContain("text-white/[0.72]");
+    expect(mockupSource?.content).toContain("mt-8");
+    expect(mockupSource?.content).not.toContain("mt-12");
     expect(
       existsSync(
         resolve(appDir, "../public/fonts/aeonik-pro/AeonikPro-Regular.woff2")
