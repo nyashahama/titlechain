@@ -1,13 +1,13 @@
 <svg width="32" height="32" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="42" height="42" rx="12" fill="#151518" />
+  <rect width="42" height="42" rx="12" fill="url(#titlechain-icon-bg)" />
   <rect
     x="0.75"
     y="0.75"
     width="40.5"
     height="40.5"
     rx="11.25"
-    stroke="#FFFFFF"
-    stroke-opacity="0.08"
+    stroke="#C7D2FE"
+    stroke-opacity="0.18"
     stroke-width="1.5"
   />
   <path
@@ -38,6 +38,18 @@
   />
   <defs>
     <linearGradient
+      id="titlechain-icon-bg"
+      x1="3"
+      y1="3"
+      x2="39"
+      y2="39"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop offset="0" stop-color="#312E81" />
+      <stop offset="0.46" stop-color="#1E1B4B" />
+      <stop offset="1" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient
       id="titlechain-icon-gradient"
       x1="5"
       y1="10"
@@ -45,9 +57,9 @@
       y2="32"
       gradientUnits="userSpaceOnUse"
     >
-      <stop offset="0" stop-color="#F8A1BA" />
-      <stop offset="0.46" stop-color="#AEB7FF" />
-      <stop offset="1" stop-color="#6573FF" />
+      <stop offset="0" stop-color="#C7D2FE" />
+      <stop offset="0.48" stop-color="#818CF8" />
+      <stop offset="1" stop-color="#4F46E5" />
     </linearGradient>
   </defs>
 </svg>

@@ -13,12 +13,15 @@ const geistMono = localFont({
   display: "swap",
 });
 
+const appIconUrl = "/icon.svg?v=blue-20260516";
+
 export const metadata: Metadata = {
   title: "TitleChain — Property Transaction Intelligence",
   description:
     "South Africa's property title intelligence platform. Verify titles, assess risk, and make Clear-to-Lodge decisions with confidence.",
   icons: {
-    icon: "/icon.svg",
+    icon: [{ url: appIconUrl, type: "image/svg+xml" }],
+    shortcut: [{ url: appIconUrl, type: "image/svg+xml" }],
   },
 };
 
