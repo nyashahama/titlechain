@@ -39,7 +39,7 @@ export default function SignInPage() {
             Don&apos;t have an account?{" "}
             <Link
               href="/auth/signup"
-              className="font-medium text-orange-400 hover:text-orange-300"
+              className="font-medium text-indigo-300 hover:text-indigo-200"
             >
               Sign up
             </Link>
@@ -57,7 +57,7 @@ export default function SignInPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 transition-colors focus:border-orange-500/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+            className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 transition-colors focus:border-indigo-400/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             placeholder="you@firm.co.za"
           />
         </div>
@@ -70,7 +70,7 @@ export default function SignInPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 transition-colors focus:border-orange-500/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+            className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 transition-colors focus:border-indigo-400/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             placeholder="••••••••"
           />
         </div>
@@ -86,20 +86,26 @@ export default function SignInPage() {
         </Button>
       </form>
 
-      {/* Demo account info */}
-      <div className="mt-6 rounded-xl border border-orange-500/20 bg-orange-500/[0.07] p-4">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-orange-300">
-          Demo Account
-        </p>
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
-          <span className="text-white/45">Email</span>
-          <span className="min-w-0 break-all text-right font-mono text-xs text-white/60">
-            demo@titlechain.co.za
-          </span>
+      <div className="mt-5 rounded-lg border border-white/[0.08] bg-white/[0.025] p-3">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-white/45">
+            Demo access
+          </p>
+          <p className="text-right text-xs text-white/35">
+            Copy these credentials into the form.
+          </p>
         </div>
-        <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
-          <span className="text-white/45">Password</span>
-          <span className="font-mono text-xs text-white/60">demo1234</span>
+        <div className="grid gap-1.5 text-sm">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-white/40">Email</span>
+            <span className="min-w-0 break-all text-right font-mono text-xs text-white/58">
+              demo@titlechain.co.za
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-white/40">Password</span>
+            <span className="font-mono text-xs text-white/58">demo1234</span>
+          </div>
         </div>
       </div>
     </AuthLayout>
