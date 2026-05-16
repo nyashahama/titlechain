@@ -55,7 +55,7 @@ export function AuthLayout({
                 <br />
                 intelligence,
                 <br />
-                instantly<span className="text-orange-500">_</span>
+                instantly<span className="text-indigo-500">_</span>
               </h1>
             </GradientText>
             {subtitle && (

@@ -1,37 +1,65 @@
 <svg width="32" height="32" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="42" height="42" rx="12" fill="#FFF7ED"/>
+  <rect width="42" height="42" rx="12" fill="url(#titlechain-icon-bg)" />
   <rect
-    x="8.5"
-    y="10.5"
-    width="15"
-    height="19"
-    rx="6.5"
-    transform="rotate(-45 16 20)"
-    fill="none"
-    stroke="#F97316"
-    stroke-width="3.2"
-  />
-  <rect
-    x="18.5"
-    y="10.5"
-    width="15"
-    height="19"
-    rx="6.5"
-    transform="rotate(-45 26 20)"
-    fill="none"
-    stroke="#FDBA74"
-    stroke-width="3.2"
+    x="0.75"
+    y="0.75"
+    width="40.5"
+    height="40.5"
+    rx="11.25"
+    stroke="#C7D2FE"
+    stroke-opacity="0.18"
+    stroke-width="1.5"
   />
   <path
-    d="M21 12.5V29.5"
-    stroke="#0F172A"
-    stroke-width="3.6"
+    d="M17.6 12.25h-3.2C9.75 12.25 6 16 6 20.65v.7c0 4.65 3.75 8.4 8.4 8.4h7"
+    stroke="url(#titlechain-icon-gradient)"
+    stroke-width="4.1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M24.4 29.75h3.2c4.65 0 8.4-3.75 8.4-8.4v-.7c0-4.65-3.75-8.4-8.4-8.4h-7"
+    stroke="url(#titlechain-icon-gradient)"
+    stroke-width="4.1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M21 14.85v12.3"
+    stroke="#F8FAFC"
+    stroke-width="3.3"
     stroke-linecap="round"
   />
   <path
-    d="M16.1 20H25.9"
-    stroke="#0F172A"
-    stroke-width="3.6"
+    d="M14.85 21h12.3"
+    stroke="#F8FAFC"
+    stroke-width="3.3"
     stroke-linecap="round"
   />
+  <defs>
+    <linearGradient
+      id="titlechain-icon-bg"
+      x1="3"
+      y1="3"
+      x2="39"
+      y2="39"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop offset="0" stop-color="#312E81" />
+      <stop offset="0.46" stop-color="#1E1B4B" />
+      <stop offset="1" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient
+      id="titlechain-icon-gradient"
+      x1="5"
+      y1="10"
+      x2="37"
+      y2="32"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop offset="0" stop-color="#C7D2FE" />
+      <stop offset="0.48" stop-color="#818CF8" />
+      <stop offset="1" stop-color="#4F46E5" />
+    </linearGradient>
+  </defs>
 </svg>

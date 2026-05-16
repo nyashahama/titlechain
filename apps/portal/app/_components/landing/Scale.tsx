@@ -21,7 +21,7 @@ function formatMetricFallback(value: number, suffix: string) {
 }
 
 export function Scale() {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
   const [animate, setAnimate] = useState(false);
 
@@ -30,42 +30,56 @@ export function Scale() {
   }, [inView]);
 
   return (
-    <div className="container py-20" ref={ref}>
-      <h2 className="mx-auto mb-16 max-w-2xl text-center text-3xl font-bold tracking-tight text-white md:text-4xl">
-        Over {animate ? <NumberFlow value={200} /> : "200"} firms already scale with TitleChain
-      </h2>
+    <section
+      className="relative overflow-hidden border-b border-dashed border-[#d8d8df] bg-[#ededf0] py-24 text-[#1c1c20] md:py-32"
+      data-nav-theme="light"
+      ref={ref}
+    >
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[linear-gradient(166deg,transparent_0%,transparent_48%,rgba(101,115,255,0.08)_48%,rgba(101,115,255,0.08)_100%)]"
+        aria-hidden="true"
+      />
+      <div className="container relative">
+        <h2 className="font-display mx-auto mb-16 max-w-3xl text-center text-4xl font-medium leading-tight text-[#1c1c20] text-pretty md:text-5xl">
+          Over {animate ? <NumberFlow value={200} /> : "200"} firms already
+          scale with TitleChain
+        </h2>
 
-      <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 md:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="text-center">
-            <div className="text-3xl font-bold tracking-tight text-orange-400 md:text-4xl">
-              {animate ? (
-                <NumberFlow
-                  value={stat.value}
-                  suffix={stat.suffix}
-                  format={{ notation: "compact" }}
-                />
-              ) : (
-                formatMetricFallback(stat.value, stat.suffix)
-              )}
+        <div className="mx-auto grid max-w-5xl grid-cols-2 overflow-hidden rounded-xl border border-[#d8d8df] bg-white/40 md:grid-cols-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="border-dashed border-[#d8d8df] p-6 text-center odd:border-r md:border-r md:last:border-r-0"
+            >
+              <div className="font-display text-3xl font-medium text-indigo-600 md:text-4xl">
+                {animate ? (
+                  <NumberFlow
+                    value={stat.value}
+                    suffix={stat.suffix}
+                    format={{ notation: "compact" }}
+                  />
+                ) : (
+                  formatMetricFallback(stat.value, stat.suffix)
+                )}
+              </div>
+              <div className="mt-2 text-xs font-medium text-[#5c5c66]">
+                {stat.label}
+              </div>
             </div>
-            <div className="mt-2 text-xs font-medium text-white/40">
-              {stat.label}
-            </div>
+          ))}
+        </div>
+
+        <div className="mx-auto mt-16 max-w-xl text-center">
+          <blockquote className="text-lg font-medium text-[#3f3f48] italic">
+            &ldquo;The value is the evidence trail: every recommendation has the source
+            context, risk state, and next action attached.&rdquo;
+          </blockquote>
+          <div className="mt-4">
+            <p className="text-sm font-medium text-[#1c1c20]">Pilot conveyancing lead</p>
+            <p className="text-xs text-[#5c5c66]">Regulated property transfer team</p>
           </div>
-        ))}
-      </div>
-
-      <div className="mx-auto mt-16 max-w-xl text-center">
-        <blockquote className="text-lg font-medium text-white/70 italic">
-          &ldquo;The value is the evidence trail: every recommendation has the source
-          context, risk state, and next action attached.&rdquo;
-        </blockquote>
-        <div className="mt-4">
-          <p className="text-sm font-medium text-white">Pilot conveyancing lead</p>
-          <p className="text-xs text-white/40">Regulated property transfer team</p>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

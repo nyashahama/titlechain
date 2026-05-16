@@ -6,12 +6,10 @@ import { MainFooter } from "./MainFooter";
 
 export function Main({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="titlechain-public min-h-screen bg-black text-white">
       <MainNav />
       <main>{children}</main>
-      <div className="container">
-        <MainFooter />
-      </div>
+      <MainFooter />
     </div>
   );
 }

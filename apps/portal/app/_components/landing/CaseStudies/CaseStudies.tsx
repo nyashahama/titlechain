@@ -28,20 +28,27 @@ export function CaseStudies() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="container py-20">
-      <h2 className="mx-auto mb-12 text-center text-3xl font-bold tracking-tight text-white md:text-4xl">
-        Designed for regulated property teams
-      </h2>
-      <div className="mx-auto max-w-3xl space-y-4">
-        {studies.map((study, i) => (
-          <CaseStudyCard
-            key={study.name}
-            {...study}
-            isOpen={openIndex === i}
-            onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-          />
-        ))}
+    <section className="bg-[#03040a] py-24 md:py-32" id="case-studies">
+      <div className="container">
+        <div className="mx-auto mb-12 max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-300/70">
+            Customers
+          </p>
+          <h2 className="font-display mt-4 text-4xl font-medium leading-tight text-white text-pretty md:text-5xl">
+            Designed for regulated property teams
+          </h2>
+        </div>
+        <div className="mx-auto max-w-3xl space-y-3">
+          {studies.map((study, i) => (
+            <CaseStudyCard
+              key={study.name}
+              {...study}
+              isOpen={openIndex === i}
+              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

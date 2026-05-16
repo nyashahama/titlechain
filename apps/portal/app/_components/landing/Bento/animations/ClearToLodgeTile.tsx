@@ -26,14 +26,14 @@ export function ClearToLodgeTile() {
   return (
     <Link
       href="#solutions"
-      className="group relative col-span-12 flex min-h-[260px] flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)] p-6 transition-shadow hover:shadow-[0px_0px_0px_4px_hsl(0_0%_6%)] md:col-span-7"
+      className="group relative col-span-12 flex min-h-[260px] flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.035] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-colors hover:border-white/[0.14] hover:bg-white/[0.055] md:col-span-7"
     >
-      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
         <Noise opacity={0.08} />
       </div>
       <div className="relative z-10">
-        <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-orange-500/10">
-          <DomainIcon name="clear-to-lodge" className="text-orange-400" />
+        <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-indigo-500/10">
+          <DomainIcon name="clear-to-lodge" className="text-indigo-400" />
         </div>
         <h3 className="text-lg font-semibold text-white">Clear-to-Lodge</h3>
         <p className="mt-1 text-sm text-white/45">

@@ -1,6 +1,6 @@
 "use client";
 
-import { GradientText, Noise } from "@/app/_components/landing/Fancy";
+import { Noise } from "@/app/_components/landing/Fancy";
 import { cn } from "@/app/_lib/cn";
 import { DomainIcon } from "./shared/DomainIcons";
 
@@ -25,18 +25,16 @@ interface PlatformsProps {
 }
 
 export function Platforms({
-  headline = "Integrated with South Africa's leading property data sources",
+  headline = "Optimized for the property data sources and matter systems you rely on",
   className,
 }: PlatformsProps) {
   return (
     <div className={cn("relative z-10", className)}>
-      <div className="container flex flex-col items-center pt-1 md:pt-2">
+      <div className="container flex flex-col items-center pt-10 md:pt-12">
         <h2 className="m-0 w-full px-4 text-center">
-          <GradientText className="text-[0.9375rem] leading-snug font-normal tracking-tight text-pretty lg:text-[1rem]">
-            <span className="mx-auto mb-1.5 block max-w-[22rem] text-center lg:mb-2 lg:max-w-3xl">
-              {headline}
-            </span>
-          </GradientText>
+          <span className="mx-auto mb-1.5 block max-w-[22rem] text-center text-[0.9375rem] leading-snug font-normal tracking-normal text-white/72 text-pretty lg:mb-2 lg:max-w-3xl lg:text-[1rem]">
+            {headline}
+          </span>
         </h2>
       </div>
 
@@ -52,14 +50,14 @@ export function Platforms({
                       className="group relative flex h-14 min-h-14 min-w-[9.5rem] flex-none cursor-pointer overflow-hidden border-r border-dashed border-white/[0.06] animate-fade-in lg:min-w-0 lg:flex-1 lg:basis-0"
                       style={{ animationDelay: `${i * 12}ms` }}
                     >
-                      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-orange-500/10 to-orange-400/5 opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-indigo-500/10 to-indigo-400/5 opacity-0 transition-opacity group-hover:opacity-100">
                         <Noise opacity={0.1} />
                       </div>
                       <span className="relative z-10 flex size-full min-h-0 min-w-0 items-center justify-center px-4 py-2">
                         <span className="flex items-center gap-2 whitespace-nowrap text-xs font-medium text-white/60 transition-colors group-hover:text-white/90">
                           <DomainIcon
                             name={platform.icon}
-                            className="size-4 shrink-0 text-orange-300/80"
+                            className="size-4 shrink-0 text-indigo-300/80"
                           />
                           {platform.name}
                         </span>

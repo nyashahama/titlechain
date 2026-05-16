@@ -40,40 +40,42 @@ const footerLinks = [
 
 export function MainFooter() {
   return (
-    <footer className="border-t border-white/[0.06] py-16">
-      <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
-        <div className="col-span-2 lg:col-span-1">
-          <Link href="/" className="inline-block">
-            <TitlechainMark className="size-10" />
-          </Link>
-          <p className="mt-4 text-sm text-white/45">
-            Property title intelligence for South Africa.
-          </p>
+    <footer className="border-t border-white/[0.08] bg-[#151518] py-16">
+      <div className="mx-auto max-w-[86.875rem] px-4 md:px-8">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
+          <div className="col-span-2 lg:col-span-1">
+            <Link href="/" className="inline-block">
+              <TitlechainMark className="size-10" />
+            </Link>
+            <p className="mt-4 max-w-56 text-sm leading-6 text-white/45">
+              Property title intelligence for South Africa.
+            </p>
+          </div>
+
+          {footerLinks.map((group) => (
+            <div key={group.title}>
+              <h4 className="font-display mb-4 text-sm font-medium text-white/70">
+                {group.title}
+              </h4>
+              <ul className="space-y-3">
+                {group.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-white/40 transition-colors hover:text-white/75"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        {footerLinks.map((group) => (
-          <div key={group.title}>
-            <h4 className="mb-4 text-sm font-medium text-white/60">
-              {group.title}
-            </h4>
-            <ul className="space-y-3">
-              {group.links.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-white/40 transition-colors hover:text-white/70"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-12 border-t border-white/[0.04] pt-6 text-center text-xs text-white/30">
-        &copy; {new Date().getFullYear()} TitleChain. All rights reserved.
+        <div className="mt-12 border-t border-white/[0.06] pt-6 text-center text-xs text-white/30">
+          &copy; {new Date().getFullYear()} TitleChain. All rights reserved.
+        </div>
       </div>
     </footer>
   );

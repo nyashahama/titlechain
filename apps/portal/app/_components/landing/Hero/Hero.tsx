@@ -1,6 +1,5 @@
 "use client";
 
-import { GradientText } from "@/app/_components/landing/Fancy";
 import { Button } from "@/app/_components/landing/shared/Button";
 import { HeroBanner } from "./HeroBanner";
 import { HeroDashboardMockup } from "./HeroDashboardMockup";
@@ -8,54 +7,62 @@ import { siteConfig } from "@/app/siteConfig";
 
 export function Hero() {
   return (
-    <div className="relative flex max-w-screen items-center overflow-hidden py-10 md:py-0 lg:min-h-[680px]">
-      {/* Ambient lighting background */}
+    <section className="relative isolate flex min-h-[760px] w-full max-w-screen flex-col items-center overflow-hidden pt-24 md:pt-32 lg:min-h-[880px]">
       <div
-        className="absolute top-0 left-0 -z-10 h-screen w-[200vw] -translate-x-[25%] translate-y-8 rotate-25 overflow-hidden blur-3xl md:w-full animate-lighting"
-        style={{
-          backgroundImage:
-            "radial-gradient(ellipse 390px 50px at 10% 30%, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0) 70%), radial-gradient(ellipse 1100px 170px at 15% 40%, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0) 70%), radial-gradient(ellipse 1200px 180px at 30% 30%, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0) 70%)",
-          backgroundPosition: "0% 0%",
-        }}
+        className="absolute left-1/2 top-0 bottom-0 -z-30 w-screen -translate-x-1/2 bg-[radial-gradient(ellipse_at_0%_44%,rgba(101,35,75,0.20),transparent_52%),radial-gradient(circle_at_32%_42%,rgba(255,70,145,0.08),transparent_34%),radial-gradient(circle_at_50%_0%,rgba(101,115,255,0.06),transparent_30%),linear-gradient(180deg,#19191b_0%,#17171a_46%,#151519_72%,#03040a_100%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute left-1/2 top-0 -z-20 h-[620px] w-screen -translate-x-1/2 bg-[conic-gradient(from_226deg_at_50%_0%,transparent_0deg,rgba(101,115,255,0.08)_30deg,rgba(205,221,255,0.04)_42deg,transparent_70deg)] opacity-40 [mask-image:linear-gradient(to_right,transparent_0%,black_14%,black_86%,transparent_100%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute left-1/2 top-0 bottom-0 -z-20 w-screen -translate-x-1/2 opacity-10 [background-image:linear-gradient(rgba(205,221,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(205,221,255,0.045)_1px,transparent_1px)] [background-size:96px_76px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_18%,black_66%,transparent_100%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute left-1/2 top-10 -z-10 h-[520px] w-screen -translate-x-1/2 bg-[radial-gradient(ellipse_at_48%_34%,rgba(101,115,255,0.1),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.018),transparent_72%)] opacity-70 [mask-image:linear-gradient(to_bottom,black_0%,black_64%,transparent_100%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute left-1/2 bottom-0 -z-10 h-80 w-screen -translate-x-1/2 bg-[linear-gradient(180deg,transparent_0%,rgba(3,4,10,0.76)_36%,#03040a_100%)]"
         aria-hidden="true"
       />
 
-      <div className="container relative mx-auto grid h-full grid-cols-1 place-items-center gap-16 md:grid-cols-2">
-        {/* Text column */}
-        <div className="animate-blur-in flex flex-col gap-4 [animation-delay:150ms] [animation-duration:1000ms] md:ml-12 lg:ml-0">
+      <div className="container relative z-10 mx-auto flex w-full flex-col items-center">
+        <div className="flex w-full max-w-5xl flex-col items-center gap-4 text-center">
           <HeroBanner
             title="Clear-to-Lodge evidence pack now in pilot"
             href="#solutions"
           />
 
-          <GradientText className="animate-fade-in my-2 md:my-3">
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-pretty sm:text-5xl md:text-6xl lg:text-7xl">
-              Property title intelligence, instantly<span className="text-orange-500">_</span>
-            </h1>
-          </GradientText>
+          <h1 className="font-display my-2 mx-auto max-w-[61rem] bg-linear-145 from-indigo-100 via-white to-white bg-clip-text text-balance text-center text-[3.1rem] leading-[0.98] font-medium tracking-normal text-transparent text-pretty drop-shadow-[0_18px_54px_rgba(160,170,255,0.16)] sm:text-[3.9rem] md:my-3 md:text-[4.45rem] lg:text-[4.75rem]">
+            <span className="block">Property title intelligence,</span>
+            <span className="block">instantly<span className="text-indigo-500">_</span></span>
+          </h1>
 
           <p
-            className="text-base font-medium text-white/60 md:text-lg"
+            className="mx-auto max-w-3xl text-center text-lg leading-8 font-medium text-white/[0.72] md:text-xl md:leading-8"
             style={{
-              minHeight: "calc(4.25 * 1.5rem)",
+              minHeight: "calc(2.5 * 1.75rem)",
             }}
           >
             Verify titles, assess risk, and make Clear-to-Lodge decisions with
             confidence across every property in South Africa.
           </p>
 
-          <div className="mt-4 flex flex-col gap-2 lg:flex-row">
-            <Button href={siteConfig.baseLinks.signin} className="w-full lg:w-fit">
+          <div className="mt-4 flex w-full flex-col items-center justify-center gap-2 sm:flex-row">
+            <Button href={siteConfig.baseLinks.signin} className="w-full sm:w-fit">
               Get started
             </Button>
-            <Button href={siteConfig.baseLinks.contact} variant="secondary" className="w-full lg:w-fit">
+            <Button href={siteConfig.baseLinks.contact} variant="secondary" className="w-full sm:w-fit">
               Talk to sales
             </Button>
           </div>
         </div>
 
-        <HeroDashboardMockup />
+        <HeroDashboardMockup placement="below" />
       </div>
-    </div>
+    </section>
   );
 }

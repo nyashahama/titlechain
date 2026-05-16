@@ -1,6 +1,4 @@
 import { Button } from "@/app/_components/landing/shared/Button";
-import { cn } from "@/app/_lib/cn";
-import { Check } from "lucide-react";
 
 const accessRequestHref =
   "mailto:hello@titlechain.co.za?subject=TitleChain%20access%20request";
@@ -12,12 +10,6 @@ const plans = [
     description: "For sole practitioners and small conveyancing firms.",
     cta: "Request access",
     href: accessRequestHref,
-    features: [
-      "Up to 50 title verifications/month",
-      "Basic risk scoring",
-      "Deeds search access",
-      "Email support",
-    ],
   },
   {
     name: "Professional",
@@ -27,14 +19,6 @@ const plans = [
     description: "For growing firms that need advanced intelligence.",
     cta: "Start pilot",
     href: "mailto:hello@titlechain.co.za?subject=TitleChain%20professional%20pilot",
-    features: [
-      "Up to 500 verifications/month",
-      "Advanced risk engine",
-      "Bond and interdict checks",
-      "FIC cross-referencing",
-      "Priority support",
-      "Team access (up to 10 users)",
-    ],
   },
   {
     name: "Enterprise",
@@ -42,90 +26,100 @@ const plans = [
     description: "For national firms and banks with high-volume needs.",
     cta: "Talk to sales",
     href: "mailto:hello@titlechain.co.za",
-    features: [
-      "Unlimited verifications",
-      "Custom risk models",
-      "Dedicated account manager",
-      "SLA guarantees",
-      "API access",
-      "SSO & advanced security",
-      "Custom integrations",
-      "24/7 premium support",
-    ],
   },
 ];
 
 export function Pricing() {
   return (
-    <div className="relative flex min-h-[650px] max-w-screen items-center justify-center overflow-hidden pt-40 md:pb-10" id="pricing">
-      {/* Ambient lighting (matches Hero background) */}
+    <section
+      className="relative min-h-[540px] max-w-screen scroll-mt-24 overflow-hidden bg-[#171719] pt-[18rem] pb-32 text-white"
+      id="pricing"
+    >
       <div
-        className="absolute top-0 left-0 -z-10 h-screen w-[200vw] -translate-x-[25%] translate-y-8 rotate-25 overflow-hidden blur-3xl md:w-full animate-lighting"
-        style={{
-          backgroundImage:
-            "radial-gradient(ellipse 390px 50px at 10% 30%, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0) 70%), radial-gradient(ellipse 1100px 170px at 15% 40%, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0) 70%), radial-gradient(ellipse 1200px 180px at 30% 30%, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0) 70%)",
-          backgroundPosition: "0% 0%",
-        }}
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[8.25rem] bg-[#ededf0] opacity-100 [background-image:linear-gradient(rgba(127,132,153,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(127,132,153,0.10)_1px,transparent_1px)] [background-size:150px_90px]"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute left-0 top-0 z-0 h-[8.25rem] w-[39rem] bg-[linear-gradient(170deg,transparent_0%,transparent_49%,rgba(101,115,255,0.07)_50%,rgba(255,70,145,0.09)_100%)] [clip-path:polygon(0_100%,100%_0,100%_100%,0_100%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute left-0 top-[8.25rem] z-0 h-px w-[40rem] origin-left -rotate-[12deg] bg-indigo-400/70"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_12%_34%,rgba(255,70,145,0.10),transparent_31%),radial-gradient(circle_at_45%_32%,rgba(101,115,255,0.05),transparent_28%)]"
         aria-hidden="true"
       />
 
-      <div className="container flex w-full flex-col items-center justify-center gap-10">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Start building like a team of hundreds today
+      <div className="container relative z-10">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <h2 className="font-display max-w-[43rem] text-4xl font-medium leading-[1.08] text-white text-pretty md:text-5xl">
+            Start building like a title team of hundreds today
+            <span className="text-indigo-500">_</span>
           </h2>
-          <p className="mt-4 text-sm text-white/45">
-            Join 200+ conveyancing firms already using TitleChain
-          </p>
+
+          <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+            <Button
+              href="mailto:hello@titlechain.co.za?subject=Start%20building%20with%20TitleChain"
+              className="h-11 px-5 text-[0.9375rem]"
+            >
+              Start building
+            </Button>
+            <Button
+              href="#pricing-plans"
+              variant="secondary"
+              className="h-11 border-indigo-500/30 bg-white/[0.04] px-5 text-[0.9375rem] hover:bg-white/[0.08]"
+            >
+              View pricing plans
+            </Button>
+          </div>
         </div>
 
-        <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-3">
+        <div
+          id="pricing-plans"
+          className="mt-9 grid overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl lg:grid-cols-3 lg:divide-x lg:divide-white/[0.06]"
+        >
           {plans.map((plan) => (
-            <div
+            <article
               key={plan.name}
-              className={cn(
-                "relative flex flex-col rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)]/80 p-8 backdrop-blur-xl transition-shadow hover:shadow-[0px_0px_0px_4px_hsl(0_0%_6%)]",
-                plan.tag === "Popular" && "border-orange-500/30 bg-[hsl(0_0%_6%)]/90"
-              )}
+              className="relative flex min-h-[18.75rem] flex-col justify-between border-b border-dashed border-white/[0.06] p-8 last:border-b-0 lg:border-b-0"
             >
-              {plan.tag && (
-                <span className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-orange-500 px-3 py-1 text-xs font-medium text-white">
-                  {plan.tag}
-                </span>
-              )}
               <div>
-                <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
-                <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold tracking-tight text-white">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-xl font-medium text-white/72">
+                    {plan.name}
+                  </h3>
+                  {plan.tag && (
+                    <span className="rounded-md bg-indigo-500 px-2 py-1 text-xs font-semibold text-white">
+                      {plan.tag}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 flex items-end gap-1">
+                  <span className="font-display text-5xl font-medium leading-none text-white">
                     {plan.price}
                   </span>
                   {plan.subtitle && (
-                    <span className="text-sm text-white/40">{plan.subtitle}</span>
+                    <span className="pb-1 text-sm text-white/42">{plan.subtitle}</span>
                   )}
                 </div>
-                <p className="mt-2 text-sm text-white/45">{plan.description}</p>
+                <p className="mt-8 max-w-sm text-sm leading-6 font-medium text-white/52">
+                  {plan.description}
+                </p>
               </div>
-
-              <ul className="mt-6 flex-1 space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <Check className="mt-0.5 size-4 shrink-0 text-orange-400" />
-                    <span className="text-sm text-white/60">{feature}</span>
-                  </li>
-                ))}
-              </ul>
 
               <Button
                 href={plan.href}
                 variant={plan.tag === "Popular" ? "primary" : "secondary"}
-                className="mt-8 w-full"
+                className="mt-12 w-full border-indigo-500/30"
               >
                 {plan.cta}
               </Button>
-            </div>
+            </article>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

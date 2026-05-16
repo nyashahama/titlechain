@@ -7,24 +7,21 @@ import { Toaster } from "sonner";
 import { CommandPalette } from "@/app/_components/command-palette";
 import { KeyboardShortcutsHelp } from "@/app/_components/keyboard-shortcuts-help";
 
-const geistSans = localFont({
-  variable: "--font-geist",
-  src: "../../../node_modules/next/dist/next-devtools/server/font/geist-latin.woff2",
-  display: "swap",
-});
-
 const geistMono = localFont({
   variable: "--font-geist-mono",
   src: "../../../node_modules/next/dist/next-devtools/server/font/geist-mono-latin.woff2",
   display: "swap",
 });
 
+const appIconUrl = "/icon.svg?v=blue-20260516";
+
 export const metadata: Metadata = {
   title: "TitleChain — Property Transaction Intelligence",
   description:
     "South Africa's property title intelligence platform. Verify titles, assess risk, and make Clear-to-Lodge decisions with confidence.",
   icons: {
-    icon: "/icon.svg",
+    icon: [{ url: appIconUrl, type: "image/svg+xml" }],
+    shortcut: [{ url: appIconUrl, type: "image/svg+xml" }],
   },
 };
 
@@ -34,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={geistMono.variable}>
       <body className="antialiased">
         <AuthProvider>
           <AnimationProvider>
