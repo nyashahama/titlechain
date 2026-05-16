@@ -28,7 +28,7 @@ export function CaseStudies() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="container py-20">
+    <div className="container py-20" id="case-studies">
       <h2 className="mx-auto mb-12 text-center text-3xl font-bold tracking-tight text-white md:text-4xl">
         Designed for regulated property teams
       </h2>

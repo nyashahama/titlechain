@@ -143,6 +143,23 @@ describe("landing: public quality", () => {
     ).toBe(true);
   });
 
+  it("uses an Appwrite-style desktop navigation bar", () => {
+    const navSource = sources.find(({ file }) =>
+      file.endsWith(join("layout", "MainNav.tsx"))
+    );
+
+    expect(navSource?.content).toContain("h-20");
+    expect(navSource?.content).toContain("max-w-[86.875rem]");
+    expect(navSource?.content).toContain("border-b border-white/[0.08]");
+    expect(navSource?.content).toContain("bg-[#151518]/95");
+    expect(navSource?.content).toContain("Products");
+    expect(navSource?.content).toContain("ChevronDown");
+    expect(navSource?.content).toContain("Github");
+    expect(navSource?.content).toContain("Pilot");
+    expect(navSource?.content).toContain("Start project");
+    expect(navSource?.content).not.toContain("scrolled");
+  });
+
   it("does not use emoji as integration or feature icons", () => {
     const emojiMatches = combinedSource.match(/\p{Extended_Pictographic}/gu) ?? [];
     expect(emojiMatches).toEqual([]);

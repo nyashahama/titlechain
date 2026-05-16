@@ -71,7 +71,7 @@ export function MobileNav({ open, onClose, links }: MobileNavProps) {
             Sign in
           </Button>
           <Button href={siteConfig.baseLinks.signin}>
-            Get started
+            Start project
           </Button>
         </div>
       </div>
