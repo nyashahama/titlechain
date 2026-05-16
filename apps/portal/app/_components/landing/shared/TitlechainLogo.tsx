@@ -1,3 +1,4 @@
+import { useId } from "react"
 import type { SVGProps } from "react"
 
 import { cx } from "@/app/_lib/utils"
@@ -5,72 +6,88 @@ import { cx } from "@/app/_lib/utils"
 export const TitlechainLogo = ({
   className,
   ...props
-}: SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 184 42"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-    focusable="false"
-    className={cx("text-[#eef2ff]", className)}
-    {...props}
-  >
-    <rect x="0" y="0" width="42" height="42" fill="transparent" />
-    <rect
-      x="8.5"
-      y="10.5"
-      width="15"
-      height="19"
-      rx="6.5"
-      transform="rotate(-45 16 20)"
+}: SVGProps<SVGSVGElement>) => {
+  const brandGradientId = useId()
+  const wordGradientId = useId()
+
+  return (
+    <svg
+      viewBox="0 0 174 42"
       fill="none"
-      stroke="#6573FF"
-      strokeWidth="3.2"
-    />
-    <rect
-      x="18.5"
-      y="10.5"
-      width="15"
-      height="19"
-      rx="6.5"
-      transform="rotate(-45 26 20)"
-      fill="none"
-      stroke="#C7D2FE"
-      strokeWidth="3.2"
-    />
-    <path
-      d="M21 12.5V29.5"
-      stroke="currentColor"
-      strokeWidth="3.6"
-      strokeLinecap="round"
-    />
-    <path
-      d="M16.1 20H25.9"
-      stroke="currentColor"
-      strokeWidth="3.6"
-      strokeLinecap="round"
-    />
-    <text
-      x="50"
-      y="26"
-      fill="currentColor"
-      fontSize="18.5"
-      fontWeight="700"
-      letterSpacing="-0.04em"
-      style={{ fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif" }}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      className={cx("text-[#eef2ff]", className)}
+      {...props}
     >
-      Title
-    </text>
-    <text
-      x="104"
-      y="26"
-      fill="#6573ff"
-      fontSize="18.5"
-      fontWeight="600"
-      letterSpacing="-0.04em"
-      style={{ fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif" }}
-    >
-      chain
-    </text>
-  </svg>
-)
+      <defs>
+        <linearGradient
+          id={brandGradientId}
+          x1="5"
+          y1="10"
+          x2="37"
+          y2="32"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0" stopColor="#F8A1BA" />
+          <stop offset="0.46" stopColor="#AEB7FF" />
+          <stop offset="1" stopColor="#6573FF" />
+        </linearGradient>
+        <linearGradient
+          id={wordGradientId}
+          x1="87"
+          y1="14"
+          x2="142"
+          y2="30"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0" stopColor="#C7D2FE" />
+          <stop offset="1" stopColor="#6573FF" />
+        </linearGradient>
+      </defs>
+
+      <path
+        d="M17.6 12.25h-3.2C9.75 12.25 6 16 6 20.65v.7c0 4.65 3.75 8.4 8.4 8.4h7"
+        stroke={`url(#${brandGradientId})`}
+        strokeWidth="4.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M24.4 29.75h3.2c4.65 0 8.4-3.75 8.4-8.4v-.7c0-4.65-3.75-8.4-8.4-8.4h-7"
+        stroke={`url(#${brandGradientId})`}
+        strokeWidth="4.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M21 14.85v12.3"
+        stroke="currentColor"
+        strokeWidth="3.3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M14.85 21h12.3"
+        stroke="currentColor"
+        strokeWidth="3.3"
+        strokeLinecap="round"
+      />
+
+      <text
+        x="49"
+        y="28"
+        fill="currentColor"
+        fontSize="22"
+        fontWeight="700"
+        letterSpacing="0"
+        style={{
+          fontFamily:
+            "var(--font-aeonik-pro), Aeonik Pro, Inter, ui-sans-serif, system-ui, sans-serif",
+        }}
+      >
+        <tspan>title</tspan>
+        <tspan fill={`url(#${wordGradientId})`}>chain</tspan>
+      </text>
+    </svg>
+  )
+}

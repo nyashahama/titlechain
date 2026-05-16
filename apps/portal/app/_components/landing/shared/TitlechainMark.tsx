@@ -9,7 +9,7 @@ export const TitlechainMark = ({
   crossColor = "currentColor",
   ...props
 }: TitlechainMarkProps) => {
-  const gradientId = useId()
+  const brandGradientId = useId()
 
   return (
     <svg
@@ -22,50 +22,42 @@ export const TitlechainMark = ({
     >
       <defs>
         <linearGradient
-          id={gradientId}
-          x1="9"
+          id={brandGradientId}
+          x1="5"
           y1="10"
-          x2="33"
+          x2="37"
           y2="32"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0" stopColor="#C7D2FE" />
-          <stop offset="0.55" stopColor="#6573FF" />
-          <stop offset="1" stopColor="#4F46E5" />
+          <stop offset="0" stopColor="#F8A1BA" />
+          <stop offset="0.46" stopColor="#AEB7FF" />
+          <stop offset="1" stopColor="#6573FF" />
         </linearGradient>
       </defs>
-      <rect
-        x="8.5"
-        y="10.5"
-        width="15"
-        height="19"
-        rx="6.5"
-        transform="rotate(-45 16 20)"
-        fill="none"
-        stroke={`url(#${gradientId})`}
-        strokeWidth="3.2"
-      />
-      <rect
-        x="18.5"
-        y="10.5"
-        width="15"
-        height="19"
-        rx="6.5"
-        transform="rotate(-45 26 20)"
-        fill="none"
-        stroke={`url(#${gradientId})`}
-        strokeWidth="3.2"
+      <path
+        d="M17.6 12.25h-3.2C9.75 12.25 6 16 6 20.65v.7c0 4.65 3.75 8.4 8.4 8.4h7"
+        stroke={`url(#${brandGradientId})`}
+        strokeWidth="4.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
-        d="M21 12.5V29.5"
+        d="M24.4 29.75h3.2c4.65 0 8.4-3.75 8.4-8.4v-.7c0-4.65-3.75-8.4-8.4-8.4h-7"
+        stroke={`url(#${brandGradientId})`}
+        strokeWidth="4.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M21 14.85v12.3"
         stroke={crossColor}
-        strokeWidth="3.6"
+        strokeWidth="3.3"
         strokeLinecap="round"
       />
       <path
-        d="M16.1 20H25.9"
+        d="M14.85 21h12.3"
         stroke={crossColor}
-        strokeWidth="3.6"
+        strokeWidth="3.3"
         strokeLinecap="round"
       />
     </svg>

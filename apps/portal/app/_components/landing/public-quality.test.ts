@@ -177,6 +177,25 @@ describe("landing: public quality", () => {
     expect(navSource?.content).not.toContain("scrolled");
   });
 
+  it("uses a refined Appwrite-style TitleChain logo system", () => {
+    const logoSource = sources.find(({ file }) =>
+      file.endsWith(join("shared", "TitlechainLogo.tsx"))
+    );
+    const markSource = sources.find(({ file }) =>
+      file.endsWith(join("shared", "TitlechainMark.tsx"))
+    );
+
+    expect(logoSource?.content).toContain("var(--font-aeonik-pro)");
+    expect(logoSource?.content).toContain(">title<");
+    expect(logoSource?.content).toContain(">chain<");
+    expect(logoSource?.content).toContain("wordGradientId");
+    expect(logoSource?.content).not.toContain("Geist");
+    expect(logoSource?.content).not.toContain('letterSpacing="-0.04em"');
+    expect(markSource?.content).toContain("brandGradientId");
+    expect(markSource?.content).toContain("strokeLinecap");
+    expect(markSource?.content).not.toContain('transform="rotate(-45');
+  });
+
   it("uses an Appwrite-style post-hero source and audience rail", () => {
     const platformSource = sources.find(({ file }) =>
       matchesLandingPath(file, "Platforms.tsx")
