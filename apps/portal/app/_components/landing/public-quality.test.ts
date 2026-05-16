@@ -36,6 +36,8 @@ describe("landing: public quality", () => {
     file,
     content: readFileSync(file, "utf-8"),
   }));
+  const layoutSource = readFileSync(join(appDir, "layout.tsx"), "utf-8");
+  const globalsSource = readFileSync(join(appDir, "globals.css"), "utf-8");
   const combinedSource = sources.map(({ content }) => content).join("\n");
 
   it("does not expose placeholder or missing internal links", () => {
@@ -97,6 +99,38 @@ describe("landing: public quality", () => {
     for (const token of oldOrangeTokens) {
       expect(combinedSource).not.toContain(token);
     }
+  });
+
+  it("uses an Appwrite-inspired Inter typography system with assertive hero scale", () => {
+    const heroSource = sources.find(({ file }) =>
+      file.endsWith(join("Hero", "Hero.tsx"))
+    );
+
+    expect(layoutSource).not.toContain('from "next/font/google"');
+    expect(globalsSource).toContain("font-family:Aeonik Pro");
+    expect(globalsSource).toContain("font-family:Inter");
+    expect(globalsSource).toContain(
+      'url("/fonts/aeonik-pro/AeonikPro-Regular.woff2")'
+    );
+    expect(globalsSource).toContain(
+      'url("/fonts/inter/inter-latin-400-normal.woff2")'
+    );
+    expect(globalsSource).toContain('--font-aeonik-pro: "Aeonik Pro"');
+    expect(globalsSource).toContain('--font-inter: "Inter"');
+    expect(globalsSource).toContain("--font-display: var(--font-aeonik-pro)");
+    expect(heroSource?.content).toContain("font-display");
+    expect(heroSource?.content).toContain("xl:text-[6.75rem]");
+    expect(heroSource?.content).toContain("text-white/[0.72]");
+    expect(
+      existsSync(
+        resolve(appDir, "../public/fonts/aeonik-pro/AeonikPro-Regular.woff2")
+      )
+    ).toBe(true);
+    expect(
+      existsSync(
+        resolve(appDir, "../public/fonts/inter/inter-latin-400-normal.woff2")
+      )
+    ).toBe(true);
   });
 
   it("does not use emoji as integration or feature icons", () => {

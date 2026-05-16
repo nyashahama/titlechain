@@ -1,6 +1,5 @@
 "use client";
 
-import { GradientText } from "@/app/_components/landing/Fancy";
 import { Button } from "@/app/_components/landing/shared/Button";
 import { HeroBanner } from "./HeroBanner";
 import { HeroDashboardMockup } from "./HeroDashboardMockup";
@@ -44,14 +43,12 @@ export function Hero() {
             href="#solutions"
           />
 
-          <GradientText className="my-2 md:my-3">
-            <h1 className="mx-auto max-w-5xl text-balance text-center text-5xl leading-[0.98] font-semibold tracking-normal text-pretty sm:text-6xl md:text-7xl lg:text-[5.25rem]">
-              Property title intelligence, instantly<span className="text-indigo-500">_</span>
-            </h1>
-          </GradientText>
+          <h1 className="font-display my-2 mx-auto max-w-6xl bg-linear-145 from-indigo-100 via-white to-white bg-clip-text text-balance text-center text-[3.5rem] leading-[0.92] font-semibold tracking-normal text-transparent text-pretty drop-shadow-[0_18px_54px_rgba(160,170,255,0.18)] sm:text-[4.5rem] md:my-3 md:text-[5.75rem] lg:text-[6rem] xl:text-[6.75rem]">
+            Property title intelligence, instantly<span className="text-indigo-500">_</span>
+          </h1>
 
           <p
-            className="mx-auto max-w-2xl text-center text-base leading-7 font-medium text-white/60 md:text-lg"
+            className="mx-auto max-w-3xl text-center text-lg leading-8 font-medium text-white/[0.72] md:text-xl md:leading-8"
             style={{
               minHeight: "calc(2.5 * 1.75rem)",
             }}

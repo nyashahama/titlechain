@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@font-face{font-family:Aeonik Pro;font-style:normal;font-weight:400;font-display:swap;src:local(Aeonik Pro),local(AeonikPro),url("/fonts/aeonik-pro/AeonikPro-Regular.woff2")format("woff2")}
+@font-face{font-family:Aeonik Pro;font-style:normal;font-weight:500;font-display:swap;src:local(Aeonik Pro),local(AeonikPro),url("/fonts/aeonik-pro/AeonikPro-Medium.woff2")format("woff2")}
+@font-face{font-family:Aeonik Pro;font-style:normal;font-weight:600;font-display:swap;src:local(Aeonik Pro),local(AeonikPro),url("/fonts/aeonik-pro/AeonikPro-Bold.woff2")format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/inter/inter-latin-400-normal.woff2")format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/inter/inter-latin-500-normal.woff2")format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/inter/inter-latin-600-normal.woff2")format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/inter/inter-latin-700-normal.woff2")format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:800;font-display:swap;src:url("/fonts/inter/inter-latin-800-normal.woff2")format("woff2")}
+
 @utility container {
   max-width: 75rem;
   margin-inline: auto;
@@ -52,7 +61,10 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 
-  --font-sans: var(--font-geist), 'Geist', 'Inter', system-ui, sans-serif;
+  --font-inter: "Inter", arial, sans-serif;
+  --font-aeonik-pro: "Aeonik Pro", var(--font-sans);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-aeonik-pro);
   --font-mono: var(--font-geist-mono), 'Geist Mono', 'SF Mono', monospace;
 }
 
@@ -61,6 +73,8 @@
   html { @apply scroll-smooth; background-color: #000; }
   body {
     @apply bg-background text-foreground font-sans overflow-x-hidden antialiased;
+    font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "cv11" 1;
+    text-rendering: optimizeLegibility;
   }
   input, textarea, select { @apply outline-none; }
   input:focus-visible, textarea:focus-visible, select:focus-visible {
@@ -120,6 +134,21 @@
 }
 
 @layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0;
+  }
+
+  .titlechain-public {
+    font-family: var(--font-inter);
+    font-synthesis-weight: none;
+  }
+
+  .titlechain-public :where(h1, h2, h3) {
+    font-family: var(--font-aeonik-pro);
+    letter-spacing: 0;
+  }
+
   .border-gradient {
     position: relative;
   }

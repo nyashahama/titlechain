@@ -7,12 +7,6 @@ import { Toaster } from "sonner";
 import { CommandPalette } from "@/app/_components/command-palette";
 import { KeyboardShortcutsHelp } from "@/app/_components/keyboard-shortcuts-help";
 
-const geistSans = localFont({
-  variable: "--font-geist",
-  src: "../../../node_modules/next/dist/next-devtools/server/font/geist-latin.woff2",
-  display: "swap",
-});
-
 const geistMono = localFont({
   variable: "--font-geist-mono",
   src: "../../../node_modules/next/dist/next-devtools/server/font/geist-mono-latin.woff2",
@@ -34,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={geistMono.variable}>
       <body className="antialiased">
         <AuthProvider>
           <AnimationProvider>

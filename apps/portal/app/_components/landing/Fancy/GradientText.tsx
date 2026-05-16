@@ -10,7 +10,7 @@ export function GradientText({ children, className }: GradientTextProps) {
   return (
     <span
       className={cn(
-        "bg-linear-145 from-indigo-300 to-white bg-clip-text text-transparent",
+        "bg-linear-145 from-indigo-100 via-white to-white bg-clip-text text-transparent",
         className
       )}
     >
