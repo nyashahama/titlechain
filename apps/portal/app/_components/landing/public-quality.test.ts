@@ -167,6 +167,8 @@ describe("landing: public quality", () => {
     expect(navSource?.content).toContain("max-w-[86.875rem]");
     expect(navSource?.content).toContain("border-b border-white/[0.08]");
     expect(navSource?.content).toContain("bg-[#151518]/95");
+    expect(navSource?.content).toContain("isLight");
+    expect(navSource?.content).toContain("bg-[#ededf0]/95");
     expect(navSource?.content).toContain("Products");
     expect(navSource?.content).toContain("ChevronDown");
     expect(navSource?.content).toContain("Github");
@@ -209,16 +211,41 @@ describe("landing: public quality", () => {
 
     for (const source of [featuresSource, mapSource, scaleSource]) {
       expect(source?.content).toContain("bg-[#ededf0]");
+      expect(source?.content).toContain('data-nav-theme="light"');
       expect(source?.content).toContain("text-[#1c1c20]");
       expect(source?.content).toContain("border-[#d8d8df]");
       expect(source?.content).not.toContain("text-white");
     }
 
-    expect(pricingSource?.content).toContain("bg-[#03040a]");
+    expect(pricingSource?.content).toContain("bg-[#171719]");
     expect(pricingSource?.content).toContain("text-white");
     expect(featuresSource?.content).not.toContain(
       'className="whitespace-nowrap">security and compliance'
     );
+  });
+
+  it("uses an Appwrite-style compact pricing conversion band", () => {
+    const pricingSource = sources.find(({ file }) =>
+      matchesLandingPath(file, "Pricing.tsx")
+    );
+
+    expect(pricingSource?.content).toContain("clip-path");
+    expect(pricingSource?.content).toContain("h-[8.25rem]");
+    expect(pricingSource?.content).toContain("Start building like a title team");
+    expect(pricingSource?.content).toContain("Start building");
+    expect(pricingSource?.content).toContain("View pricing plans");
+    expect(pricingSource?.content).toContain("items-center");
+    expect(pricingSource?.content).toContain("pt-[18rem]");
+    expect(pricingSource?.content).toContain("pb-32");
+    expect(pricingSource?.content).toContain("mt-9");
+    expect(pricingSource?.content).toContain("grid-cols-3");
+    expect(pricingSource?.content).toContain("divide-x");
+    expect(pricingSource?.content).toContain("rounded-xl border border-white/[0.08]");
+    expect(pricingSource?.content).toContain("min-h-[540px]");
+    expect(pricingSource?.content).toContain("min-h-[18.75rem]");
+    expect(pricingSource?.content).not.toContain("gap-6 lg:grid-cols-3");
+    expect(pricingSource?.content).not.toContain("space-y-3");
+    expect(pricingSource?.content).not.toContain("Check");
   });
 
   it("keeps the lower landing page on the Appwrite-style section system", () => {

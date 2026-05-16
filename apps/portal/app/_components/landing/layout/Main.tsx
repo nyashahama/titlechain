@@ -9,9 +9,7 @@ export function Main({ children }: { children: ReactNode }) {
     <div className="titlechain-public min-h-screen bg-black text-white">
       <MainNav />
       <main>{children}</main>
-      <div className="container">
-        <MainFooter />
-      </div>
+      <MainFooter />
     </div>
   );
 }

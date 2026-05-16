@@ -32,6 +32,7 @@ export function Scale() {
   return (
     <section
       className="relative overflow-hidden border-b border-dashed border-[#d8d8df] bg-[#ededf0] py-24 text-[#1c1c20] md:py-32"
+      data-nav-theme="light"
       ref={ref}
     >
       <div

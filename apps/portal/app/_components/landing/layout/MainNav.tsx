@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TitlechainLogo } from "@/app/_components/landing/shared/TitlechainLogo";
 import { Button } from "@/app/_components/landing/shared/Button";
 import { MobileNav } from "./MobileNav";
 import { siteConfig } from "@/app/siteConfig";
+import { cn } from "@/app/_lib/cn";
 import { ChevronDown, Menu } from "lucide-react";
 
 const navLinks = [
@@ -35,13 +36,55 @@ function GithubMark({ className }: { className?: string }) {
 
 export function MainNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLight, setIsLight] = useState(false);
+
+  useEffect(() => {
+    let frame = 0;
+
+    const updateTheme = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const probeY = 36;
+        const lightSections = Array.from(
+          document.querySelectorAll<HTMLElement>('[data-nav-theme="light"]')
+        );
+        const isOverLightSection = lightSections.some((section) => {
+          const rect = section.getBoundingClientRect();
+          return rect.top <= probeY && rect.bottom > probeY;
+        });
+        const pricingRect = document.getElementById("pricing")?.getBoundingClientRect();
+        const isPricingBridge = pricingRect
+          ? pricingRect.top <= 80 && pricingRect.top > -140
+          : false;
+
+        setIsLight(isOverLightSection || isPricingBridge);
+      });
+    };
+
+    updateTheme();
+    window.addEventListener("scroll", updateTheme, { passive: true });
+    window.addEventListener("resize", updateTheme);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateTheme);
+      window.removeEventListener("resize", updateTheme);
+    };
+  }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.08] bg-[#151518]/95 backdrop-blur-xl">
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 border-b border-white/[0.08] bg-[#151518]/95 text-white backdrop-blur-xl transition-colors duration-200",
+        isLight && "border-[#d8d8df] bg-[#ededf0]/95 text-[#1c1c20]"
+      )}
+    >
       <nav className="mx-auto flex h-[4.5rem] w-full max-w-[86.875rem] items-center justify-between px-5">
         <div className="flex min-w-0 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center">
-            <TitlechainLogo className="h-7 w-auto" />
+            <TitlechainLogo
+              className={cn("h-7 w-auto", isLight && "text-[#1c1c20]")}
+            />
           </Link>
 
           <div className="hidden items-center gap-8 xl:flex">
@@ -49,7 +92,10 @@ export function MainNav() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="inline-flex items-center gap-1 text-[0.9375rem] font-medium text-white/64 transition-colors hover:text-white"
+                className={cn(
+                  "inline-flex items-center gap-1 text-[0.9375rem] font-medium text-white/64 transition-colors hover:text-white",
+                  isLight && "text-[#4a4a52] hover:text-[#1c1c20]"
+                )}
               >
                 {link.label}
                 {link.hasMenu ? (
@@ -63,17 +109,29 @@ export function MainNav() {
         <div className="hidden items-center gap-3 xl:flex">
           <a
             href="https://github.com/nyashahama/titlechain"
-            className="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-sm font-medium text-white/62 transition-colors hover:text-white"
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-sm font-medium text-white/62 transition-colors hover:text-white",
+              isLight && "text-[#5b5b64] hover:text-[#1c1c20]"
+            )}
             target="_blank"
             rel="noreferrer"
             aria-label="TitleChain on GitHub"
           >
             <GithubMark className="size-5" />
-            <span className="rounded bg-white/[0.12] px-1.5 py-0.5 leading-none text-white/86">
+            <span
+              className={cn(
+                "rounded bg-white/[0.12] px-1.5 py-0.5 leading-none text-white/86",
+                isLight && "bg-black/[0.08] text-[#1c1c20]"
+              )}
+            >
               Pilot
             </span>
           </a>
-          <Button href={siteConfig.baseLinks.signin} variant="text">
+          <Button
+            href={siteConfig.baseLinks.signin}
+            variant="text"
+            className={cn(isLight && "text-[#5b5b64] hover:text-[#1c1c20]")}
+          >
             Sign in
           </Button>
           <Button
@@ -94,7 +152,10 @@ export function MainNav() {
             Start project
           </Button>
           <button
-            className="flex size-10 items-center justify-center rounded-lg text-white"
+            className={cn(
+              "flex size-10 items-center justify-center rounded-lg text-white",
+              isLight && "text-[#1c1c20]"
+            )}
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
           >

@@ -34,6 +34,7 @@ export function Map() {
   return (
     <section
       className="scroll-mt-24 border-b border-dashed border-[#d8d8df] bg-[#ededf0] py-24 text-[#1c1c20] md:py-32"
+      data-nav-theme="light"
       id="coverage"
     >
       <div className="container">

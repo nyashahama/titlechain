@@ -158,6 +158,7 @@ export function Features() {
   return (
     <section
       className="scroll-mt-24 border-y border-dashed border-[#d8d8df] bg-[#ededf0] py-24 text-[#1c1c20] md:py-32"
+      data-nav-theme="light"
       id="security"
     >
       <div className="container mx-auto">
