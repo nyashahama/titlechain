@@ -38,15 +38,18 @@ describe("AuthLayout", () => {
     expect(screen.getAllByText("Sign in")).toHaveLength(1);
   });
 
-  it("keeps demo credentials compact and subordinate on the sign-in page", () => {
+  it("keeps demo workspace access compact and avoids copied OAuth patterns", () => {
     const source = readFileSync(
       resolve(__dirname, "../../../auth/signin/page.tsx"),
       "utf-8",
     );
 
-    expect(source).toContain("Demo access");
-    expect(source).toContain("Copy these credentials into the form.");
+    expect(source).toContain("Demo workspace");
+    expect(source).toContain("Use demo workspace");
+    expect(source).toContain("Pilot workspace");
     expect(source).toContain("rounded-lg border border-white/[0.08]");
+    expect(source).not.toContain("Copy these credentials into the form.");
+    expect(source).not.toContain("Sign in with GitHub");
     expect(source).not.toContain("rounded-xl border border-orange-500/20");
     expect(source).not.toContain("bg-orange-500/[0.07]");
     expect(source).not.toContain("orange-");

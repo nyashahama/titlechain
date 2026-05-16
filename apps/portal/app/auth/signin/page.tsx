@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../_providers/auth-provider";
 import { AuthLayout } from "@/app/_components/landing/layout/AuthLayout";
 import { Button } from "@/app/_components/landing/shared/Button";
@@ -10,10 +11,17 @@ import { Button } from "@/app/_components/landing/shared/Button";
 export default function SignInPage() {
   const router = useRouter();
   const { signIn } = useAuth();
-  const [email, setEmail] = useState("demo@titlechain.co.za");
-  const [password, setPassword] = useState("demo1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function useDemoWorkspace() {
+    setEmail("demo@titlechain.co.za");
+    setPassword("demo1234");
+    setError("");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,12 +55,24 @@ export default function SignInPage() {
         </div>
       }
     >
+      <div className="mb-6 flex items-center justify-between gap-3 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 py-2 text-xs text-white/45">
+        <span className="inline-flex items-center gap-2">
+          <span className="size-1.5 rounded-full bg-indigo-300" aria-hidden="true" />
+          Pilot workspace
+        </span>
+        <span className="text-indigo-200/65">Registry session</span>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-white/70">
+          <label
+            htmlFor="signin-email"
+            className="mb-1.5 block text-sm font-medium text-white/70"
+          >
             Email
           </label>
           <input
+            id="signin-email"
             type="email"
             required
             value={email}
@@ -62,17 +82,35 @@ export default function SignInPage() {
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-white/70">
+          <label
+            htmlFor="signin-password"
+            className="mb-1.5 block text-sm font-medium text-white/70"
+          >
             Password
           </label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 transition-colors focus:border-indigo-400/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            placeholder="••••••••"
-          />
+          <div className="relative">
+            <input
+              id="signin-password"
+              type={showPassword ? "text" : "password"}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 pr-11 text-sm text-white placeholder:text-white/25 transition-colors focus:border-indigo-400/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((visible) => !visible)}
+              className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-white/45 transition-colors hover:bg-white/[0.06] hover:text-white/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+            >
+              {showPassword ? (
+                <EyeOff className="size-4" aria-hidden="true" />
+              ) : (
+                <Eye className="size-4" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -87,25 +125,23 @@ export default function SignInPage() {
       </form>
 
       <div className="mt-5 rounded-lg border border-white/[0.08] bg-white/[0.025] p-3">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-white/45">
-            Demo access
-          </p>
-          <p className="text-right text-xs text-white/35">
-            Copy these credentials into the form.
-          </p>
-        </div>
-        <div className="grid gap-1.5 text-sm">
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-white/40">Email</span>
-            <span className="min-w-0 break-all text-right font-mono text-xs text-white/58">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wide text-white/45">
+              Demo workspace
+            </p>
+            <p className="mt-1 truncate font-mono text-xs text-white/58">
               demo@titlechain.co.za
-            </span>
+            </p>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-white/40">Password</span>
-            <span className="font-mono text-xs text-white/58">demo1234</span>
-          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={useDemoWorkspace}
+          >
+            Use demo workspace
+          </Button>
         </div>
       </div>
     </AuthLayout>
