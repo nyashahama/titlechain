@@ -135,13 +135,16 @@ describe("landing: public quality", () => {
     expect(globalsSource).toContain("--font-display: var(--font-aeonik-pro)");
     expect(heroSource?.content).toContain("font-display");
     expect(heroSource?.content).toContain("font-medium");
-    expect(heroSource?.content).toContain("lg:text-[5.25rem]");
+    expect(heroSource?.content).toContain("md:pt-32");
+    expect(heroSource?.content).toContain("max-w-[61rem]");
+    expect(heroSource?.content).toContain("lg:text-[4.75rem]");
     expect(heroSource?.content).not.toContain("xl:text-[6.75rem]");
-    expect(heroSource?.content).toContain("opacity-25");
+    expect(heroSource?.content).toContain("opacity-10");
     expect(heroSource?.content).not.toContain("opacity-80");
     expect(heroSource?.content).not.toContain("stroke-opacity='.28'");
     expect(heroSource?.content).toContain("text-white/[0.72]");
     expect(mockupSource?.content).toContain("mt-8");
+    expect(mockupSource?.content).toContain("md:mt-24");
     expect(mockupSource?.content).not.toContain("mt-12");
     expect(
       existsSync(
@@ -160,7 +163,7 @@ describe("landing: public quality", () => {
       file.endsWith(join("layout", "MainNav.tsx"))
     );
 
-    expect(navSource?.content).toContain("h-20");
+    expect(navSource?.content).toContain("h-[4.5rem]");
     expect(navSource?.content).toContain("max-w-[86.875rem]");
     expect(navSource?.content).toContain("border-b border-white/[0.08]");
     expect(navSource?.content).toContain("bg-[#151518]/95");
@@ -170,6 +173,24 @@ describe("landing: public quality", () => {
     expect(navSource?.content).toContain("Pilot");
     expect(navSource?.content).toContain("Start project");
     expect(navSource?.content).not.toContain("scrolled");
+  });
+
+  it("uses an Appwrite-style post-hero source and audience rail", () => {
+    const platformSource = sources.find(({ file }) =>
+      matchesLandingPath(file, "Platforms.tsx")
+    );
+    const logoListSource = sources.find(({ file }) =>
+      matchesLandingPath(file, "LogoList.tsx")
+    );
+
+    expect(platformSource?.content).toContain(
+      "Optimized for the property data sources and matter systems you rely on"
+    );
+    expect(platformSource?.content).toContain("pt-10");
+    expect(logoListSource?.content).toContain("grid-cols-2 gap-y-10");
+    expect(logoListSource?.content).not.toContain(
+      "rounded-xl border border-dashed"
+    );
   });
 
   it("keeps the lower landing page on the Appwrite-style section system", () => {

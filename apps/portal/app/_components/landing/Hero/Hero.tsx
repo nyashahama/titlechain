@@ -7,17 +7,17 @@ import { siteConfig } from "@/app/siteConfig";
 
 export function Hero() {
   return (
-    <section className="relative isolate flex min-h-[760px] w-full max-w-screen flex-col items-center overflow-hidden pt-24 md:pt-40 lg:min-h-[880px]">
+    <section className="relative isolate flex min-h-[760px] w-full max-w-screen flex-col items-center overflow-hidden pt-24 md:pt-32 lg:min-h-[880px]">
       <div
-        className="absolute left-1/2 top-0 bottom-0 -z-30 w-screen -translate-x-1/2 bg-[radial-gradient(circle_at_28%_24%,rgba(101,115,255,0.18),transparent_24%),radial-gradient(circle_at_31%_43%,rgba(255,70,145,0.08),transparent_34%),linear-gradient(180deg,#171721_0%,#101119_44%,#03040a_100%)]"
+        className="absolute left-1/2 top-0 bottom-0 -z-30 w-screen -translate-x-1/2 bg-[radial-gradient(ellipse_at_0%_44%,rgba(101,35,75,0.20),transparent_52%),radial-gradient(circle_at_32%_42%,rgba(255,70,145,0.08),transparent_34%),radial-gradient(circle_at_50%_0%,rgba(101,115,255,0.06),transparent_30%),linear-gradient(180deg,#19191b_0%,#17171a_46%,#151519_72%,#03040a_100%)]"
         aria-hidden="true"
       />
       <div
-        className="absolute left-1/2 top-0 -z-20 h-[620px] w-[min(1400px,120vw)] -translate-x-1/2 bg-[conic-gradient(from_226deg_at_50%_0%,transparent_0deg,rgba(101,115,255,0.1)_30deg,rgba(205,221,255,0.05)_42deg,transparent_70deg)] opacity-60"
+        className="absolute left-1/2 top-0 -z-20 h-[620px] w-screen -translate-x-1/2 bg-[conic-gradient(from_226deg_at_50%_0%,transparent_0deg,rgba(101,115,255,0.08)_30deg,rgba(205,221,255,0.04)_42deg,transparent_70deg)] opacity-40 [mask-image:linear-gradient(to_right,transparent_0%,black_14%,black_86%,transparent_100%)]"
         aria-hidden="true"
       />
       <div
-        className="absolute left-1/2 top-0 bottom-0 -z-20 w-screen -translate-x-1/2 opacity-25 [background-image:linear-gradient(rgba(205,221,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(205,221,255,0.045)_1px,transparent_1px)] [background-size:96px_76px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_18%,black_66%,transparent_100%)]"
+        className="absolute left-1/2 top-0 bottom-0 -z-20 w-screen -translate-x-1/2 opacity-10 [background-image:linear-gradient(rgba(205,221,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(205,221,255,0.045)_1px,transparent_1px)] [background-size:96px_76px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_18%,black_66%,transparent_100%)]"
         aria-hidden="true"
       />
       <div
@@ -36,7 +36,7 @@ export function Hero() {
             href="#solutions"
           />
 
-          <h1 className="font-display my-2 mx-auto max-w-[68rem] bg-linear-145 from-indigo-100 via-white to-white bg-clip-text text-balance text-center text-[3.35rem] leading-[0.98] font-medium tracking-normal text-transparent text-pretty drop-shadow-[0_18px_54px_rgba(160,170,255,0.16)] sm:text-[4.25rem] md:my-3 md:text-[4.75rem] lg:text-[5.25rem]">
+          <h1 className="font-display my-2 mx-auto max-w-[61rem] bg-linear-145 from-indigo-100 via-white to-white bg-clip-text text-balance text-center text-[3.1rem] leading-[0.98] font-medium tracking-normal text-transparent text-pretty drop-shadow-[0_18px_54px_rgba(160,170,255,0.16)] sm:text-[3.9rem] md:my-3 md:text-[4.45rem] lg:text-[4.75rem]">
             <span className="block">Property title intelligence,</span>
             <span className="block">instantly<span className="text-indigo-500">_</span></span>
           </h1>

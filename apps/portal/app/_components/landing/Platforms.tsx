@@ -1,6 +1,6 @@
 "use client";
 
-import { GradientText, Noise } from "@/app/_components/landing/Fancy";
+import { Noise } from "@/app/_components/landing/Fancy";
 import { cn } from "@/app/_lib/cn";
 import { DomainIcon } from "./shared/DomainIcons";
 
@@ -25,18 +25,16 @@ interface PlatformsProps {
 }
 
 export function Platforms({
-  headline = "Integrated with South Africa's leading property data sources",
+  headline = "Optimized for the property data sources and matter systems you rely on",
   className,
 }: PlatformsProps) {
   return (
     <div className={cn("relative z-10", className)}>
-      <div className="container flex flex-col items-center pt-1 md:pt-2">
+      <div className="container flex flex-col items-center pt-10 md:pt-12">
         <h2 className="m-0 w-full px-4 text-center">
-          <GradientText className="text-[0.9375rem] leading-snug font-normal tracking-normal text-pretty lg:text-[1rem]">
-            <span className="mx-auto mb-1.5 block max-w-[22rem] text-center lg:mb-2 lg:max-w-3xl">
-              {headline}
-            </span>
-          </GradientText>
+          <span className="mx-auto mb-1.5 block max-w-[22rem] text-center text-[0.9375rem] leading-snug font-normal tracking-normal text-white/72 text-pretty lg:mb-2 lg:max-w-3xl lg:text-[1rem]">
+            {headline}
+          </span>
         </h2>
       </div>
 

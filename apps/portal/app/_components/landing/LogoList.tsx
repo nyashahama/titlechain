@@ -27,7 +27,7 @@ export function LogoList({
   return (
     <section
       className={cn(
-        "border-y border-dashed border-white/[0.06] bg-[#03040a] py-14 md:py-16",
+        "bg-[#03040a] py-20 md:py-24",
         className
       )}
     >
@@ -35,19 +35,19 @@ export function LogoList({
         <h2 className="text-center text-sm font-medium text-white/55 text-pretty md:whitespace-nowrap">
           {title}
         </h2>
-        <div className="relative mt-8 grid grid-cols-2 overflow-hidden rounded-xl border border-dashed border-white/[0.06] bg-white/[0.02] sm:grid-cols-3 lg:grid-cols-6">
+        <div className="relative mx-auto mt-12 grid max-w-5xl grid-cols-2 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
           {logos.map((logo) => (
             <div
               key={logo.name}
-              className="flex min-h-16 items-center justify-center border-r border-b border-dashed border-white/[0.06] px-4 text-center"
+              className="flex min-h-10 items-center justify-center px-4 text-center"
             >
-              <span className="text-sm font-medium text-white/35">
+              <span className="font-display text-[0.9375rem] font-medium text-white/35 md:text-base">
                 {logo.name}
               </span>
             </div>
           ))}
         </div>
-        <div className="text-center">
+        <div className="mt-12 text-center">
           <a
             href="mailto:hello@titlechain.co.za?subject=TitleChain%20pilot%20evidence"
             className="text-sm font-medium text-indigo-500 hover:underline"

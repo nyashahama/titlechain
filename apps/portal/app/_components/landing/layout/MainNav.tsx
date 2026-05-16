@@ -38,7 +38,7 @@ export function MainNav() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.08] bg-[#151518]/95 backdrop-blur-xl">
-      <nav className="mx-auto flex h-20 w-full max-w-[86.875rem] items-center justify-between px-5">
+      <nav className="mx-auto flex h-[4.5rem] w-full max-w-[86.875rem] items-center justify-between px-5">
         <div className="flex min-w-0 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center">
             <TitlechainLogo className="h-7 w-auto" />
@@ -85,13 +85,22 @@ export function MainNav() {
           </Button>
         </div>
 
-        <button
-          className="flex size-10 items-center justify-center rounded-lg text-white xl:hidden"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-        >
-          <Menu className="size-5" />
-        </button>
+        <div className="flex items-center gap-3 xl:hidden">
+          <Button
+            href={siteConfig.baseLinks.signin}
+            variant="primary"
+            className="h-10 rounded-lg px-4 text-sm min-[380px]:h-11 min-[380px]:px-5 min-[380px]:text-[0.9375rem]"
+          >
+            Start project
+          </Button>
+          <button
+            className="flex size-10 items-center justify-center rounded-lg text-white"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu className="size-5" />
+          </button>
+        </div>
       </nav>
 
       <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} links={navLinks} />
