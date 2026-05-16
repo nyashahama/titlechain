@@ -724,9 +724,9 @@ export const SVGMap = (props: SVGProps<SVGSVGElement>) => {
 const GradientColors = () => {
   return (
     <>
-      <stop stopColor="#fb923c" stopOpacity="0" />
-      <stop offset="0.325" stopColor="#fb923c" />
-      <stop offset="1" stopColor="#fb923c" stopOpacity="0" />
+      <stop stopColor="#22d3ee" stopOpacity="0" />
+      <stop offset="0.325" stopColor="#22d3ee" />
+      <stop offset="1" stopColor="#22d3ee" stopOpacity="0" />
     </>
   )
 }

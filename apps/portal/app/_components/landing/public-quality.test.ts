@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
-import { join, resolve } from "path";
+import { join, resolve, sep } from "path";
 
 const landingDir = resolve(__dirname);
 const appDir = resolve(__dirname, "../..");
@@ -28,6 +28,14 @@ function routeExists(href: string) {
 
   const routeDir = join(appDir, route);
   return existsSync(join(routeDir, "page.tsx"));
+}
+
+function landingPath(fileName: string) {
+  return join(...fileName.split("/"));
+}
+
+function matchesLandingPath(file: string, fileName: string) {
+  return file.endsWith(`${sep}${landingPath(fileName)}`);
 }
 
 describe("landing: public quality", () => {
@@ -91,6 +99,10 @@ describe("landing: public quality", () => {
       "#F97316",
       "#FDBA74",
       "#EA580C",
+      "#fb923c",
+      "#FB923C",
+      "amber-",
+      "rgba(249,115,22",
       "249, 115, 22",
       "251, 146, 60",
       "253, 186, 116",
@@ -158,6 +170,51 @@ describe("landing: public quality", () => {
     expect(navSource?.content).toContain("Pilot");
     expect(navSource?.content).toContain("Start project");
     expect(navSource?.content).not.toContain("scrolled");
+  });
+
+  it("keeps the lower landing page on the Appwrite-style section system", () => {
+    const headingFiles = [
+      "Bento/Bento.tsx",
+      "Features.tsx",
+      "Map.tsx",
+      "CaseStudies/CaseStudies.tsx",
+      "Scale.tsx",
+      "Pricing.tsx",
+    ];
+    const surfaceFiles = [
+      "Bento/Bento.tsx",
+      "Bento/animations/BondCheckTile.tsx",
+      "Bento/animations/ClearToLodgeTile.tsx",
+      "Bento/animations/CoverageTile.tsx",
+      "Bento/animations/DeedsSearchTile.tsx",
+      "Bento/animations/FraudDetectionTile.tsx",
+      "Bento/animations/RiskEngineTile.tsx",
+      "AiSection.tsx",
+      "Map.tsx",
+      "CaseStudies/CaseStudyCard.tsx",
+      "Pricing.tsx",
+    ];
+
+    for (const fileName of headingFiles) {
+      const source = sources.find(({ file }) =>
+        matchesLandingPath(file, fileName)
+      );
+
+      expect(source?.content).toContain("font-display");
+      expect(source?.content).toContain("font-medium");
+    }
+
+    for (const fileName of surfaceFiles) {
+      const source = sources.find(({ file }) =>
+        matchesLandingPath(file, fileName)
+      );
+
+      expect(source?.content).not.toContain("bg-[hsl(0_0%_4%)]");
+      expect(source?.content).not.toContain("rounded-2xl");
+      expect(source?.content).not.toContain(
+        "hover:shadow-[0px_0px_0px_4px_hsl(0_0%_6%)]"
+      );
+    }
   });
 
   it("does not use emoji as integration or feature icons", () => {

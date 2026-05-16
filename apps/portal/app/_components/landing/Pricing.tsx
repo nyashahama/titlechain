@@ -57,25 +57,32 @@ const plans = [
 
 export function Pricing() {
   return (
-    <div className="relative flex min-h-[650px] max-w-screen items-center justify-center overflow-hidden pt-40 md:pb-10" id="pricing">
+    <section
+      className="relative flex min-h-[650px] max-w-screen scroll-mt-24 items-center justify-center overflow-hidden border-y border-dashed border-white/[0.06] bg-[#03040a] py-24 md:py-32"
+      id="pricing"
+    >
       {/* Ambient lighting (matches Hero background) */}
       <div
         className="absolute top-0 left-0 -z-10 h-screen w-[200vw] -translate-x-[25%] translate-y-8 rotate-25 overflow-hidden blur-3xl md:w-full animate-lighting"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse 390px 50px at 10% 30%, rgba(101, 115, 255, 0.2) 0%, rgba(101, 115, 255, 0) 70%), radial-gradient(ellipse 1100px 170px at 15% 40%, rgba(101, 115, 255, 0.08) 0%, rgba(101, 115, 255, 0) 70%), radial-gradient(ellipse 1200px 180px at 30% 30%, rgba(101, 115, 255, 0.08) 0%, rgba(101, 115, 255, 0) 70%)",
+            "radial-gradient(ellipse 390px 50px at 10% 30%, rgba(101, 115, 255, 0.18) 0%, rgba(101, 115, 255, 0) 70%), radial-gradient(ellipse 900px 150px at 20% 42%, rgba(16, 185, 129, 0.07) 0%, rgba(16, 185, 129, 0) 70%), radial-gradient(ellipse 1000px 180px at 48% 32%, rgba(205, 221, 255, 0.06) 0%, rgba(205, 221, 255, 0) 70%)",
           backgroundPosition: "0% 0%",
         }}
         aria-hidden="true"
       />
 
       <div className="container flex w-full flex-col items-center justify-center gap-10">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Start building like a team of hundreds today
+        <div className="max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-300/70">
+            Pricing
+          </p>
+          <h2 className="font-display mt-4 text-4xl font-medium leading-tight text-white text-pretty md:text-5xl">
+            Start with the title workflow you need today
           </h2>
-          <p className="mt-4 text-sm text-white/45">
-            Join 200+ conveyancing firms already using TitleChain
+          <p className="mx-auto mt-4 max-w-2xl text-sm font-medium leading-6 text-white/45">
+            Select an access path for a focused pilot, a growing operations
+            team, or an enterprise title-risk program.
           </p>
         </div>
 
@@ -84,8 +91,8 @@ export function Pricing() {
             <div
               key={plan.name}
               className={cn(
-                "relative flex flex-col rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)]/80 p-8 backdrop-blur-xl transition-shadow hover:shadow-[0px_0px_0px_4px_hsl(0_0%_6%)]",
-                plan.tag === "Popular" && "border-indigo-500/30 bg-[hsl(0_0%_6%)]/90"
+                "relative flex flex-col rounded-xl border border-white/[0.08] bg-white/[0.035] p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl transition-colors hover:border-white/[0.14] hover:bg-white/[0.055]",
+                plan.tag === "Popular" && "border-indigo-400/35 bg-indigo-500/[0.07]"
               )}
             >
               {plan.tag && (
@@ -94,9 +101,9 @@ export function Pricing() {
                 </span>
               )}
               <div>
-                <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+                <h3 className="font-display text-xl font-medium text-white">{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold tracking-tight text-white">
+                  <span className="font-display text-3xl font-medium text-white">
                     {plan.price}
                   </span>
                   {plan.subtitle && (
@@ -126,6 +133,6 @@ export function Pricing() {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

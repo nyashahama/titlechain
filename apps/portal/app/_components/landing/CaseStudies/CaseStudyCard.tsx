@@ -20,8 +20,8 @@ export function CaseStudyCard({
   return (
     <div
       className={cn(
-        "group cursor-pointer rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)] p-6 transition-all hover:border-white/[0.12]",
-        isOpen && "border-indigo-500/30 bg-[hsl(0_0%_6%)]"
+        "group cursor-pointer rounded-xl border border-white/[0.08] bg-white/[0.035] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-colors hover:border-white/[0.14] hover:bg-white/[0.055]",
+        isOpen && "border-indigo-400/35 bg-indigo-500/[0.07]"
       )}
       onClick={onToggle}
       role="button"
@@ -30,7 +30,7 @@ export function CaseStudyCard({
     >
       <div className="flex items-start justify-between">
         <div>
-          <h4 className="text-sm font-semibold text-white">{name}</h4>
+          <h4 className="font-display text-base font-medium text-white">{name}</h4>
           <p className="mt-0.5 text-xs text-white/45">{title}</p>
         </div>
         <span

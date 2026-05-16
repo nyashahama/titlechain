@@ -32,7 +32,7 @@ export function Platforms({
     <div className={cn("relative z-10", className)}>
       <div className="container flex flex-col items-center pt-1 md:pt-2">
         <h2 className="m-0 w-full px-4 text-center">
-          <GradientText className="text-[0.9375rem] leading-snug font-normal tracking-tight text-pretty lg:text-[1rem]">
+          <GradientText className="text-[0.9375rem] leading-snug font-normal tracking-normal text-pretty lg:text-[1rem]">
             <span className="mx-auto mb-1.5 block max-w-[22rem] text-center lg:mb-2 lg:max-w-3xl">
               {headline}
             </span>
