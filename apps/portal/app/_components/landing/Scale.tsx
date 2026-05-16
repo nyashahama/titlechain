@@ -31,22 +31,26 @@ export function Scale() {
 
   return (
     <section
-      className="border-y border-dashed border-white/[0.06] bg-[#03040a]/70 py-24 md:py-32"
+      className="relative overflow-hidden border-b border-dashed border-[#d8d8df] bg-[#ededf0] py-24 text-[#1c1c20] md:py-32"
       ref={ref}
     >
-      <div className="container">
-        <h2 className="font-display mx-auto mb-16 max-w-3xl text-center text-4xl font-medium leading-tight text-white text-pretty md:text-5xl">
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[linear-gradient(166deg,transparent_0%,transparent_48%,rgba(101,115,255,0.08)_48%,rgba(101,115,255,0.08)_100%)]"
+        aria-hidden="true"
+      />
+      <div className="container relative">
+        <h2 className="font-display mx-auto mb-16 max-w-3xl text-center text-4xl font-medium leading-tight text-[#1c1c20] text-pretty md:text-5xl">
           Over {animate ? <NumberFlow value={200} /> : "200"} firms already
           scale with TitleChain
         </h2>
 
-        <div className="mx-auto grid max-w-5xl grid-cols-2 overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.025] md:grid-cols-4">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 overflow-hidden rounded-xl border border-[#d8d8df] bg-white/40 md:grid-cols-4">
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="border-dashed border-white/[0.08] p-6 text-center odd:border-r md:border-r md:last:border-r-0"
+              className="border-dashed border-[#d8d8df] p-6 text-center odd:border-r md:border-r md:last:border-r-0"
             >
-              <div className="font-display text-3xl font-medium text-indigo-300 md:text-4xl">
+              <div className="font-display text-3xl font-medium text-indigo-600 md:text-4xl">
                 {animate ? (
                   <NumberFlow
                     value={stat.value}
@@ -57,7 +61,7 @@ export function Scale() {
                   formatMetricFallback(stat.value, stat.suffix)
                 )}
               </div>
-              <div className="mt-2 text-xs font-medium text-white/40">
+              <div className="mt-2 text-xs font-medium text-[#5c5c66]">
                 {stat.label}
               </div>
             </div>
@@ -65,13 +69,13 @@ export function Scale() {
         </div>
 
         <div className="mx-auto mt-16 max-w-xl text-center">
-          <blockquote className="text-lg font-medium text-white/70 italic">
+          <blockquote className="text-lg font-medium text-[#3f3f48] italic">
             &ldquo;The value is the evidence trail: every recommendation has the source
             context, risk state, and next action attached.&rdquo;
           </blockquote>
           <div className="mt-4">
-            <p className="text-sm font-medium text-white">Pilot conveyancing lead</p>
-            <p className="text-xs text-white/40">Regulated property transfer team</p>
+            <p className="text-sm font-medium text-[#1c1c20]">Pilot conveyancing lead</p>
+            <p className="text-xs text-[#5c5c66]">Regulated property transfer team</p>
           </div>
         </div>
       </div>

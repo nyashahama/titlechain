@@ -193,6 +193,34 @@ describe("landing: public quality", () => {
     );
   });
 
+  it("uses the Appwrite-style light lower band before returning to the dark CTA", () => {
+    const featuresSource = sources.find(({ file }) =>
+      matchesLandingPath(file, "Features.tsx")
+    );
+    const mapSource = sources.find(({ file }) =>
+      matchesLandingPath(file, "Map.tsx")
+    );
+    const scaleSource = sources.find(({ file }) =>
+      matchesLandingPath(file, "Scale.tsx")
+    );
+    const pricingSource = sources.find(({ file }) =>
+      matchesLandingPath(file, "Pricing.tsx")
+    );
+
+    for (const source of [featuresSource, mapSource, scaleSource]) {
+      expect(source?.content).toContain("bg-[#ededf0]");
+      expect(source?.content).toContain("text-[#1c1c20]");
+      expect(source?.content).toContain("border-[#d8d8df]");
+      expect(source?.content).not.toContain("text-white");
+    }
+
+    expect(pricingSource?.content).toContain("bg-[#03040a]");
+    expect(pricingSource?.content).toContain("text-white");
+    expect(featuresSource?.content).not.toContain(
+      'className="whitespace-nowrap">security and compliance'
+    );
+  });
+
   it("keeps the lower landing page on the Appwrite-style section system", () => {
     const headingFiles = [
       "Bento/Bento.tsx",
