@@ -52,14 +52,14 @@ export function Platforms({
                       className="group relative flex h-14 min-h-14 min-w-[9.5rem] flex-none cursor-pointer overflow-hidden border-r border-dashed border-white/[0.06] animate-fade-in lg:min-w-0 lg:flex-1 lg:basis-0"
                       style={{ animationDelay: `${i * 12}ms` }}
                     >
-                      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-orange-500/10 to-orange-400/5 opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-indigo-500/10 to-indigo-400/5 opacity-0 transition-opacity group-hover:opacity-100">
                         <Noise opacity={0.1} />
                       </div>
                       <span className="relative z-10 flex size-full min-h-0 min-w-0 items-center justify-center px-4 py-2">
                         <span className="flex items-center gap-2 whitespace-nowrap text-xs font-medium text-white/60 transition-colors group-hover:text-white/90">
                           <DomainIcon
                             name={platform.icon}
-                            className="size-4 shrink-0 text-orange-300/80"
+                            className="size-4 shrink-0 text-indigo-300/80"
                           />
                           {platform.name}
                         </span>

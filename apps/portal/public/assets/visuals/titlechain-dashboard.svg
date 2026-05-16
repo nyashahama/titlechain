@@ -13,8 +13,8 @@
 
   <rect x="24" y="78" width="238" height="381" rx="18" fill="#0C0C0C" stroke="white" stroke-opacity=".07"/>
   <text x="48" y="112" fill="white" fill-opacity=".38" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="2">MATTERS</text>
-  <rect x="48" y="132" width="190" height="42" rx="12" fill="#F97316" fill-opacity=".14" stroke="#F97316" stroke-opacity=".26"/>
-  <text x="66" y="157" fill="#FDBA74" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">TC-82941</text>
+  <rect x="48" y="132" width="190" height="42" rx="12" fill="#6573FF" fill-opacity=".14" stroke="#6573FF" stroke-opacity=".26"/>
+  <text x="66" y="157" fill="#C7D2FE" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">TC-82941</text>
   <text x="158" y="157" fill="white" fill-opacity=".62" font-family="Inter, Arial, sans-serif" font-size="12">Cape Town</text>
   <rect x="48" y="188" width="190" height="42" rx="12" fill="white" fill-opacity=".025" stroke="white" stroke-opacity=".06"/>
   <text x="66" y="214" fill="white" fill-opacity=".58" font-family="Inter, Arial, sans-serif" font-size="12">TC-82940</text>
@@ -28,15 +28,15 @@
   <text x="122" y="386" fill="#34D399" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">verified</text>
 
   <rect x="286" y="78" width="626" height="381" rx="18" fill="#090909" stroke="white" stroke-opacity=".07"/>
-  <text x="318" y="116" fill="#FDBA74" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="2">CLEAR-TO-LODGE ASSESSMENT</text>
+  <text x="318" y="116" fill="#C7D2FE" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="2">CLEAR-TO-LODGE ASSESSMENT</text>
   <text x="318" y="154" fill="white" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800">Erf 4821, Cape Town</text>
   <text x="318" y="181" fill="white" fill-opacity=".44" font-family="Inter, Arial, sans-serif" font-size="14">Transfer readiness for mandate M-2026-1842</text>
-  <rect x="318" y="212" width="260" height="168" rx="18" fill="url(#scoreGlow)" stroke="#F97316" stroke-opacity=".24"/>
+  <rect x="318" y="212" width="260" height="168" rx="18" fill="url(#scoreGlow)" stroke="#6573FF" stroke-opacity=".24"/>
   <text x="344" y="248" fill="white" fill-opacity=".48" font-family="Inter, Arial, sans-serif" font-size="13">Clear-to-Lodge score</text>
   <text x="344" y="317" fill="white" font-family="Inter, Arial, sans-serif" font-size="74" font-weight="850">92</text>
   <text x="450" y="316" fill="#34D399" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800">LOW RISK</text>
   <rect x="344" y="344" width="200" height="10" rx="5" fill="white" fill-opacity=".08"/>
-  <rect x="344" y="344" width="184" height="10" rx="5" fill="#F97316"/>
+  <rect x="344" y="344" width="184" height="10" rx="5" fill="#6573FF"/>
 
   <rect x="606" y="212" width="274" height="168" rx="18" fill="white" fill-opacity=".025" stroke="white" stroke-opacity=".07"/>
   <text x="632" y="247" fill="white" fill-opacity=".44" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">VERIFICATION CHECKS</text>
@@ -52,9 +52,9 @@
   <text x="966" y="116" fill="white" fill-opacity=".38" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="2">AUDIT TRAIL</text>
   <line x1="984" y1="150" x2="984" y2="392" stroke="white" stroke-opacity=".09"/>
   <g font-family="Inter, Arial, sans-serif" font-size="13">
-    <circle cx="984" cy="158" r="5" fill="#F97316"/><text x="1004" y="163" fill="white" fill-opacity=".72">09:12 Deed pulled from registry</text>
-    <circle cx="984" cy="218" r="5" fill="#F97316"/><text x="1004" y="223" fill="white" fill-opacity=".72">09:13 Seller ID matched</text>
-    <circle cx="984" cy="278" r="5" fill="#F97316"/><text x="1004" y="283" fill="white" fill-opacity=".72">09:14 Bond cancellation checked</text>
+    <circle cx="984" cy="158" r="5" fill="#6573FF"/><text x="1004" y="163" fill="white" fill-opacity=".72">09:12 Deed pulled from registry</text>
+    <circle cx="984" cy="218" r="5" fill="#6573FF"/><text x="1004" y="223" fill="white" fill-opacity=".72">09:13 Seller ID matched</text>
+    <circle cx="984" cy="278" r="5" fill="#6573FF"/><text x="1004" y="283" fill="white" fill-opacity=".72">09:14 Bond cancellation checked</text>
     <circle cx="984" cy="338" r="5" fill="#34D399"/><text x="1004" y="343" fill="white" fill-opacity=".72">09:15 Recommendation issued</text>
   </g>
   <rect x="966" y="402" width="116" height="34" rx="12" fill="white" fill-opacity=".025" stroke="white" stroke-opacity=".07"/>
@@ -64,8 +64,8 @@
 
   <defs>
     <radialGradient id="scoreGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(386 214) rotate(59) scale(196 284)">
-      <stop stop-color="#F97316" stop-opacity=".24"/>
-      <stop offset=".42" stop-color="#F97316" stop-opacity=".07"/>
+      <stop stop-color="#6573FF" stop-opacity=".24"/>
+      <stop offset=".42" stop-color="#6573FF" stop-opacity=".07"/>
       <stop offset="1" stop-color="white" stop-opacity=".025"/>
     </radialGradient>
   </defs>

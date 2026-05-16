@@ -551,7 +551,7 @@ export const SVGMap = (props: SVGProps<SVGSVGElement>) => {
         strokeWidth="0.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="stroke-orange-400/30"
+        className="stroke-indigo-400/30"
       />
 
       <path
@@ -566,7 +566,7 @@ export const SVGMap = (props: SVGProps<SVGSVGElement>) => {
         strokeWidth="0.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="stroke-orange-400/30"
+        className="stroke-indigo-400/30"
       />
 
       <path
@@ -605,14 +605,14 @@ export const SVGMap = (props: SVGProps<SVGSVGElement>) => {
       {/* Dashed Beams */}
       <path
         d="M342.5 28L85 -1"
-        className="animate-dashesReverse stroke-orange-400/30"
+        className="animate-dashesReverse stroke-indigo-400/30"
         strokeWidth="1"
         strokeLinecap="square"
         strokeDasharray="2 5"
       />
       <path
         d="M341.5 27L296 83.5"
-        className="animate-dashesReverse stroke-orange-400/30"
+        className="animate-dashesReverse stroke-indigo-400/30"
         strokeWidth="1"
         strokeLinecap="square"
         strokeDasharray="2 5"
@@ -669,7 +669,7 @@ export const SVGMap = (props: SVGProps<SVGSVGElement>) => {
                 cx={i * 4 + 2}
                 cy={j * 4 + 2}
                 r="0.5"
-                className="fill-orange-400/30"
+                className="fill-indigo-400/30"
               />
             )),
           )}

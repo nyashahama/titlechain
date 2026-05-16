@@ -38,7 +38,7 @@ export function Scale() {
       <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 md:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="text-center">
-            <div className="text-3xl font-bold tracking-tight text-orange-400 md:text-4xl">
+            <div className="text-3xl font-bold tracking-tight text-indigo-400 md:text-4xl">
               {animate ? (
                 <NumberFlow
                   value={stat.value}

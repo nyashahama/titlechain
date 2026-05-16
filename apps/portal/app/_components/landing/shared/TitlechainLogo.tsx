@@ -12,7 +12,7 @@ export const TitlechainLogo = ({
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
     focusable="false"
-    className={cx("text-[#0f172a]", className)}
+    className={cx("text-[#eef2ff]", className)}
     {...props}
   >
     <rect x="0" y="0" width="42" height="42" fill="transparent" />
@@ -24,7 +24,7 @@ export const TitlechainLogo = ({
       rx="6.5"
       transform="rotate(-45 16 20)"
       fill="none"
-      stroke="#F97316"
+      stroke="#6573FF"
       strokeWidth="3.2"
     />
     <rect
@@ -35,7 +35,7 @@ export const TitlechainLogo = ({
       rx="6.5"
       transform="rotate(-45 26 20)"
       fill="none"
-      stroke="#FDBA74"
+      stroke="#C7D2FE"
       strokeWidth="3.2"
     />
     <path
@@ -64,7 +64,7 @@ export const TitlechainLogo = ({
     <text
       x="104"
       y="26"
-      fill="#f97316"
+      fill="#6573ff"
       fontSize="18.5"
       fontWeight="600"
       letterSpacing="-0.04em"

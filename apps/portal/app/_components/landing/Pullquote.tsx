@@ -11,7 +11,7 @@ export function Pullquote({ name, title, children }: PullquoteProps) {
     <div className="container py-16 md:py-24">
       <div className="relative mx-auto max-w-2xl text-center">
         <div className="mx-auto mb-8 flex size-16 items-center justify-center">
-          <TitlechainMark className="size-12 text-orange-500" crossColor="currentColor" />
+          <TitlechainMark className="size-12 text-indigo-500" crossColor="currentColor" />
         </div>
         <blockquote className="text-xl font-medium text-white/80 leading-relaxed md:text-2xl">
           &ldquo;{children}&rdquo;

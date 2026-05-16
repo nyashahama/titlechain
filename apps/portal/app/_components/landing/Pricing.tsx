@@ -63,7 +63,7 @@ export function Pricing() {
         className="absolute top-0 left-0 -z-10 h-screen w-[200vw] -translate-x-[25%] translate-y-8 rotate-25 overflow-hidden blur-3xl md:w-full animate-lighting"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse 390px 50px at 10% 30%, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0) 70%), radial-gradient(ellipse 1100px 170px at 15% 40%, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0) 70%), radial-gradient(ellipse 1200px 180px at 30% 30%, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0) 70%)",
+            "radial-gradient(ellipse 390px 50px at 10% 30%, rgba(101, 115, 255, 0.2) 0%, rgba(101, 115, 255, 0) 70%), radial-gradient(ellipse 1100px 170px at 15% 40%, rgba(101, 115, 255, 0.08) 0%, rgba(101, 115, 255, 0) 70%), radial-gradient(ellipse 1200px 180px at 30% 30%, rgba(101, 115, 255, 0.08) 0%, rgba(101, 115, 255, 0) 70%)",
           backgroundPosition: "0% 0%",
         }}
         aria-hidden="true"
@@ -85,11 +85,11 @@ export function Pricing() {
               key={plan.name}
               className={cn(
                 "relative flex flex-col rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)]/80 p-8 backdrop-blur-xl transition-shadow hover:shadow-[0px_0px_0px_4px_hsl(0_0%_6%)]",
-                plan.tag === "Popular" && "border-orange-500/30 bg-[hsl(0_0%_6%)]/90"
+                plan.tag === "Popular" && "border-indigo-500/30 bg-[hsl(0_0%_6%)]/90"
               )}
             >
               {plan.tag && (
-                <span className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-orange-500 px-3 py-1 text-xs font-medium text-white">
+                <span className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-indigo-500 px-3 py-1 text-xs font-medium text-white">
                   {plan.tag}
                 </span>
               )}
@@ -109,7 +109,7 @@ export function Pricing() {
               <ul className="mt-6 flex-1 space-y-3">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
-                    <Check className="mt-0.5 size-4 shrink-0 text-orange-400" />
+                    <Check className="mt-0.5 size-4 shrink-0 text-indigo-400" />
                     <span className="text-sm text-white/60">{feature}</span>
                   </li>
                 ))}

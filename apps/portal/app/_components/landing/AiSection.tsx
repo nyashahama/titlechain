@@ -9,11 +9,11 @@ export function AiSection() {
       <div className="grid gap-8 md:grid-cols-2">
         {/* Pipeline Tile */}
         <div className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)] p-8">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
             <Noise opacity={0.08} />
           </div>
           <div className="relative z-10">
-            <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
               Automated Pipeline
             </p>
             <h3 className="mt-4 text-2xl font-bold text-white">
@@ -45,11 +45,11 @@ export function AiSection() {
 
         {/* Decision Tile */}
         <div className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)] p-8">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
             <Noise opacity={0.08} />
           </div>
           <div className="relative z-10">
-            <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
               Decision Intelligence
             </p>
             <h3 className="mt-4 text-2xl font-bold text-white">

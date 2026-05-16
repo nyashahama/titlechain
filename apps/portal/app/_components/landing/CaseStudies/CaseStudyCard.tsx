@@ -21,7 +21,7 @@ export function CaseStudyCard({
     <div
       className={cn(
         "group cursor-pointer rounded-2xl border border-white/[0.06] bg-[hsl(0_0%_4%)] p-6 transition-all hover:border-white/[0.12]",
-        isOpen && "border-orange-500/30 bg-[hsl(0_0%_6%)]"
+        isOpen && "border-indigo-500/30 bg-[hsl(0_0%_6%)]"
       )}
       onClick={onToggle}
       role="button"

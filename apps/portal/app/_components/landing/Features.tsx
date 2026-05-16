@@ -11,7 +11,7 @@ const features = [
             key={item}
             className="grid h-8 place-items-center rounded-md border border-white/[0.07] bg-black/35 text-[10px] text-white/45"
           >
-            {i > 2 ? <span className="size-1.5 rounded-full bg-orange-500" /> : item}
+            {i > 2 ? <span className="size-1.5 rounded-full bg-indigo-500" /> : item}
           </span>
         ))}
       </div>
@@ -53,7 +53,7 @@ const features = [
       <div className="space-y-2">
         {["Deed pulled", "Bond checked", "Decision issued"].map((item) => (
           <div key={item} className="flex items-center gap-2 text-[11px] text-black/55">
-          <span className="size-2 rounded-full bg-orange-400" />
+          <span className="size-2 rounded-full bg-indigo-400" />
           <span className="text-white/55">{item}</span>
           </div>
         ))}
@@ -67,10 +67,10 @@ const features = [
       "Operate with controlled storage and processing boundaries for regulated matters.",
     preview: (
       <div className="relative h-20 rounded-xl border border-white/[0.07] bg-black/35">
-        <span className="absolute left-8 top-8 size-2 rounded-full bg-orange-500 shadow-[0_0_24px_rgba(249,115,22,0.65)]" />
+        <span className="absolute left-8 top-8 size-2 rounded-full bg-indigo-500 shadow-[0_0_24px_rgba(249,115,22,0.65)]" />
         <span className="absolute right-10 top-5 size-2 rounded-full bg-emerald-500 shadow-[0_0_24px_rgba(16,185,129,0.55)]" />
         <span className="absolute bottom-5 left-1/2 size-2 rounded-full bg-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]" />
-        <span className="absolute left-9 right-11 top-9 border-t border-dashed border-orange-300/30" />
+        <span className="absolute left-9 right-11 top-9 border-t border-dashed border-indigo-300/30" />
       </div>
     ),
   },
@@ -105,7 +105,7 @@ const features = [
           <div key={width} className="rounded-md border border-white/[0.07] bg-black/35 p-1.5">
             <div className="h-1.5 rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-orange-500"
+                className="h-full rounded-full bg-indigo-500"
                 style={{ width: `${width}%` }}
               />
             </div>
@@ -129,7 +129,7 @@ const features = [
           <div className="mt-3 h-1.5 w-16 rounded-full bg-white/15" />
           <div className="mt-1.5 h-1.5 w-10 rounded-full bg-white/10" />
         </div>
-        <div className="grid size-12 place-items-center rounded-full border border-orange-500/20 bg-orange-500/10 text-[10px] font-bold text-orange-600">
+        <div className="grid size-12 place-items-center rounded-full border border-indigo-500/20 bg-indigo-500/10 text-[10px] font-bold text-indigo-600">
           FIC
         </div>
       </div>
@@ -162,7 +162,7 @@ export function Features() {
           <h2 className="max-w-[700px] text-3xl font-semibold leading-tight tracking-tight text-white text-pretty sm:text-4xl md:text-5xl">
             Safely scale with built-in{" "}
             <span className="whitespace-nowrap">security and compliance</span>
-            <span className="text-orange-500">_</span>
+            <span className="text-indigo-500">_</span>
           </h2>
           <p className="mt-4 max-w-full text-sm font-medium leading-6 text-white/45 lg:max-w-xl">
             Give conveyancing teams the controls, evidence trail, and
@@ -182,7 +182,7 @@ export function Features() {
               <div className="mb-5 h-28 overflow-hidden rounded-2xl border border-white/[0.07] bg-[radial-gradient(circle_at_20%_0%,rgba(249,115,22,0.2),transparent_34%),rgba(255,255,255,0.035)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                 {box.preview}
               </div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-300/70">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-300/70">
                 {box.kicker}
               </p>
               <h3 className="mt-2 flex flex-wrap items-center gap-1 text-sm font-semibold text-white">

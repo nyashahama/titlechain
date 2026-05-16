@@ -29,9 +29,9 @@ export const TitlechainMark = ({
           y2="32"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0" stopColor="#FDBA74" />
-          <stop offset="0.55" stopColor="#F97316" />
-          <stop offset="1" stopColor="#EA580C" />
+          <stop offset="0" stopColor="#C7D2FE" />
+          <stop offset="0.55" stopColor="#6573FF" />
+          <stop offset="1" stopColor="#4F46E5" />
         </linearGradient>
       </defs>
       <rect

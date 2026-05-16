@@ -45,7 +45,7 @@ export function LogoList({
         <div className="text-center">
           <a
             href="mailto:hello@titlechain.co.za?subject=TitleChain%20pilot%20evidence"
-            className="text-sm font-medium text-orange-500 hover:underline"
+            className="text-sm font-medium text-indigo-500 hover:underline"
           >
             Discuss pilot evidence &rarr;
           </a>

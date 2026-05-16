@@ -82,6 +82,23 @@ describe("landing: public quality", () => {
     expect(heroSource?.content).toContain("text-center");
   });
 
+  it("does not use the old orange public landing accent system", () => {
+    const oldOrangeTokens = [
+      "orange-",
+      "#f97316",
+      "#F97316",
+      "#FDBA74",
+      "#EA580C",
+      "249, 115, 22",
+      "251, 146, 60",
+      "253, 186, 116",
+    ];
+
+    for (const token of oldOrangeTokens) {
+      expect(combinedSource).not.toContain(token);
+    }
+  });
+
   it("does not use emoji as integration or feature icons", () => {
     const emojiMatches = combinedSource.match(/\p{Extended_Pictographic}/gu) ?? [];
     expect(emojiMatches).toEqual([]);
